@@ -1,0 +1,16 @@
+    # Ignore compiled files
+    *.o
+    *.class
+
+    # Ignore build artifacts
+    /build/
+    /dist/
+
+    # Ignore node_modules folder in Node.js projects
+    /node_modules/
+
+    # Ignore environment variables file
+    .env
+
+    # Ignore system files (e.g., macOS)
+    .DS_Store
