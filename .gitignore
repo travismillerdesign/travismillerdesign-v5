@@ -3,11 +3,11 @@
 *.class
 
 # Ignore build artifacts
-/build/
-/dist/
+build/
+dist/
 
 # Ignore node_modules folder in Node.js projects
-/node_modules/
+node_modules/
 
 # Ignore environment variables file
 .env
