@@ -4,6 +4,8 @@
   "description": "v5 portfolio website",
   "main": "index.js",
   "scripts": {
+    "compile:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --style=compressed",
+    "prebuild": "npm run compile:scss",
     "build": "npx @11ty/eleventy",
     "serve": "npx @11ty/eleventy --serve --quiet"
   },
@@ -20,5 +22,9 @@
   "homepage": "https://github.com/travismillerdesign/travismillerdesign-v5#readme",
   "dependencies": {
     "@11ty/eleventy": "^3.1.2"
+  },
+  "devDependencies": {
+    "normalize-scss": "^8.0.0",
+    "sass": "^1.93.2"
   }
 }
