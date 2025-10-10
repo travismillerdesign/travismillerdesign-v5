@@ -1,18 +1,3 @@
-// Core Settings and Resets
-//*******************************************
-@import "normalize.scss";
-
-
-//	Utilities
-//*******************************************
-@import "utilities/baseline.scss";
-@import "utilities/breakpoint.scss";
-@import "utilities/centering.scss";
-@import "utilities/clearfix.scss";
-@import "utilities/grid.scss";
-@import "utilities/scroll.scss";
-
-
 // Settings Variables
 //*******************************************
 @import "settings/breakpoint.scss";
@@ -21,6 +6,20 @@
 @import "settings/path.scss";
 @import "settings/transition.scss";
 @import "settings/zindex.scss";
+
+// Core Settings and Resets
+//*******************************************
+@import "normalize-scss/sass/normalize";
+
+
+//	Utilities
+//*******************************************
+// @import "utilities/baseline.scss";
+@import "utilities/breakpoint.scss";
+@import "utilities/centering.scss";
+@import "utilities/clearfix.scss";
+// @import "utilities/grid.scss";
+@import "utilities/scroll.scss";
 
 
 //	Placeholders

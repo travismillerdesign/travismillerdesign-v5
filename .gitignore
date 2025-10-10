@@ -14,3 +14,8 @@ node_modules/
 
 # Ignore system files (e.g., macOS)
 .DS_Store
+
+# Ignore build artifacts
+npm_output.log
+src/styles/project.css
+src/styles/project.css.map

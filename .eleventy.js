@@ -7,6 +7,8 @@ module.exports = function(eleventyConfig) {
         strictFilters: false, // will prevent crashing on undefined filters
     });
 
+    eleventyConfig.addPassthroughCopy("src/styles/project.css");
+
     return {
       dir: {
         input: "src",
