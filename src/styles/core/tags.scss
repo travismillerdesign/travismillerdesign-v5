@@ -1,0 +1,120 @@
+//*******************************************
+//
+//	HTML TAGS
+//
+//	Description
+//	- Default styles for HTML tags e.g. <body>, <h1>, <sup>
+//
+//	Notes
+//	- Review normalize.scss for default tag styling
+//
+//	Contents
+//	1) BASE
+//	2) LINKS
+//	3) TYPE
+//	4) EMBEDDED CONTENT
+//	5) FIGURES
+//	6) FORMS
+//	7) TABLES
+//
+//*******************************************
+
+
+
+//*******************************************
+//
+//	BASE
+//
+//*******************************************
+* {
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+html {font-size: $fontSize-root;}
+
+
+// body {}
+
+
+
+//*******************************************
+//
+//	LINKS
+//
+//*******************************************
+// a:focus {}
+// a:hover {}
+// a:active {}
+
+
+
+//*******************************************
+//
+//	TYPE
+//
+//*******************************************
+// h1 {}
+// p {}
+// abbr[title] {}
+// b {}
+// strong {}
+// dfn {}
+// hr {}
+// mark {}
+// code {}
+// kbd {}
+// pre {}
+// q {}
+// small {}
+// sub {}
+// sup {}
+// sub {}
+
+
+
+//*******************************************
+//
+//	EMBEDDED CONTENT
+//
+//*******************************************
+// img {}
+
+
+
+//*******************************************
+//
+//	FIGURES
+//
+//*******************************************
+// figure {}
+
+
+
+//*******************************************
+//
+//	FORMS
+//
+//*******************************************
+// fieldset {}
+// legend {}
+// button {}
+// input {}
+// select {}
+// textarea {}
+// html input[type="button"] {}
+// input[type="reset"] {}
+// input[type="submit"] {}
+// input[type="checkbox"] {}
+// input[type="radio"] {}
+// input[type="search"] {}
+
+
+
+//*******************************************
+//
+//	TABLES
+//
+//*******************************************
+// table {}

@@ -1,0 +1,151 @@
+//*******************************************
+//
+//	FONT SETTINGS
+//
+//	- Font settings using automatically generated values
+//
+//	Contents
+//	1) SETTINGS
+//	2) BASE
+//	3) FAMILIES
+//	4) SIZES
+//	5) LAYOUT
+//	6) OUTPUT
+//
+//*******************************************
+
+
+
+//*******************************************
+//
+//	SETTINGS
+//
+//*******************************************
+$fontSize-root:     18px;		// (px)			Root HTML font size - 10px default
+$fontSize-base:     1rem; 	// (rem) 		Body paragraph size
+
+
+
+//*******************************************
+//
+//	BASE
+//	- Generic styles applied to all type
+//
+//*******************************************
+%font-base { margin: 0; }
+
+
+
+//*******************************************
+//
+//	FAMILIES
+//	- Font families, weights, and styles
+//
+//	SHIFT RATIO
+//	- (unitless)
+//	- Different for each fon
+//	- This value describes the location of the font's baseline as a percentage
+//	- Using an accurate value for each font is essential to proper alignment
+//
+//*******************************************
+$fontFamily-primary: sans-serif;
+%fontFamily-primary {
+	@extend %font-base;
+	font-family: $fontFamily-primary;
+	font-style:  normal;
+	font-weight: 500;
+}
+
+$fontFamily-secondary: sans-serif;
+%fontFamily-secondary {
+	@extend %font-base;
+	font-family: $fontFamily-secondary;
+	font-style:  normal;
+	font-weight: normal;
+}
+$fontFamily-monospace: monospace;
+%fontFamily-monospace {
+	@extend %font-base;
+	font-family: $fontFamily-monospace;
+	font-style:  normal;
+	font-weight: normal;
+}
+
+
+
+//*******************************************
+//
+//	LAYOUT
+//	- Layout size ramp baseline increments
+//	- Should be unitless and used with the baseline-grid function
+//
+//*******************************************
+$gridUnit-base: 		8px;
+$gridUnit-smallest:		$gridUnit-base * 1;
+$gridUnit-smaller:		$gridUnit-base * 2;
+$gridUnit-small:		$gridUnit-base * 3;
+$gridUnit-default: 		$gridUnit-base * 4;
+$gridUnit-large: 		$gridUnit-base * 5;
+$gridUnit-larger:		$gridUnit-base * 6;
+$gridUnit-largest: 		$gridUnit-base * 7;
+
+
+
+//*******************************************
+//
+//	OUTPUT
+//	- Margin can be applied using the LAYOUT settings to customize vertical spacing
+//	- Combine the different type settings
+//	- Custom styles can be added
+//
+//*******************************************
+h1 {
+	@extend %fontFamily-primary;
+	font-size: 2.986rem;
+	line-height: 1.4em;
+}
+h2 {
+	@extend %fontFamily-primary;
+	font-size: 2.488rem;
+	line-height: 1.4em;
+}
+h3 {
+	@extend %fontFamily-primary;
+	font-size: 2.074rem;
+	line-height: 1.4em;
+}
+h4 {
+	@extend %fontFamily-primary;
+	font-size: 1.728rem;
+	line-height: 1.4em;
+}
+h5 {
+	@extend %fontFamily-primary;
+	font-size: 1.44rem;
+	line-height: 1.4em;
+}
+h6 {
+	@extend %fontFamily-primary;
+	font-size: 1.2rem;
+	line-height: 1.4em;
+}
+.p1 {
+	@extend %fontFamily-primary;
+	font-size: 1.2rem;
+	line-height: 1.4em;
+}
+p, .p2 {
+	@extend %fontFamily-primary;
+	font-size: 1rem;
+	line-height: 1.4em;
+}
+small, .p3 {
+	@extend %fontFamily-primary;
+	font-size: 0.833rem;
+	line-height: 1.4em;
+}
+.p4 {
+	@extend %fontFamily-primary;
+	font-size: 0.694rem;
+	line-height: 1.4em;
+}

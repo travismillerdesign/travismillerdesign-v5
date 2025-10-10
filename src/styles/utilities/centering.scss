@@ -1,0 +1,124 @@
+//*******************************************
+//
+//	CENTERING UTILITIES
+//
+//	Details
+//	- Utilities for centering x-axis, y-axis, xy-axis
+//
+//	Contents
+//	1) ABSOLUTE CENTERING (Preferred Method)
+//	2) TRANSFORM METHOD
+//	3) FIXED SIZE METHOD
+//	4) GHOST METHOD
+//
+//	Reference
+//	http://css-tricks.com/centering-in-the-unknown/
+//
+//
+//*******************************************
+
+
+
+//*******************************************
+//
+//	ABSOLUTE CENTERING
+//
+//	Reference:
+//	http://coding.smashingmagazine.com/2013/08/09/absolute-horizontal-vertical-centering-css/
+//
+//	Notes:
+//	- Read Article for Advantages and Caveats
+//
+//*******************************************
+%center-absolute {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+}
+
+
+
+//*******************************************
+//
+//	TRANSFORM METHOD
+//
+//	Notes
+//	- Parent Elements needs position: absolute/relative/fixed value
+//
+//*******************************************
+// center on the y axis
+%center-vertical-transform {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+}
+// center on the x axis
+%center-horizontal-transform {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
+// center on the x and y axis
+%center-transform {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+}
+
+
+
+//*******************************************
+//
+//	FIXED SIZE METHOD
+//
+//	Notes
+//	- Parent Elements needs position: absolute/relative/fixed value
+//
+//	Usage
+//	@include center-negative-margins(500px, 200px, {position});
+//
+//*******************************************
+@mixin center-fixed-size ($width: 500px, $height: 200px, $position: absolute) {
+	position: $position;
+	top: 50%;
+	left: 50%;
+	width: $width;
+	height: $height;
+	margin-top: -0.5*$height;
+	margin-left: -0.5*$width;
+}
+
+
+
+//*******************************************
+//
+//	GHOST METHOD
+//
+//	Notes
+//	- Requires: IE 8+
+//
+//*******************************************
+// center on the y axis
+%center-vertical-ghost {
+	&::before {
+		display: inline-block;
+		height: 100%;
+		margin-right: -0.25em; /* Adjusts for spacing */
+		content: '';
+		vertical-align: middle;
+	}
+	// Note: This Assumes a div element will be used to wrap content
+	> div {
+		display: inline-block;
+		vertical-align: middle;
+	}
+}
+// center on the xy axis
+%center-ghost {
+	@extend %center-vertical-ghost;
+	text-align: center;
+}

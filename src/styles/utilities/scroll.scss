@@ -1,0 +1,36 @@
+//*******************************************
+//
+//	SCROLL UTILITIES
+//
+//	Details
+//	- Contains utilities that facilite better scrolling functionality
+//
+//	Contents
+//	1) OVERFLOW SCROLLING
+//
+//*******************************************
+
+
+
+//*******************************************
+//
+//	OVERFLOW SCROLLING
+//
+//	Details
+//	- Enables touch scrolling for DOM elements that require any overflow properties
+//
+//*******************************************
+%util-scroll {
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;	
+}
+%util-scroll-y {
+	overflow-x: hidden;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;	
+}
+%util-scroll-x {
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;		
+}

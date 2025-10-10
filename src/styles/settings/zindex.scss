@@ -1,0 +1,32 @@
+//*******************************************
+//
+//	ZINDEX SETTINGS
+//	Depth management settings
+//
+//	Contents
+//	1) DEPTHS
+//	2) STANDARD RAMP
+//
+//*******************************************
+
+
+
+//*******************************************
+//
+//	RANGE INCREMENT
+//
+//*******************************************
+$zIncrement: 1000;	// Standard increment between depth layers
+
+
+
+//*******************************************
+//
+//	STANDARD RAMP
+//
+//*******************************************
+$z-min:	0;
+$z-bg:	$zIncrement*1;
+$z-mg:	$zIncrement*2;
+$z-fg:	$zIncrement*3;
+$z-max:	$zIncrement*4;
