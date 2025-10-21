@@ -536,6 +536,231 @@ const overviewSketch = (p) => {
   };
 };
 
+// DELETE EVERYTHING BELOW THIS LINE IN THE OVERVIEW SKETCH
+// ============================================================================
+// CHALLENGE CANVAS - Grid-based animation
+// ============================================================================
+
+const challengeSketch_PLACEHOLDER = (p) => {
+  function spawnNextTile_SHOULD_NOT_EXIST() {
+    let gridWidth = cols * (cellSize + gap) - gap;
+    let gridHeight = rows * (cellSize + gap) - gap;
+    let gridStartX = (p.width - gridWidth) / 2;
+    let gridStartY = (p.height - gridHeight) / 2;
+
+    spawnAttemptCounter++;
+
+    let useSequential = (spawnAttemptCounter % fallbackFrequency === 0);
+
+    if (useSequential) {
+      // Sequential fallback - find first unspawned tile (right to left)
+      for (let col = cols - 1; col >= 0; col--) {
+        for (let row = 0; row < rows; row++) {
+          if (!spawned[col][row]) {
+            let targetX = gridStartX + col * (cellSize + gap);
+            let targetY = gridStartY + row * (cellSize + gap);
+
+            particles.push(new Particle(targetX, targetY, row, col));
+            spawned[col][row] = true;
+            tilesSpawned++;
+            return;
+          }
+        }
+      }
+    } else {
+      // Weighted random spawn
+      let attempts = 0;
+      let maxAttempts = 30;
+
+      while (attempts < maxAttempts) {
+        let colWeight = p.randomGaussian() * 3 + (cols - 1 - spawnBias);
+        let col = p.constrain(p.floor(colWeight), 0, cols - 1);
+        let row = p.floor(p.random(rows));
+
+        if (!spawned[col][row]) {
+          let targetX = gridStartX + col * (cellSize + gap);
+          let targetY = gridStartY + row * (cellSize + gap);
+
+          particles.push(new Particle(targetX, targetY, row, col));
+          spawned[col][row] = true;
+          tilesSpawned++;
+          return;
+        }
+
+        attempts++;
+      }
+    }
+  }
+
+  function applyMouseInteraction() {
+    let mouseCellX = p.floor(p.mouseX / gridCellSize);
+    let mouseCellY = p.floor(p.mouseY / gridCellSize);
+    let mousePos = p.createVector(p.mouseX, p.mouseY);
+
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        let gx = mouseCellX + dx;
+        let gy = mouseCellY + dy;
+
+        if (gx >= 0 && gx < gridCols && gy >= 0 && gy < gridRows) {
+          for (let particle of spatialGrid[gx][gy]) {
+            let toMouse = p5.Vector.sub(particle.pos, mousePos);
+            let distance = toMouse.mag();
+
+            if (distance < mouseRadius && distance > 0) {
+              toMouse.normalize();
+              let strength = p.map(distance, 0, mouseRadius, mouseForce, 0);
+              particle.offset.x += toMouse.x * strength * 0.1;
+              particle.offset.y += toMouse.y * strength * 0.1;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  p.setup = () => {
+    container = document.getElementById('overview-canvas');
+
+    if (!container) {
+      console.warn('Overview canvas container not found');
+      return;
+    }
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+
+    // Calculate responsive grid
+    cols = p.floor(p.width / (cellSize + gap));
+    rows = p.floor(p.height / (cellSize + gap));
+    totalTiles = cols * rows;
+
+    particles = [];
+    lastMousePos = p.createVector(p.mouseX, p.mouseY);
+
+    // Initialize spawn tracking
+    spawned = [];
+    for (let i = 0; i < cols; i++) {
+      spawned[i] = [];
+      for (let j = 0; j < rows; j++) {
+        spawned[i][j] = false;
+      }
+    }
+
+    // Initialize spatial grid
+    gridCols = p.ceil(p.width / gridCellSize) + 1;
+    gridRows = p.ceil(p.height / gridCellSize) + 1;
+    spatialGrid = [];
+    for (let i = 0; i < gridCols; i++) {
+      spatialGrid[i] = [];
+      for (let j = 0; j < gridRows; j++) {
+        spatialGrid[i][j] = [];
+      }
+    }
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) {
+      return;
+    }
+
+    p.background(245, 245, 248);
+
+    // Calculate mouse movement
+    let currentMouse = p.createVector(p.mouseX, p.mouseY);
+    mouseMoveDist = p5.Vector.dist(lastMousePos, currentMouse);
+    lastMousePos = currentMouse;
+
+    // Gradually shift spawn bias from right to left
+    spawnBias = p.map(tilesSpawned, 0, totalTiles, 0, cols);
+
+    // Spawn tiles
+    spawnTimer++;
+    if (spawnTimer >= spawnInterval && tilesSpawned < totalTiles) {
+      let spawnsThisFrame = 3;
+      for (let i = 0; i < spawnsThisFrame && tilesSpawned < totalTiles; i++) {
+        spawnNextTile();
+      }
+      spawnTimer = 0;
+    }
+
+    // Clear spatial grid
+    for (let i = 0; i < gridCols; i++) {
+      for (let j = 0; j < gridRows; j++) {
+        spatialGrid[i][j] = [];
+      }
+    }
+
+    // Update particles and populate spatial grid
+    for (let particle of particles) {
+      particle.update();
+
+      // Add to spatial grid if locked
+      if (particle.age >= 1.0) {
+        let gx = p.floor(particle.pos.x / gridCellSize);
+        let gy = p.floor(particle.pos.y / gridCellSize);
+        gx = p.constrain(gx, 0, gridCols - 1);
+        gy = p.constrain(gy, 0, gridRows - 1);
+        spatialGrid[gx][gy].push(particle);
+      }
+    }
+
+    // Apply mouse interaction if mouse has moved
+    if (mouseMoveDist > 0.5) {
+      applyMouseInteraction();
+    }
+
+    // Draw particles
+    for (let particle of particles) {
+      particle.display();
+    }
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+
+      // Recalculate grid for new size
+      cols = p.floor(p.width / (cellSize + gap));
+      rows = p.floor(p.height / (cellSize + gap));
+      totalTiles = cols * rows;
+
+      // Reset spatial grid
+      gridCols = p.ceil(p.width / gridCellSize) + 1;
+      gridRows = p.ceil(p.height / gridCellSize) + 1;
+      spatialGrid = [];
+      for (let i = 0; i < gridCols; i++) {
+        spatialGrid[i] = [];
+        for (let j = 0; j < gridRows; j++) {
+          spatialGrid[i][j] = [];
+        }
+      }
+
+      // Reset animation
+      particles = [];
+      tilesSpawned = 0;
+      spawnTimer = 0;
+      spawned = [];
+      for (let i = 0; i < cols; i++) {
+        spawned[i] = [];
+        for (let j = 0; j < rows; j++) {
+          spawned[i][j] = false;
+        }
+      }
+    }
+  };
+};
+
+// ============================================================================
+// CHALLENGE CANVAS - Grid-based animation
+// ============================================================================
+
 const challengeSketch = (p) => {
   let container;
   let visibilityHelper;

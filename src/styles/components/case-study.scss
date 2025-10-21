@@ -10,6 +10,9 @@
   justify-content: center;
   overflow: hidden;
   padding: 4rem 2rem;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
 
   @media (min-width: 768px) {
     padding: 6rem 4rem;
@@ -120,6 +123,9 @@
   text-align: center;
   padding: 2rem;
   overflow: hidden;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
 
   h1 {
     position: relative;
