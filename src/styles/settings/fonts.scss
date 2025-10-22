@@ -21,7 +21,7 @@
 //	SETTINGS
 //
 //*******************************************
-$fontSize-root:     18px;		// (px)			Root HTML font size - 10px default
+$fontSize-root:     22px;		// (px)			Root HTML font size - 10px default
 $fontSize-base:     1rem; 	// (rem) 		Body paragraph size
 
 
@@ -48,29 +48,13 @@ $fontSize-base:     1rem; 	// (rem) 		Body paragraph size
 //	- Using an accurate value for each font is essential to proper alignment
 //
 //*******************************************
-$fontFamily-primary: sans-serif;
+$fontFamily-primary: 'PP Mori', sans-serif;
 %fontFamily-primary {
 	@extend %font-base;
 	font-family: $fontFamily-primary;
 	font-style:  normal;
-	font-weight: 500;
+	font-weight: 500;	
 }
-
-$fontFamily-secondary: sans-serif;
-%fontFamily-secondary {
-	@extend %font-base;
-	font-family: $fontFamily-secondary;
-	font-style:  normal;
-	font-weight: normal;
-}
-$fontFamily-monospace: monospace;
-%fontFamily-monospace {
-	@extend %font-base;
-	font-family: $fontFamily-monospace;
-	font-style:  normal;
-	font-weight: normal;
-}
-
 
 
 //*******************************************
@@ -102,6 +86,7 @@ $gridUnit-largest: 		$gridUnit-base * 7;
 h1 {
 	@extend %fontFamily-primary;
 	font-size: 2.986rem;
+	// font-size: 1rem;
 	line-height: 1.4em;
 }
 h2 {
