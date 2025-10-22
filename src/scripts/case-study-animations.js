@@ -1,19 +1,15 @@
-// Case Study P5.js Animations
-// Using instance mode for better performance and namespace isolation
+// Case Study P5.js Animations - Clean, Focused Visual Metaphors
+// Each sketch has ONE clear concept with flat design + beautiful gradients
 
 // ============================================================================
 // INTERSECTION OBSERVER SETUP
-// Only runs animations when they're visible in viewport
 // ============================================================================
 
 const createVisibilityObserver = (sketch, threshold = 0.1) => {
   let isVisible = false;
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       isVisible = entry.isIntersecting;
-
-      // Pause/resume animation loop based on visibility
       if (isVisible && sketch.isLooping() === false) {
         sketch.loop();
       } else if (!isVisible && sketch.isLooping() === true) {
@@ -22,692 +18,311 @@ const createVisibilityObserver = (sketch, threshold = 0.1) => {
     });
   }, {
     threshold: threshold,
-    rootMargin: '50px' // Start animating slightly before visible
+    rootMargin: '50px'
   });
-
   return { observer, isVisible: () => isVisible };
 };
 
 // ============================================================================
-// SCROLL TRACKING
-// Track scroll position for scroll-reactive animations
-// ============================================================================
-
-class ScrollTracker {
-  constructor() {
-    this.scrollY = window.scrollY;
-    this.scrollProgress = 0;
-    this.documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-
-    window.addEventListener('scroll', () => {
-      this.scrollY = window.scrollY;
-      this.scrollProgress = this.scrollY / this.documentHeight;
-    }, { passive: true });
-
-    // Update document height on resize
-    window.addEventListener('resize', () => {
-      this.documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-    }, { passive: true });
-  }
-
-  getScrollY() {
-    return this.scrollY;
-  }
-
-  getScrollProgress() {
-    return this.scrollProgress;
-  }
-}
-
-const scrollTracker = new ScrollTracker();
-
-// ============================================================================
-// HERO CANVAS - Iridescent Tile Assembly (converted from Processing)
+// HERO CANVAS - Chaos to Order
+// Visual Metaphor: LEFT scattered dots → RIGHT organized grid
 // ============================================================================
 
 const heroSketch = (p) => {
-  let container;
-  let visibilityHelper;
+  let container, visibilityHelper;
+  let dots = [];
+  let time = 0;
+  const GRID_SIZE = 30;
 
-  let particles = [];
-  let cols, rows;
-  let cellSize = 10;
-  let gap = 1;
-  let totalTiles;
+  class Dot {
+    constructor(index, gridX, gridY) {
+      this.gridX = gridX;
+      this.gridY = gridY;
 
-  let spawnTimer = 0;
-  let spawnInterval = 0.01;
-  let tilesSpawned = 4;
+      // Chaos position (left, scattered)
+      this.chaosX = p.random(p.width * 0.1, p.width * 0.4);
+      this.chaosY = p.random(p.height * 0.1, p.height * 0.9);
 
-  let mouseRadius = 400;
-  let mouseForce = 50;
-  let lastMousePos;
-  let mouseMoveDist = 0;
+      // Order position (right, grid)
+      this.orderX = p.width * 0.6 + gridX * GRID_SIZE;
+      this.orderY = p.height * 0.2 + gridY * GRID_SIZE;
 
-  // Spatial grid for efficient neighbor lookups
-  let gridCols, gridRows;
-  let gridCellSize = 120;
-  let spatialGrid = [];
-
-  // Track which tiles have been spawned
-  let spawned = [];
-
-  // Spawn weighting
-  let spawnBias = 0;
-  let fallbackFrequency = 8;
-  let spawnAttemptCounter = 0;
-
-  class Particle {
-    constructor(tx, ty, r, c) {
-      this.target = p.createVector(tx, ty);
-      this.row = r;
-      this.col = c;
-      this.offset = p.createVector(0, 0);
-      this.locked = false;
-
-      this.age = 0;
-      this.scale = 0;
-      this.lifespan = p.random(3.5, 5.0);
-
-      let verticalRange = p.height;
-      let verticalCenter = p.height * 0.5;
-      this.startPos = p.createVector(
-        (1 - (spawned.length / totalTiles)) * window.innerWidth * 0.8,
-        verticalCenter + p.random(-verticalRange/2, verticalRange/2)
-      );
-      this.pos = this.startPos.copy();
-
-      this.noiseOffsetX = p.random(1000);
-      this.noiseOffsetY = p.random(1000);
-      this.scaleDelay = 0.3;
+      this.x = this.chaosX;
+      this.y = this.chaosY;
+      this.phase = p.random(p.TWO_PI);
     }
 
-    update() {
-      this.age += 1.0 / (this.lifespan * 60);
-      this.age = p.constrain(this.age, 0, 1);
+    update(mouseInfluence) {
+      // Oscillate between chaos and order
+      let progress = (p.sin(time * 0.5 + this.phase) + 1) * 0.5;
+      progress = p.constrain(progress + mouseInfluence, 0, 1);
 
-      this.offset.mult(0.85);
+      this.x = p.lerp(this.chaosX, this.orderX, progress);
+      this.y = p.lerp(this.chaosY, this.orderY, progress);
 
-      if (this.age < 1.0) {
-        let noiseScale = 0.008;
-        let noiseMag = 80 * (1 - this.age);
-
-        let noiseX = (p.noise(this.noiseOffsetX + p.frameCount * noiseScale) - 0.5) * noiseMag;
-        let noiseY = (p.noise(this.noiseOffsetY + p.frameCount * noiseScale) - 0.5) * noiseMag;
-
-        let eased = this.easeInOutCubic(this.age);
-        this.pos.x = p.lerp(this.startPos.x, this.target.x, eased) + noiseX;
-        this.pos.y = p.lerp(this.startPos.y, this.target.y, eased) + noiseY;
-
-        let scaleAge = p.constrain((this.age - this.scaleDelay) / (1 - this.scaleDelay), 0, 1);
-        this.scale = this.easeOutCubic(scaleAge);
-
-        this.locked = false;
-      } else {
-        if (!this.locked) {
-          this.locked = true;
-          this.pos.x = this.target.x;
-          this.pos.y = this.target.y;
-          this.scale = 1.0;
-        }
-
-        this.pos.x = this.target.x + this.offset.x;
-        this.pos.y = this.target.y + this.offset.y;
-
-        if (p.frameCount % 3 === 0) {
-          this.scale = 1.0 + p.sin(p.frameCount * 0.02 + this.row * 0.3 + this.col * 0.2) * 0.015;
-        }
-      }
+      return progress;
     }
 
-    display() {
-      if (this.scale < 0.01) return;
+    display(progress) {
+      // Gradient: warm gray → cyan
+      let hue = p.lerp(240, 190, progress);
+      let sat = p.lerp(5, 65, progress);
+      let bri = p.lerp(70, 85, progress);
 
-      // Iridescent gradient - pale shifting colors
-      let gradientT = this.col / p.max(1, cols - 1);
-
-      // HSB to RGB for smooth color transitions
       p.colorMode(p.HSB, 360, 100, 100);
-
-      let hue = p.lerp(340, 60, gradientT);
-      let saturation = p.lerp(25, 35, gradientT);
-      let brightness = p.lerp(92, 96, gradientT);
-
-      let baseColor = p.color(hue, saturation, brightness);
-
-      // Convert back to RGB mode
-      p.colorMode(p.RGB, 255);
-      let baseR = p.red(baseColor);
-      let baseG = p.green(baseColor);
-      let baseB = p.blue(baseColor);
-
-      // Start color (chaos) - light grey
-      let startR = 220;
-      let startG = 220;
-      let startB = 225;
-
-      // Blend from start grey to iridescent color
-      let r = p.lerp(startR, baseR, this.age);
-      let g = p.lerp(startG, baseG, this.age);
-      let b = p.lerp(startB, baseB, this.age);
-
-      let size = cellSize * this.scale;
-
-      // Draw square
       p.noStroke();
-      p.fill(r, g, b, 250);
-      p.rectMode(p.CENTER);
-      p.rect(this.pos.x + cellSize/2, this.pos.y + cellSize/2, size, size);
-
-      // Subtle shimmer for locked tiles
-      if (this.age >= 0.95) {
-        let shimmer = p.sin(p.frameCount * 0.05 + this.row * 0.5 + this.col * 0.3) * 0.5 + 0.5;
-        let shimmerAlpha = shimmer * 15;
-        p.fill(r + 10, g + 10, b + 10, shimmerAlpha);
-        p.rect(this.pos.x + cellSize/2, this.pos.y + cellSize/2, size + 2, size + 2);
-      }
-    }
-
-    easeInOutCubic(t) {
-      return (t < 0.5) ? 4 * t * t * t : 0.5 * p.pow(2 * t - 2, 3) + 1;
-    }
-
-    easeOutCubic(t) {
-      return p.pow(t - 1, 3) + 1;
-    }
-  }
-
-  function spawnNextTile() {
-    let gridWidth = cols * (cellSize + gap) - gap;
-    let gridHeight = rows * (cellSize + gap) - gap;
-    let gridStartX = (p.width - gridWidth) / 2;
-    let gridStartY = (p.height - gridHeight) / 2;
-
-    spawnAttemptCounter++;
-
-    let useSequential = (spawnAttemptCounter % fallbackFrequency === 0);
-
-    if (useSequential) {
-      // Sequential fallback - find first unspawned tile (right to left)
-      for (let col = cols - 1; col >= 0; col--) {
-        for (let row = 0; row < rows; row++) {
-          if (!spawned[col][row]) {
-            let targetX = gridStartX + col * (cellSize + gap);
-            let targetY = gridStartY + row * (cellSize + gap);
-
-            particles.push(new Particle(targetX, targetY, row, col));
-            spawned[col][row] = true;
-            tilesSpawned++;
-            return;
-          }
-        }
-      }
-    } else {
-      // Weighted random spawn
-      let attempts = 0;
-      let maxAttempts = 30;
-
-      while (attempts < maxAttempts) {
-        let colWeight = p.randomGaussian() * 3 + (cols - 1 - spawnBias);
-        let col = p.constrain(p.floor(colWeight), 0, cols - 1);
-        let row = p.floor(p.random(rows));
-
-        if (!spawned[col][row]) {
-          let targetX = gridStartX + col * (cellSize + gap);
-          let targetY = gridStartY + row * (cellSize + gap);
-
-          particles.push(new Particle(targetX, targetY, row, col));
-          spawned[col][row] = true;
-          tilesSpawned++;
-          return;
-        }
-
-        attempts++;
-      }
-    }
-  }
-
-  function applyMouseInteraction() {
-    let mouseCellX = p.floor(p.mouseX / gridCellSize);
-    let mouseCellY = p.floor(p.mouseY / gridCellSize);
-    let mousePos = p.createVector(p.mouseX, p.mouseY);
-
-    for (let dx = -1; dx <= 1; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        let gx = mouseCellX + dx;
-        let gy = mouseCellY + dy;
-
-        if (gx >= 0 && gx < gridCols && gy >= 0 && gy < gridRows) {
-          for (let particle of spatialGrid[gx][gy]) {
-            let toMouse = p5.Vector.sub(particle.pos, mousePos);
-            let distance = toMouse.mag();
-
-            if (distance < mouseRadius && distance > 0) {
-              toMouse.normalize();
-              let strength = p.map(distance, 0, mouseRadius, mouseForce, 0);
-              particle.offset.x += toMouse.x * strength * 0.1;
-              particle.offset.y += toMouse.y * strength * 0.1;
-            }
-          }
-        }
-      }
+      p.fill(hue, sat, bri);
+      p.circle(this.x, this.y, 8);
     }
   }
 
   p.setup = () => {
     container = document.getElementById('hero-canvas');
-
-    if (!container) {
-      console.warn('Hero canvas container not found');
-      return;
-    }
+    if (!container) return;
 
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent(container);
 
-    // Calculate responsive grid
-    cols = p.floor(p.width / (cellSize + gap));
-    rows = p.floor(p.height / (cellSize + gap));
-    totalTiles = cols * rows;
+    let cols = Math.floor(p.width * 0.3 / GRID_SIZE);
+    let rows = Math.floor(p.height * 0.6 / GRID_SIZE);
 
-    particles = [];
-    lastMousePos = p.createVector(p.mouseX, p.mouseY);
-
-    // Initialize spawn tracking
-    spawned = [];
-    for (let i = 0; i < cols; i++) {
-      spawned[i] = [];
-      for (let j = 0; j < rows; j++) {
-        spawned[i][j] = false;
-      }
-    }
-
-    // Initialize spatial grid
-    gridCols = p.ceil(p.width / gridCellSize) + 1;
-    gridRows = p.ceil(p.height / gridCellSize) + 1;
-    spatialGrid = [];
-    for (let i = 0; i < gridCols; i++) {
-      spatialGrid[i] = [];
-      for (let j = 0; j < gridRows; j++) {
-        spatialGrid[i][j] = [];
-      }
+    for (let i = 0; i < cols * rows; i++) {
+      let gx = i % cols;
+      let gy = Math.floor(i / cols);
+      dots.push(new Dot(i, gx, gy));
     }
 
     const { observer, isVisible } = createVisibilityObserver(p);
     visibilityHelper = { observer, isVisible };
     observer.observe(container);
-
     p.noLoop();
   };
 
   p.draw = () => {
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
+    if (!visibilityHelper || !visibilityHelper.isVisible()) return;
+
+    // Soft gradient background
+    p.colorMode(p.RGB, 255);
+    let ctx = p.drawingContext;
+    let gradient = ctx.createLinearGradient(0, 0, p.width, 0);
+    gradient.addColorStop(0, '#F5F5F8');
+    gradient.addColorStop(1, '#E8F4F8');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, p.width, p.height);
+
+    time += 0.01;
+
+    // Mouse hover speeds up transformation
+    let mouseInfluence = 0;
+    if (p.mouseX > 0 && p.mouseY > 0) {
+      let centerX = p.width / 2;
+      let centerY = p.height / 2;
+      let d = p.dist(p.mouseX, p.mouseY, centerX, centerY);
+      mouseInfluence = p.map(d, 0, p.width * 0.3, 0.3, 0, true);
     }
 
-    p.background(245, 245, 248);
-
-    // Calculate mouse movement
-    let currentMouse = p.createVector(p.mouseX, p.mouseY);
-    mouseMoveDist = p5.Vector.dist(lastMousePos, currentMouse);
-    lastMousePos = currentMouse;
-
-    // Gradually shift spawn bias from right to left
-    spawnBias = p.map(tilesSpawned, 0, totalTiles, 0, cols);
-
-    // Spawn tiles
-    spawnTimer++;
-    if (spawnTimer >= spawnInterval && tilesSpawned < totalTiles) {
-      let spawnsThisFrame = 3;
-      for (let i = 0; i < spawnsThisFrame && tilesSpawned < totalTiles; i++) {
-        spawnNextTile();
-      }
-      spawnTimer = 0;
-    }
-
-    // Clear spatial grid
-    for (let i = 0; i < gridCols; i++) {
-      for (let j = 0; j < gridRows; j++) {
-        spatialGrid[i][j] = [];
-      }
-    }
-
-    // Update particles and populate spatial grid
-    for (let particle of particles) {
-      particle.update();
-
-      // Add to spatial grid if locked
-      if (particle.age >= 1.0) {
-        let gx = p.floor(particle.pos.x / gridCellSize);
-        let gy = p.floor(particle.pos.y / gridCellSize);
-        gx = p.constrain(gx, 0, gridCols - 1);
-        gy = p.constrain(gy, 0, gridRows - 1);
-        spatialGrid[gx][gy].push(particle);
-      }
-    }
-
-    // Apply mouse interaction if mouse has moved
-    if (mouseMoveDist > 0.5) {
-      applyMouseInteraction();
-    }
-
-    // Draw particles
-    for (let particle of particles) {
-      particle.display();
-    }
+    dots.forEach(dot => {
+      let progress = dot.update(mouseInfluence);
+      dot.display(progress);
+    });
   };
 
   p.windowResized = () => {
     if (container) {
       p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-
-      // Recalculate grid for new size
-      cols = p.floor(p.width / (cellSize + gap));
-      rows = p.floor(p.height / (cellSize + gap));
-      totalTiles = cols * rows;
-
-      // Reset spatial grid
-      gridCols = p.ceil(p.width / gridCellSize) + 1;
-      gridRows = p.ceil(p.height / gridCellSize) + 1;
-      spatialGrid = [];
-      for (let i = 0; i < gridCols; i++) {
-        spatialGrid[i] = [];
-        for (let j = 0; j < gridRows; j++) {
-          spatialGrid[i][j] = [];
-        }
-      }
-
-      // Reset animation
-      particles = [];
-      tilesSpawned = 0;
-      spawnTimer = 0;
-      spawned = [];
-      for (let i = 0; i < cols; i++) {
-        spawned[i] = [];
-        for (let j = 0; j < rows; j++) {
-          spawned[i][j] = false;
-        }
+      dots = [];
+      let cols = Math.floor(p.width * 0.3 / GRID_SIZE);
+      let rows = Math.floor(p.height * 0.6 / GRID_SIZE);
+      for (let i = 0; i < cols * rows; i++) {
+        let gx = i % cols;
+        let gy = Math.floor(i / cols);
+        dots.push(new Dot(i, gx, gy));
       }
     }
   };
 };
 
 // ============================================================================
-// APPROACH CANVAS - Scroll-responsive particle animation
+// APPROACH CANVAS - Foundation Building
+// Visual Metaphor: Blocks stack from bottom, wider at base
 // ============================================================================
 
 const approachSketch = (p) => {
-  let container;
-  let visibilityHelper;
-  let particles = [];
-  const PARTICLE_COUNT = 50;
+  let container, visibilityHelper;
+  let layers = [];
+  let time = 0;
+  const MAX_LAYERS = 12;
 
-  class Particle {
-    constructor() {
-      this.reset();
+  class Layer {
+    constructor(index) {
+      this.index = index;
+      this.y = p.height - index * 40 - 50;
+      this.width = 200 + index * 60;
+      this.x = p.width / 2 - this.width / 2;
+      this.height = 35;
+
+      // Gradient: deep purple → light cyan
+      let t = index / MAX_LAYERS;
+      this.hue1 = p.lerp(260, 200, t);
+      this.hue2 = p.lerp(270, 210, t);
+      this.sat = p.lerp(70, 50, t);
+      this.bri = p.lerp(50, 85, t);
     }
 
-    reset() {
-      this.x = p.random(p.width);
-      this.y = p.random(p.height);
-      this.size = p.random(2, 8);
-      this.speedX = p.random(-0.5, 0.5);
-      this.speedY = p.random(-0.5, 0.5);
-      this.opacity = p.random(100, 255);
-    }
-
-    update() {
-      // Add scroll influence to movement
-      const scrollInfluence = scrollTracker.getScrollProgress() * 2;
-
-      // Mouse interaction - particles are attracted to mouse
-      if (p.mouseX > 0 && p.mouseY > 0) {
-        const mouseDistance = p.dist(this.x, this.y, p.mouseX, p.mouseY);
-        if (mouseDistance < 150) {
-          const angle = p.atan2(p.mouseY - this.y, p.mouseX - this.x);
-          const force = p.map(mouseDistance, 0, 150, 2, 0);
-          this.x += p.cos(angle) * force;
-          this.y += p.sin(angle) * force;
-        }
+    display(mouseY) {
+      // Lift on hover
+      let lift = 0;
+      if (mouseY > 0 && Math.abs(mouseY - this.y) < 100) {
+        lift = p.map(Math.abs(mouseY - this.y), 0, 100, -20, 0);
       }
 
-      this.x += this.speedX + scrollInfluence;
-      this.y += this.speedY;
+      let wave = p.sin(time * 2 + this.index * 0.5) * 2;
+      let y = this.y + wave + lift;
 
-      // Wrap around edges
-      if (this.x < 0) this.x = p.width;
-      if (this.x > p.width) this.x = 0;
-      if (this.y < 0) this.y = p.height;
-      if (this.y > p.height) this.y = 0;
-    }
+      // Horizontal gradient
+      let ctx = p.drawingContext;
+      let gradient = ctx.createLinearGradient(this.x, y, this.x + this.width, y);
+      p.colorMode(p.HSB, 360, 100, 100);
+      gradient.addColorStop(0, p.color(this.hue1, this.sat, this.bri).toString('#rrggbb'));
+      gradient.addColorStop(1, p.color(this.hue2, this.sat, this.bri + 5).toString('#rrggbb'));
 
-    display() {
+      ctx.fillStyle = gradient;
       p.noStroke();
-      p.fill(100, 150, 255, this.opacity);
-      p.circle(this.x, this.y, this.size);
+      ctx.fillRect(this.x, y, this.width, this.height);
     }
   }
 
   p.setup = () => {
     container = document.getElementById('approach-canvas');
-
-    if (!container) {
-      console.warn('Approach canvas container not found');
-      return;
-    }
+    if (!container) return;
 
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent(container);
 
-    // Set up visibility observer
+    for (let i = 0; i < MAX_LAYERS; i++) {
+      layers.push(new Layer(i));
+    }
+
     const { observer, isVisible } = createVisibilityObserver(p);
     visibilityHelper = { observer, isVisible };
     observer.observe(container);
-
-    // Initialize particles
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push(new Particle());
-    }
-
-    // Start with loop paused until visible
     p.noLoop();
   };
 
   p.draw = () => {
-    // Only draw if visible
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
-    }
+    if (!visibilityHelper || !visibilityHelper.isVisible()) return;
 
-    // Clear with semi-transparent background for trail effect
-    p.background(10, 10, 20, 25);
+    p.colorMode(p.HSB, 360, 100, 100);
+    p.background(260, 20, 12);
 
-    // Update and display particles
-    particles.forEach(particle => {
-      particle.update();
-      particle.display();
-    });
+    time += 0.01;
+
+    layers.forEach(layer => layer.display(p.mouseY));
   };
 
   p.windowResized = () => {
     if (container) {
       p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+      layers = [];
+      for (let i = 0; i < MAX_LAYERS; i++) {
+        layers.push(new Layer(i));
+      }
     }
   };
 };
 
-// DISCOVERY CANVAS - Scattered dots coalescing into patterns
+// ============================================================================
+// FOUNDATION-PRINCIPLES CANVAS - Flexible Grid
+// Visual Metaphor: Grid morphs between two layouts
 // ============================================================================
 
-const discoverySketch = (p) => {
-  let container;
-  let visibilityHelper;
-  let particles = [];
-  const PARTICLE_COUNT = 80;
+const foundationPrinciplesSketch = (p) => {
+  let container, visibilityHelper;
+  let cells = [];
   let time = 0;
+  const COLS = 10, ROWS = 6;
 
-  class DiscoveryParticle {
-    constructor() {
-      this.x = p.random(p.width);
-      this.y = p.random(p.height);
-      this.targetX = this.x;
-      this.targetY = this.y;
-      this.size = p.random(3, 10);
-      this.hue = p.random(280, 320);
-      this.opacity = p.random(150, 255);
-      this.speed = p.random(0.02, 0.05);
+  class Cell {
+    constructor(i) {
+      this.index = i;
+
+      // Layout A: regular grid
+      this.ax = (i % COLS) * (p.width / COLS) + p.width / COLS / 2;
+      this.ay = Math.floor(i / COLS) * (p.height / ROWS) + p.height / ROWS / 2;
+
+      // Layout B: offset pattern
+      this.bx = ((i + 3) % COLS) * (p.width / COLS) + p.width / COLS / 2;
+      this.by = (Math.floor((i * 1.5) % ROWS)) * (p.height / ROWS) + p.height / ROWS / 2;
+
+      this.x = this.ax;
+      this.y = this.ay;
     }
 
-    update() {
-      // Move toward target with easing
-      this.x += (this.targetX - this.x) * this.speed;
-      this.y += (this.targetY - this.y) * this.speed;
+    update(mouseDist) {
+      // Morph based on time + mouse proximity
+      let baseProgress = (p.sin(time * 0.6) + 1) * 0.5;
+      let mouseEffect = mouseDist < 200 ? p.map(mouseDist, 0, 200, 0.4, 0) : 0;
+      let progress = p.constrain(baseProgress + mouseEffect, 0, 1);
 
-      // Occasionally set new target
-      if (p.frameCount % 180 === 0 && p.random() < 0.3) {
-        this.targetX = p.random(p.width);
-        this.targetY = p.random(p.height);
-      }
+      this.x = p.lerp(this.ax, this.bx, progress);
+      this.y = p.lerp(this.ay, this.by, progress);
 
-      // Add subtle drift
-      this.x += p.sin(time + this.y * 0.01) * 0.5;
-      this.y += p.cos(time + this.x * 0.01) * 0.5;
-
-      // Wrap around edges
-      if (this.x < 0) this.x = p.width;
-      if (this.x > p.width) this.x = 0;
-      if (this.y < 0) this.y = p.height;
-      if (this.y > p.height) this.y = 0;
+      return progress;
     }
 
-    display() {
+    display(progress) {
+      let hue = p.lerp(200, 180, progress);
+
+      p.colorMode(p.HSB, 360, 100, 100);
       p.noStroke();
-      p.fill(this.hue, 70, 80, this.opacity);
-      p.circle(this.x, this.y, this.size);
-
-      // Draw connections to nearby particles
-      for (let other of particles) {
-        if (other !== this) {
-          let d = p.dist(this.x, this.y, other.x, other.y);
-          if (d < 100) {
-            let alpha = p.map(d, 0, 100, 100, 0);
-            p.stroke(this.hue, 50, 70, alpha);
-            p.strokeWeight(1);
-            p.line(this.x, this.y, other.x, other.y);
-          }
-        }
-      }
+      p.fill(hue, 60, 75, 0.9);
+      p.circle(this.x, this.y, 30);
     }
   }
 
   p.setup = () => {
-    container = document.getElementById('discovery-canvas');
-
-    if (!container) {
-      console.warn('Discovery canvas container not found');
-      return;
-    }
+    container = document.getElementById('foundation-principles-canvas');
+    if (!container) return;
 
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent(container);
-    p.colorMode(p.HSB, 360, 100, 100, 255);
+
+    for (let i = 0; i < COLS * ROWS; i++) {
+      cells.push(new Cell(i));
+    }
 
     const { observer, isVisible } = createVisibilityObserver(p);
     visibilityHelper = { observer, isVisible };
     observer.observe(container);
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push(new DiscoveryParticle());
-    }
-
     p.noLoop();
   };
 
   p.draw = () => {
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
-    }
+    if (!visibilityHelper || !visibilityHelper.isVisible()) return;
 
-    p.background(15, 20, 10, 30);
+    p.colorMode(p.HSB, 360, 100, 100);
+    p.background(200, 10, 15);
+
     time += 0.01;
 
-    particles.forEach(particle => {
-      particle.update();
-      particle.display();
-    });
-  };
+    let mouseDist = p.mouseX > 0 ? p.dist(p.mouseX, p.mouseY, p.width / 2, p.height / 2) : 1000;
 
-  p.windowResized = () => {
-    if (container) {
-      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    }
-  };
-};
-
-// ============================================================================
-// FOUNDATION CANVAS - Grid structure building from ground up
-// ============================================================================
-
-const foundationSketch = (p) => {
-  let container;
-  let visibilityHelper;
-  let gridSize = 40;
-  let cells = [];
-  let time = 0;
-
-  p.setup = () => {
-    container = document.getElementById('foundation-canvas');
-
-    if (!container) {
-      console.warn('Foundation canvas container not found');
-      return;
-    }
-
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent(container);
-    p.colorMode(p.HSB, 360, 100, 100, 255);
-
-    const { observer, isVisible } = createVisibilityObserver(p);
-    visibilityHelper = { observer, isVisible };
-    observer.observe(container);
-
-    // Initialize grid cells
-    for (let x = 0; x < p.width; x += gridSize) {
-      for (let y = 0; y < p.height; y += gridSize) {
-        cells.push({
-          x: x,
-          y: y,
-          active: p.random() > 0.5,
-          activationTime: p.random(1000)
-        });
+    // Connection lines
+    p.stroke(200, 30, 50, 0.2);
+    p.strokeWeight(1);
+    for (let i = 0; i < cells.length; i++) {
+      for (let j = i + 1; j < cells.length; j++) {
+        let d = p.dist(cells[i].x, cells[i].y, cells[j].x, cells[j].y);
+        if (d < 120) {
+          p.line(cells[i].x, cells[i].y, cells[j].x, cells[j].y);
+        }
       }
     }
 
-    p.noLoop();
-  };
-
-  p.draw = () => {
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
-    }
-
-    p.background(220, 15, 12);
-    time += 0.02;
-
-    cells.forEach((cell) => {
-      // Gradually activate cells from bottom to top
-      let activationWave = p.sin(time - cell.y * 0.005 + cell.activationTime * 0.001);
-      let isActive = activationWave > 0;
-
-      if (isActive) {
-        let alpha = p.map(activationWave, 0, 1, 100, 255);
-        let size = p.map(activationWave, 0, 1, 5, gridSize * 0.8);
-
-        p.noStroke();
-        p.fill(200, 40, 85, alpha);
-        p.rectMode(p.CENTER);
-        p.rect(cell.x + gridSize / 2, cell.y + gridSize / 2, size, size, 4);
-      }
+    // Cells
+    cells.forEach(cell => {
+      let progress = cell.update(mouseDist);
+      cell.display(progress);
     });
   };
 
@@ -715,13 +330,228 @@ const foundationSketch = (p) => {
     if (container) {
       p.resizeCanvas(container.offsetWidth, container.offsetHeight);
       cells = [];
-      for (let x = 0; x < p.width; x += gridSize) {
-        for (let y = 0; y < p.height; y += gridSize) {
-          cells.push({
-            x: x,
-            y: y,
-            active: p.random() > 0.5,
-            activationTime: p.random(1000)
+      for (let i = 0; i < COLS * ROWS; i++) {
+        cells.push(new Cell(i));
+      }
+    }
+  };
+};
+
+// ============================================================================
+// IMPLEMENTATION CANVAS - Translation Layers
+// Visual Metaphor: 3 horizontal layers (Design → Specs → Code)
+// ============================================================================
+
+const implementationSketch = (p) => {
+  let container, visibilityHelper;
+  let layers = [];
+  let time = 0;
+
+  class TranslationLayer {
+    constructor(index) {
+      this.index = index;
+      this.y = p.height * (index / 3);
+      this.height = p.height / 3;
+
+      // Color per layer
+      if (index === 0) {
+        this.hue = 20; this.label = 'DESIGN';
+      } else if (index === 1) {
+        this.hue = 180; this.label = 'SPECIFICATIONS';
+      } else {
+        this.hue = 220; this.label = 'IMPLEMENTATION';
+      }
+
+      this.particles = [];
+      for (let i = 0; i < 8; i++) {
+        this.particles.push({
+          x: p.random(p.width * 0.2, p.width * 0.8),
+          offset: p.random(p.TWO_PI)
+        });
+      }
+    }
+
+    display(mouseY) {
+      p.colorMode(p.HSB, 360, 100, 100);
+
+      // Hover highlight
+      let hover = mouseY > this.y && mouseY < this.y + this.height;
+      let alpha = hover ? 0.6 : 0.4;
+
+      p.noStroke();
+      p.fill(this.hue, 40, 40, alpha);
+      p.rect(0, this.y, p.width, this.height);
+
+      // Floating particles
+      this.particles.forEach(part => {
+        let y = this.y + this.height / 2 + p.sin(time + part.offset) * 30;
+        p.fill(this.hue, 70, 80, 0.8);
+        p.circle(part.x, y, 12);
+      });
+    }
+  }
+
+  p.setup = () => {
+    container = document.getElementById('implementation-canvas');
+    if (!container) return;
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+
+    for (let i = 0; i < 3; i++) {
+      layers.push(new TranslationLayer(i));
+    }
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) return;
+
+    p.background(30);
+    time += 0.02;
+
+    layers.forEach(layer => layer.display(p.mouseY));
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+      layers = [];
+      for (let i = 0; i < 3; i++) {
+        layers.push(new TranslationLayer(i));
+      }
+    }
+  };
+};
+
+// ============================================================================
+// ENABLEMENT CANVAS - Network Multiplication
+// Visual Metaphor: Center node → team nodes → outputs
+// ============================================================================
+
+const enablementSketch = (p) => {
+  let container, visibilityHelper;
+  let centerNode, teamNodes = [], outputs = [];
+  let time = 0;
+
+  p.setup = () => {
+    container = document.getElementById('enablement-canvas');
+    if (!container) return;
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+
+    centerNode = { x: p.width / 2, y: p.height / 2, size: 20, hue: 120 };
+
+    // 8 team nodes in circle
+    for (let i = 0; i < 8; i++) {
+      let angle = (i / 8) * p.TWO_PI;
+      let radius = Math.min(p.width, p.height) * 0.3;
+      teamNodes.push({
+        x: centerNode.x + p.cos(angle) * radius,
+        y: centerNode.y + p.sin(angle) * radius,
+        size: 12,
+        hue: 160
+      });
+
+      // 3 output nodes per team
+      for (let j = 0; j < 3; j++) {
+        let outAngle = angle + (j - 1) * 0.4;
+        let outRadius = radius + 100;
+        outputs.push({
+          x: centerNode.x + p.cos(outAngle) * outRadius,
+          y: centerNode.y + p.sin(outAngle) * outRadius,
+          size: 6,
+          hue: 200,
+          parent: i
+        });
+      }
+    }
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) return;
+
+    p.colorMode(p.HSB, 360, 100, 100);
+    p.background(140, 15, 10);
+
+    time += 0.02;
+
+    // Find hovered team node
+    let hoverNode = -1;
+    if (p.mouseX > 0) {
+      for (let i = 0; i < teamNodes.length; i++) {
+        let d = p.dist(p.mouseX, p.mouseY, teamNodes[i].x, teamNodes[i].y);
+        if (d < 40) hoverNode = i;
+      }
+    }
+
+    // Draw connections
+    p.strokeWeight(2);
+    teamNodes.forEach((node, i) => {
+      let highlight = hoverNode === i;
+      p.stroke(140, 60, 70, highlight ? 0.8 : 0.3);
+      p.line(centerNode.x, centerNode.y, node.x, node.y);
+
+      outputs.filter(o => o.parent === i).forEach(out => {
+        p.stroke(160, 50, 80, highlight ? 0.6 : 0.2);
+        p.line(node.x, node.y, out.x, out.y);
+      });
+    });
+
+    // Draw nodes
+    p.noStroke();
+    p.fill(centerNode.hue, 80, 85);
+    p.circle(centerNode.x, centerNode.y, centerNode.size);
+
+    teamNodes.forEach((node, i) => {
+      let pulse = hoverNode === i ? 1.3 : 1;
+      p.fill(node.hue, 70, 75);
+      p.circle(node.x, node.y, node.size * pulse);
+    });
+
+    outputs.forEach(out => {
+      let highlight = hoverNode === out.parent;
+      p.fill(out.hue, 60, 80, highlight ? 1 : 0.6);
+      p.circle(out.x, out.y, out.size);
+    });
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+      teamNodes = [];
+      outputs = [];
+      centerNode = { x: p.width / 2, y: p.height / 2, size: 20, hue: 120 };
+
+      for (let i = 0; i < 8; i++) {
+        let angle = (i / 8) * p.TWO_PI;
+        let radius = Math.min(p.width, p.height) * 0.3;
+        teamNodes.push({
+          x: centerNode.x + p.cos(angle) * radius,
+          y: centerNode.y + p.sin(angle) * radius,
+          size: 12,
+          hue: 160
+        });
+
+        for (let j = 0; j < 3; j++) {
+          let outAngle = angle + (j - 1) * 0.4;
+          let outRadius = radius + 100;
+          outputs.push({
+            x: centerNode.x + p.cos(outAngle) * outRadius,
+            y: centerNode.y + p.sin(outAngle) * outRadius,
+            size: 6,
+            hue: 200,
+            parent: i
           });
         }
       }
@@ -730,245 +560,153 @@ const foundationSketch = (p) => {
 };
 
 // ============================================================================
-// COMPONENTS CANVAS - Modular blocks assembling and rearranging
+// EVOLUTION CANVAS - Sparse vs Dense Networks
+// Visual Metaphor: LEFT sparse (6 nodes) vs RIGHT dense (35 nodes)
 // ============================================================================
 
-const componentsSketch = (p) => {
-  let container;
-  let visibilityHelper;
-  let blocks = [];
+const evolutionSketch = (p) => {
+  let container, visibilityHelper;
+  let sparseNodes = [], denseNodes = [];
   let time = 0;
 
-  class Block {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.w = p.random(30, 80);
-      this.h = p.random(30, 80);
-      this.rotation = 0;
-      this.targetRotation = 0;
-      this.hue = p.random(160, 200);
-    }
-
-    update() {
-      // Slowly rotate
-      this.rotation += (this.targetRotation - this.rotation) * 0.05;
-
-      // Change target rotation occasionally
-      if (p.frameCount % 120 === 0 && p.random() < 0.1) {
-        this.targetRotation += p.HALF_PI;
-      }
-    }
-
-    display() {
-      p.push();
-      p.translate(this.x, this.y);
-      p.rotate(this.rotation);
-
-      // Draw block with subtle pulsing
-      let pulse = p.sin(time + this.x * 0.01) * 5;
-      p.noStroke();
-      p.fill(this.hue, 60, 75, 200);
-      p.rectMode(p.CENTER);
-      p.rect(0, 0, this.w + pulse, this.h + pulse, 8);
-
-      // Inner highlight
-      p.fill(this.hue, 40, 90, 100);
-      p.rect(0, 0, (this.w + pulse) * 0.7, (this.h + pulse) * 0.7, 4);
-
-      p.pop();
-    }
-  }
-
   p.setup = () => {
-    container = document.getElementById('components-canvas');
-
-    if (!container) {
-      console.warn('Components canvas container not found');
-      return;
-    }
+    container = document.getElementById('evolution-canvas');
+    if (!container) return;
 
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent(container);
-    p.colorMode(p.HSB, 360, 100, 100, 255);
+
+    // Sparse: 6 large nodes (left)
+    for (let i = 0; i < 6; i++) {
+      sparseNodes.push({
+        x: p.random(p.width * 0.1, p.width * 0.4),
+        y: p.random(p.height * 0.2, p.height * 0.8),
+        size: 20
+      });
+    }
+
+    // Dense: 35 small nodes (right)
+    for (let i = 0; i < 35; i++) {
+      denseNodes.push({
+        x: p.random(p.width * 0.6, p.width * 0.9),
+        y: p.random(p.height * 0.1, p.height * 0.9),
+        size: 8
+      });
+    }
 
     const { observer, isVisible } = createVisibilityObserver(p);
     visibilityHelper = { observer, isVisible };
     observer.observe(container);
-
-    // Create blocks in grid pattern
-    for (let x = 60; x < p.width; x += 120) {
-      for (let y = 60; y < p.height; y += 120) {
-        blocks.push(new Block(x, y));
-      }
-    }
-
     p.noLoop();
   };
 
   p.draw = () => {
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
+    if (!visibilityHelper || !visibilityHelper.isVisible()) return;
+
+    p.colorMode(p.HSB, 360, 100, 100);
+    p.background(200, 10, 15);
+
+    time += 0.01;
+
+    // Mouse hover highlights side
+    let mouseZone = p.mouseX < p.width / 2 ? 'sparse' : 'dense';
+
+    // Sparse network connections
+    p.strokeWeight(2);
+    for (let i = 0; i < sparseNodes.length; i++) {
+      for (let j = i + 1; j < sparseNodes.length; j++) {
+        let d = p.dist(sparseNodes[i].x, sparseNodes[i].y, sparseNodes[j].x, sparseNodes[j].y);
+        if (d < 250) {
+          let alpha = mouseZone === 'sparse' ? 0.6 : 0.3;
+          p.stroke(200, 40, 60, alpha);
+          p.line(sparseNodes[i].x, sparseNodes[i].y, sparseNodes[j].x, sparseNodes[j].y);
+        }
+      }
     }
 
-    p.background(180, 10, 15);
-    time += 0.02;
+    // Dense network connections
+    p.strokeWeight(1);
+    for (let i = 0; i < denseNodes.length; i++) {
+      for (let j = i + 1; j < denseNodes.length; j++) {
+        let d = p.dist(denseNodes[i].x, denseNodes[i].y, denseNodes[j].x, denseNodes[j].y);
+        if (d < 100) {
+          let alpha = mouseZone === 'dense' ? 0.5 : 0.2;
+          p.stroke(200, 40, 60, alpha);
+          p.line(denseNodes[i].x, denseNodes[i].y, denseNodes[j].x, denseNodes[j].y);
+        }
+      }
+    }
 
-    blocks.forEach(block => {
-      block.update();
-      block.display();
+    // Draw nodes
+    p.noStroke();
+    sparseNodes.forEach(node => {
+      let pulse = mouseZone === 'sparse' ? 1.2 : 1;
+      p.fill(200, 60, 70);
+      p.circle(node.x, node.y, node.size * pulse);
+    });
+
+    denseNodes.forEach(node => {
+      let pulse = mouseZone === 'dense' ? 1.3 : 1;
+      p.fill(200, 60, 75);
+      p.circle(node.x, node.y, node.size * pulse);
     });
   };
 
   p.windowResized = () => {
     if (container) {
       p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-      blocks = [];
-      for (let x = 60; x < p.width; x += 120) {
-        for (let y = 60; y < p.height; y += 120) {
-          blocks.push(new Block(x, y));
-        }
+      sparseNodes = [];
+      denseNodes = [];
+
+      for (let i = 0; i < 6; i++) {
+        sparseNodes.push({
+          x: p.random(p.width * 0.1, p.width * 0.4),
+          y: p.random(p.height * 0.2, p.height * 0.8),
+          size: 20
+        });
+      }
+
+      for (let i = 0; i < 35; i++) {
+        denseNodes.push({
+          x: p.random(p.width * 0.6, p.width * 0.9),
+          y: p.random(p.height * 0.1, p.height * 0.9),
+          size: 8
+        });
       }
     }
   };
 };
 
 // ============================================================================
-// ADOPTION CANVAS - Network connections spreading organically
+// IMPACT CANVAS - Ripple Propagation
+// Visual Metaphor: Concentric ripples expanding from center
 // ============================================================================
 
-const adoptionSketch = (p) => {
-  let container;
-  let visibilityHelper;
-  let nodes = [];
-  const NODE_COUNT = 30;
-  let time = 0;
-
-  class Node {
-    constructor() {
-      this.x = p.random(p.width);
-      this.y = p.random(p.height);
-      this.size = p.random(5, 15);
-      this.vx = p.random(-0.5, 0.5);
-      this.vy = p.random(-0.5, 0.5);
-      this.hue = 140;
-    }
-
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-
-      // Bounce off edges
-      if (this.x < 0 || this.x > p.width) this.vx *= -1;
-      if (this.y < 0 || this.y > p.height) this.vy *= -1;
-
-      // Keep in bounds
-      this.x = p.constrain(this.x, 0, p.width);
-      this.y = p.constrain(this.y, 0, p.height);
-    }
-
-    display() {
-      p.noStroke();
-      p.fill(this.hue, 70, 85, 220);
-      p.circle(this.x, this.y, this.size);
-
-      // Glow effect
-      p.fill(this.hue, 50, 95, 80);
-      p.circle(this.x, this.y, this.size * 1.5);
-    }
-  }
-
-  p.setup = () => {
-    container = document.getElementById('adoption-canvas');
-
-    if (!container) {
-      console.warn('Adoption canvas container not found');
-      return;
-    }
-
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent(container);
-    p.colorMode(p.HSB, 360, 100, 100, 255);
-
-    const { observer, isVisible } = createVisibilityObserver(p);
-    visibilityHelper = { observer, isVisible };
-    observer.observe(container);
-
-    for (let i = 0; i < NODE_COUNT; i++) {
-      nodes.push(new Node());
-    }
-
-    p.noLoop();
-  };
-
-  p.draw = () => {
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
-    }
-
-    p.background(140, 20, 8, 50);
-    time += 0.01;
-
-    // Update nodes
-    nodes.forEach(node => node.update());
-
-    // Draw connections
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        let d = p.dist(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
-        if (d < 150) {
-          let alpha = p.map(d, 0, 150, 150, 0);
-          p.stroke(140, 60, 70, alpha);
-          p.strokeWeight(2);
-          p.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
-        }
-      }
-    }
-
-    // Draw nodes
-    nodes.forEach(node => node.display());
-  };
-
-  p.windowResized = () => {
-    if (container) {
-      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    }
-  };
-};
-
-// ============================================================================
-// SCALING CANVAS - Expanding concentric circles from center
-// ============================================================================
-
-const scalingSketch = (p) => {
-  let container;
-  let visibilityHelper;
+const impactSketch = (p) => {
+  let container, visibilityHelper;
   let ripples = [];
   let time = 0;
-  let spawnTimer = 0;
 
   class Ripple {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
+    constructor(hue) {
       this.radius = 0;
-      this.maxRadius = p.random(200, 400);
-      this.speed = p.random(2, 4);
-      this.hue = p.random(30, 60);
-      this.alpha = 255;
+      this.maxRadius = Math.min(p.width, p.height) * 0.6;
+      this.hue = hue;
+      this.alpha = 1;
     }
 
     update() {
-      this.radius += this.speed;
-      this.alpha = p.map(this.radius, 0, this.maxRadius, 255, 0);
+      this.radius += 3;
+      this.alpha = p.map(this.radius, 0, this.maxRadius, 1, 0);
     }
 
     display() {
       if (this.radius < this.maxRadius) {
+        p.colorMode(p.HSB, 360, 100, 100);
         p.noFill();
-        p.stroke(this.hue, 80, 85, this.alpha);
+        p.stroke(this.hue, 70, 80, this.alpha * 0.8);
         p.strokeWeight(3);
-        p.circle(this.x, this.y, this.radius * 2);
+        p.circle(p.width / 2, p.height / 2, this.radius * 2);
       }
     }
 
@@ -978,168 +716,52 @@ const scalingSketch = (p) => {
   }
 
   p.setup = () => {
-    container = document.getElementById('scaling-canvas');
-
-    if (!container) {
-      console.warn('Scaling canvas container not found');
-      return;
-    }
+    container = document.getElementById('impact-canvas');
+    if (!container) return;
 
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent(container);
-    p.colorMode(p.HSB, 360, 100, 100, 255);
 
     const { observer, isVisible } = createVisibilityObserver(p);
     visibilityHelper = { observer, isVisible };
     observer.observe(container);
-
     p.noLoop();
   };
 
   p.draw = () => {
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
+    if (!visibilityHelper || !visibilityHelper.isVisible()) return;
+
+    p.colorMode(p.HSB, 360, 100, 100);
+    p.background(200, 15, 12);
+
+    time += 1;
+
+    // Spawn ripples (different "dimensions")
+    if (time % 40 === 0) ripples.push(new Ripple(180));  // Cyan
+    if (time % 50 === 0) ripples.push(new Ripple(280));  // Purple
+    if (time % 60 === 0) ripples.push(new Ripple(60));   // Yellow
+
+    // Mouse hover creates extra ripple
+    if (p.mouseIsPressed && time % 20 === 0) {
+      ripples.push(new Ripple(140));
     }
 
-    p.background(40, 15, 12, 50);
-    time += 0.01;
-
-    // Spawn new ripples
-    spawnTimer++;
-    if (spawnTimer > 30) {
-      ripples.push(new Ripple(p.width / 2, p.height / 2));
-      spawnTimer = 0;
-    }
-
-    // Update and display ripples
+    // Update and draw
     for (let i = ripples.length - 1; i >= 0; i--) {
       ripples[i].update();
       ripples[i].display();
-
-      if (ripples[i].isDead()) {
-        ripples.splice(i, 1);
-      }
+      if (ripples[i].isDead()) ripples.splice(i, 1);
     }
+
+    // Center point
+    p.noStroke();
+    p.fill(200, 70, 90);
+    p.circle(p.width / 2, p.height / 2, 20);
   };
 
   p.windowResized = () => {
     if (container) {
       p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    }
-  };
-};
-
-// ============================================================================
-// ITERATION CANVAS - Cycling shapes transforming continuously
-// ============================================================================
-
-const iterationSketch = (p) => {
-  let container;
-  let visibilityHelper;
-  let shapes = [];
-  let time = 0;
-
-  class IterativeShape {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.size = p.random(20, 60);
-      this.rotation = p.random(p.TWO_PI);
-      this.rotationSpeed = p.random(0.01, 0.03);
-      this.hue = p.random(260, 320);
-      this.shapeType = p.floor(p.random(3)); // 0: circle, 1: square, 2: triangle
-      this.morphProgress = 0;
-    }
-
-    update() {
-      this.rotation += this.rotationSpeed;
-      this.morphProgress = (p.sin(time + this.x * 0.01) + 1) * 0.5;
-
-      // Cycle through shapes
-      if (p.frameCount % 180 === 0 && p.random() < 0.1) {
-        this.shapeType = (this.shapeType + 1) % 3;
-      }
-    }
-
-    display() {
-      p.push();
-      p.translate(this.x, this.y);
-      p.rotate(this.rotation);
-
-      let dynamicSize = this.size + p.sin(time * 2 + this.x) * 5;
-
-      p.noStroke();
-      p.fill(this.hue, 65, 80, 200);
-
-      if (this.shapeType === 0) {
-        // Circle
-        p.circle(0, 0, dynamicSize);
-      } else if (this.shapeType === 1) {
-        // Square
-        p.rectMode(p.CENTER);
-        p.rect(0, 0, dynamicSize, dynamicSize, 5);
-      } else {
-        // Triangle
-        p.triangle(
-          0, -dynamicSize / 2,
-          -dynamicSize / 2, dynamicSize / 2,
-          dynamicSize / 2, dynamicSize / 2
-        );
-      }
-
-      p.pop();
-    }
-  }
-
-  p.setup = () => {
-    container = document.getElementById('iteration-canvas');
-
-    if (!container) {
-      console.warn('Iteration canvas container not found');
-      return;
-    }
-
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent(container);
-    p.colorMode(p.HSB, 360, 100, 100, 255);
-
-    const { observer, isVisible } = createVisibilityObserver(p);
-    visibilityHelper = { observer, isVisible };
-    observer.observe(container);
-
-    // Create shapes in grid
-    for (let x = 80; x < p.width; x += 120) {
-      for (let y = 80; y < p.height; y += 120) {
-        shapes.push(new IterativeShape(x, y));
-      }
-    }
-
-    p.noLoop();
-  };
-
-  p.draw = () => {
-    if (!visibilityHelper || !visibilityHelper.isVisible()) {
-      return;
-    }
-
-    p.background(280, 20, 10, 40);
-    time += 0.02;
-
-    shapes.forEach(shape => {
-      shape.update();
-      shape.display();
-    });
-  };
-
-  p.windowResized = () => {
-    if (container) {
-      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-      shapes = [];
-      for (let x = 80; x < p.width; x += 120) {
-        for (let y = 80; y < p.height; y += 120) {
-          shapes.push(new IterativeShape(x, y));
-        }
-      }
     }
   };
 };
@@ -1148,7 +770,6 @@ const iterationSketch = (p) => {
 // INITIALIZE ALL SKETCHES
 // ============================================================================
 
-// Wait for DOM to be ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initSketches);
 } else {
@@ -1156,36 +777,11 @@ if (document.readyState === 'loading') {
 }
 
 function initSketches() {
-  // Only initialize sketches if their containers exist
-  if (document.getElementById('hero-canvas')) {
-    new p5(heroSketch);
-  }
-
-  if (document.getElementById('approach-canvas')) {
-    new p5(approachSketch);
-  }
-
-  if (document.getElementById('discovery-canvas')) {
-    new p5(discoverySketch);
-  }
-
-  if (document.getElementById('foundation-canvas')) {
-    new p5(foundationSketch);
-  }
-
-  if (document.getElementById('components-canvas')) {
-    new p5(componentsSketch);
-  }
-
-  if (document.getElementById('adoption-canvas')) {
-    new p5(adoptionSketch);
-  }
-
-  if (document.getElementById('scaling-canvas')) {
-    new p5(scalingSketch);
-  }
-
-  if (document.getElementById('iteration-canvas')) {
-    new p5(iterationSketch);
-  }
+  if (document.getElementById('hero-canvas')) new p5(heroSketch);
+  if (document.getElementById('approach-canvas')) new p5(approachSketch);
+  if (document.getElementById('foundation-principles-canvas')) new p5(foundationPrinciplesSketch);
+  if (document.getElementById('implementation-canvas')) new p5(implementationSketch);
+  if (document.getElementById('enablement-canvas')) new p5(enablementSketch);
+  if (document.getElementById('evolution-canvas')) new p5(evolutionSketch);
+  if (document.getElementById('impact-canvas')) new p5(impactSketch);
 }
