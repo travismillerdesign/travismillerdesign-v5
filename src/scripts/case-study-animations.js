@@ -23,63 +23,101 @@ const createVisibilityObserver = (sketch, threshold = 0.1) => {
 };
 
 // ============================================
-// 1. HERO SKETCH - Atomic Design
+// 1. HERO SKETCH - Animated Tile Grid
 // ============================================
-// Theme: Individual tokens/atoms connecting into molecules
-// Colors: Electric Blue (#0066FF) + Coral (#FF6B6B)
+// Theme: Grid of tiles scaling up in circular wave from bottom-right
+// Colors: Sky Blue (#87CEEB) to Deep Blue (#003366)
 
 const heroSketch = (p) => {
-  let atoms = [];
-  let time = 0;
-  const ATOM_COUNT = 40;
-  const CONNECTION_DIST = 120;
+  let tiles = [];
+  let cols, rows;
+  const TILE_SIZE = 20;
+  const TILE_GAP = 0;
+  const TILE_SPACING = TILE_SIZE + TILE_GAP; // Total space per tile including gap
+  const TILE_CORNER_RADIUS = 1;
+  const ANIMATION_DURATION = 1000; // milliseconds
+  const WAVE_SPEED = 0.5; // Speed of the wave propagation
+  const HOVER_RADIUS = 300; // Radius for mouse hover effect
+  const HOVER_SCALE = 0.1; // Scale down to 70% on hover
 
-  // Colors: Electric Blue + Coral
-  const BLUE = { r: 0, g: 102, b: 255 };
-  const CORAL = { r: 255, g: 107, b: 107 };
+  let animationStartTime;
+  let maxDistance; // Maximum distance from bottom-right corner
 
-  class Atom {
-    constructor() {
-      this.x = p.random(p.width * 0.1, p.width * 0.9);
-      this.y = p.random(p.height * 0.1, p.height * 0.9);
-      this.baseX = this.x;
-      this.baseY = this.y;
-      this.vx = p.random(-0.5, 0.5);
-      this.vy = p.random(-0.5, 0.5);
-      this.size = p.random(6, 12);
-      this.colorMix = p.random(1);
+  // Colors: Light Sky Blue to Deep Blue
+  const LIGHT_BLUE = { r: 135, g: 206, b: 235 }; // #87CEEB
+  const DEEP_BLUE = { r: 0, g: 51, b: 102 }; // #003366
+
+  class Tile {
+    constructor(col, row, x, y) {
+      this.col = col;
+      this.row = row;
+      this.x = x;
+      this.y = y;
+      this.scale = 0; // Start at 0% scale
+      this.targetScale = 0;
+      this.baseScale = 0; // Start at 0% scale
+
+      // Calculate distance from bottom-right corner
+      this.distanceFromOrigin = p.dist(col, row, cols - 1, rows - 1);
+
+      // Calculate color based on position (gradient from bottom-right to top-left)
+      let gradientProgress = p.dist(col, row, cols - 1, rows - 1) / maxDistance;
+      this.r = p.lerp(LIGHT_BLUE.r, DEEP_BLUE.r, gradientProgress);
+      this.g = p.lerp(LIGHT_BLUE.g, DEEP_BLUE.g, gradientProgress);
+      this.b = p.lerp(LIGHT_BLUE.b, DEEP_BLUE.b, gradientProgress);
     }
 
-    update(mouseX, mouseY) {
-      // Gentle floating
-      this.x += this.vx;
-      this.y += this.vy;
+    update(currentTime, mouseX, mouseY) {
+      // Calculate noise-based delay offset for organic feel (continuous)
+      let noiseOffset = p.noise(this.col * 0.1, this.row * 0.1, currentTime * 0.0001) * 200;
 
-      // Bounds
-      if (this.x < 50 || this.x > p.width - 50) this.vx *= -1;
-      if (this.y < 50 || this.y > p.height - 50) this.vy *= -1;
+      // Calculate animation progress
+      let timeSinceStart = currentTime - animationStartTime;
+      let waveDelay = this.distanceFromOrigin * WAVE_SPEED * 100 + noiseOffset;
+      let animationProgress = (timeSinceStart - waveDelay) / ANIMATION_DURATION;
 
-      // Mouse attraction
+      // Ease in-out cubic function
+      let easeProgress = animationProgress < 0.5
+        ? 4 * animationProgress * animationProgress * animationProgress
+        : 1 - p.pow(-2 * animationProgress + 2, 3) / 2;
+
+      // Update base scale from animation
+      if (animationProgress >= 0 && animationProgress <= 1) {
+        this.baseScale = p.constrain(easeProgress, 0, 1);
+      } else if (animationProgress > 1) {
+        this.baseScale = 1;
+      } else {
+        this.baseScale = 0; // Before animation starts
+      }
+
+      // Calculate mouse hover effect
+      let hoverScale = 1;
       if (mouseX > 0 && mouseY > 0) {
-        let d = p.dist(this.x, this.y, mouseX, mouseY);
-        if (d < 200) {
-          let force = p.map(d, 0, 200, 0.5, 0);
-          let angle = p.atan2(mouseY - this.y, mouseX - this.x);
-          this.x += p.cos(angle) * force;
-          this.y += p.sin(angle) * force;
+        let distToMouse = p.dist(this.x, this.y, mouseX, mouseY);
+        if (distToMouse < HOVER_RADIUS) {
+          let hoverAmount = p.map(distToMouse, 0, HOVER_RADIUS, 1, 0);
+          hoverScale = p.lerp(1, HOVER_SCALE, hoverAmount);
         }
       }
+
+      // Combine base scale and hover scale
+      this.targetScale = this.baseScale * hoverScale;
+
+      // Smooth interpolation to target scale
+      this.scale = p.lerp(this.scale, this.targetScale, 0.15);
     }
 
     display() {
-      // Mix blue and coral
-      let r = p.lerp(BLUE.r, CORAL.r, this.colorMix);
-      let g = p.lerp(BLUE.g, CORAL.g, this.colorMix);
-      let b = p.lerp(BLUE.b, CORAL.b, this.colorMix);
+      p.push();
+      p.translate(this.x, this.y);
+      p.scale(this.scale);
 
       p.noStroke();
-      p.fill(r, g, b, 200);
-      p.circle(this.x, this.y, this.size);
+      p.fill(this.r, this.g, this.b);
+      p.rectMode(p.CENTER);
+      p.rect(0, 0, TILE_SIZE, TILE_SIZE, TILE_CORNER_RADIUS);
+
+      p.pop();
     }
   }
 
@@ -90,53 +128,60 @@ const heroSketch = (p) => {
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('hero-canvas');
 
-    // Create atoms
-    for (let i = 0; i < ATOM_COUNT; i++) {
-      atoms.push(new Atom());
+    // Initialize grid
+    cols = p.ceil(p.width / TILE_SPACING);
+    rows = p.ceil(p.height / TILE_SPACING);
+    maxDistance = p.dist(0, 0, cols - 1, rows - 1);
+
+    // Create tiles
+    tiles = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        let x = col * TILE_SPACING + TILE_SIZE / 2;
+        let y = row * TILE_SPACING + TILE_SIZE / 2;
+        tiles.push(new Tile(col, row, x, y));
+      }
     }
+
+    // Start animation
+    animationStartTime = p.millis();
 
     observer.observe(container);
   };
 
   p.draw = () => {
-    // Gradient background
-    for (let y = 0; y < p.height; y++) {
-      let inter = p.map(y, 0, p.height, 0, 1);
-      let c = p.lerpColor(p.color(10, 10, 20), p.color(20, 20, 35), inter);
-      p.stroke(c);
-      p.line(0, y, p.width, y);
-    }
+    // White background
+    p.background(255);
 
-    time++;
+    let currentTime = p.millis();
 
-    // Update and draw atoms
-    atoms.forEach(atom => {
-      atom.update(p.mouseX, p.mouseY);
-      atom.display();
+    // Update and draw tiles
+    tiles.forEach(tile => {
+      tile.update(currentTime, p.mouseX, p.mouseY);
+      tile.display();
     });
-
-    // Draw connections (molecules)
-    p.stroke(255, 255, 255, 30);
-    p.strokeWeight(1);
-    for (let i = 0; i < atoms.length; i++) {
-      for (let j = i + 1; j < atoms.length; j++) {
-        let d = p.dist(atoms[i].x, atoms[i].y, atoms[j].x, atoms[j].y);
-        if (d < CONNECTION_DIST) {
-          let alpha = p.map(d, 0, CONNECTION_DIST, 60, 0);
-          p.stroke(255, 255, 255, alpha);
-          p.line(atoms[i].x, atoms[i].y, atoms[j].x, atoms[j].y);
-        }
-      }
-    }
   };
 
   p.windowResized = () => {
     const container = document.getElementById('hero-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    atoms = [];
-    for (let i = 0; i < ATOM_COUNT; i++) {
-      atoms.push(new Atom());
+
+    // Reinitialize grid
+    cols = p.ceil(p.width / TILE_SPACING);
+    rows = p.ceil(p.height / TILE_SPACING);
+    maxDistance = p.dist(0, 0, cols - 1, rows - 1);
+
+    tiles = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        let x = col * TILE_SPACING + TILE_SIZE / 2;
+        let y = row * TILE_SPACING + TILE_SIZE / 2;
+        tiles.push(new Tile(col, row, x, y));
+      }
     }
+
+    // Restart animation
+    animationStartTime = p.millis();
   };
 };
 
