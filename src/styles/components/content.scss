@@ -17,13 +17,23 @@
 
 .columnContainer {
   clear: both;
-  .leftCol3 {
+  .col3 {
     width: 33%;
     float: left;
+    padding-right: 1rem;
+    &.right {
+      margin-left: 33%;
+    }
+  }
+  .middleCol3 {
+    width: 33%;
+    float: left;
+    padding-right: 1rem;
   }
   .rightCol3 {
     width: 33%;
-    float: right;
+    float: left;
+    padding-right: 1rem;
 
   }
 }
