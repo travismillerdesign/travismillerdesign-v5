@@ -1,8 +1,12 @@
 // Shared navigation elements used across multiple pages
 // ============================================================================
 
-
-.sitename {
-  position: relative;
-  z-index: 1000;
+.siteheader {
+  height: 0;
+  .sitename {
+    position: absolute;
+    z-index: 100;
+    left: 1.5rem;
+    top: 1.5rem;
+  }
 }

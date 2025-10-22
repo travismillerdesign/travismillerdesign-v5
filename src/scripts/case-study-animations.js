@@ -71,16 +71,16 @@ const heroSketch = (p) => {
 
   let particles = [];
   let cols, rows;
-  let cellSize = 15;
+  let cellSize = 10;
   let gap = 1;
   let totalTiles;
 
   let spawnTimer = 0;
-  let spawnInterval = 1;
-  let tilesSpawned = 0;
+  let spawnInterval = 0.01;
+  let tilesSpawned = 4;
 
-  let mouseRadius = 200;
-  let mouseForce = 30;
+  let mouseRadius = 400;
+  let mouseForce = 50;
   let lastMousePos;
   let mouseMoveDist = 0;
 
@@ -109,10 +109,10 @@ const heroSketch = (p) => {
       this.scale = 0;
       this.lifespan = p.random(3.5, 5.0);
 
-      let verticalRange = p.height * 0.7;
+      let verticalRange = p.height;
       let verticalCenter = p.height * 0.5;
       this.startPos = p.createVector(
-        p.random(-50, p.width * 0.1),
+        (1 - (spawned.length / totalTiles)) * window.innerWidth * 0.8,
         verticalCenter + p.random(-verticalRange/2, verticalRange/2)
       );
       this.pos = this.startPos.copy();
@@ -433,10 +433,10 @@ const heroSketch = (p) => {
 };
 
 // ============================================================================
-// OVERVIEW CANVAS - Scroll-responsive particle animation
+// APPROACH CANVAS - Scroll-responsive particle animation
 // ============================================================================
 
-const overviewSketch = (p) => {
+const approachSketch = (p) => {
   let container;
   let visibilityHelper;
   let particles = [];
@@ -489,10 +489,10 @@ const overviewSketch = (p) => {
   }
 
   p.setup = () => {
-    container = document.getElementById('overview-canvas');
+    container = document.getElementById('approach-canvas');
 
     if (!container) {
-      console.warn('Overview canvas container not found');
+      console.warn('Approach canvas container not found');
       return;
     }
 
@@ -536,22 +536,458 @@ const overviewSketch = (p) => {
   };
 };
 
-const challengeSketch = (p) => {
+// DISCOVERY CANVAS - Scattered dots coalescing into patterns
+// ============================================================================
+
+const discoverySketch = (p) => {
   let container;
   let visibilityHelper;
-  let gridSize = 30;
+  let particles = [];
+  const PARTICLE_COUNT = 80;
   let time = 0;
 
+  class DiscoveryParticle {
+    constructor() {
+      this.x = p.random(p.width);
+      this.y = p.random(p.height);
+      this.targetX = this.x;
+      this.targetY = this.y;
+      this.size = p.random(3, 10);
+      this.hue = p.random(280, 320);
+      this.opacity = p.random(150, 255);
+      this.speed = p.random(0.02, 0.05);
+    }
+
+    update() {
+      // Move toward target with easing
+      this.x += (this.targetX - this.x) * this.speed;
+      this.y += (this.targetY - this.y) * this.speed;
+
+      // Occasionally set new target
+      if (p.frameCount % 180 === 0 && p.random() < 0.3) {
+        this.targetX = p.random(p.width);
+        this.targetY = p.random(p.height);
+      }
+
+      // Add subtle drift
+      this.x += p.sin(time + this.y * 0.01) * 0.5;
+      this.y += p.cos(time + this.x * 0.01) * 0.5;
+
+      // Wrap around edges
+      if (this.x < 0) this.x = p.width;
+      if (this.x > p.width) this.x = 0;
+      if (this.y < 0) this.y = p.height;
+      if (this.y > p.height) this.y = 0;
+    }
+
+    display() {
+      p.noStroke();
+      p.fill(this.hue, 70, 80, this.opacity);
+      p.circle(this.x, this.y, this.size);
+
+      // Draw connections to nearby particles
+      for (let other of particles) {
+        if (other !== this) {
+          let d = p.dist(this.x, this.y, other.x, other.y);
+          if (d < 100) {
+            let alpha = p.map(d, 0, 100, 100, 0);
+            p.stroke(this.hue, 50, 70, alpha);
+            p.strokeWeight(1);
+            p.line(this.x, this.y, other.x, other.y);
+          }
+        }
+      }
+    }
+  }
+
   p.setup = () => {
-    container = document.getElementById('challenge-canvas');
+    container = document.getElementById('discovery-canvas');
 
     if (!container) {
-      console.warn('Challenge canvas container not found');
+      console.warn('Discovery canvas container not found');
       return;
     }
 
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent(container);
+    p.colorMode(p.HSB, 360, 100, 100, 255);
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push(new DiscoveryParticle());
+    }
+
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) {
+      return;
+    }
+
+    p.background(15, 20, 10, 30);
+    time += 0.01;
+
+    particles.forEach(particle => {
+      particle.update();
+      particle.display();
+    });
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+    }
+  };
+};
+
+// ============================================================================
+// FOUNDATION CANVAS - Grid structure building from ground up
+// ============================================================================
+
+const foundationSketch = (p) => {
+  let container;
+  let visibilityHelper;
+  let gridSize = 40;
+  let cells = [];
+  let time = 0;
+
+  p.setup = () => {
+    container = document.getElementById('foundation-canvas');
+
+    if (!container) {
+      console.warn('Foundation canvas container not found');
+      return;
+    }
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+    p.colorMode(p.HSB, 360, 100, 100, 255);
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+
+    // Initialize grid cells
+    for (let x = 0; x < p.width; x += gridSize) {
+      for (let y = 0; y < p.height; y += gridSize) {
+        cells.push({
+          x: x,
+          y: y,
+          active: p.random() > 0.5,
+          activationTime: p.random(1000)
+        });
+      }
+    }
+
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) {
+      return;
+    }
+
+    p.background(220, 15, 12);
+    time += 0.02;
+
+    cells.forEach((cell) => {
+      // Gradually activate cells from bottom to top
+      let activationWave = p.sin(time - cell.y * 0.005 + cell.activationTime * 0.001);
+      let isActive = activationWave > 0;
+
+      if (isActive) {
+        let alpha = p.map(activationWave, 0, 1, 100, 255);
+        let size = p.map(activationWave, 0, 1, 5, gridSize * 0.8);
+
+        p.noStroke();
+        p.fill(200, 40, 85, alpha);
+        p.rectMode(p.CENTER);
+        p.rect(cell.x + gridSize / 2, cell.y + gridSize / 2, size, size, 4);
+      }
+    });
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+      cells = [];
+      for (let x = 0; x < p.width; x += gridSize) {
+        for (let y = 0; y < p.height; y += gridSize) {
+          cells.push({
+            x: x,
+            y: y,
+            active: p.random() > 0.5,
+            activationTime: p.random(1000)
+          });
+        }
+      }
+    }
+  };
+};
+
+// ============================================================================
+// COMPONENTS CANVAS - Modular blocks assembling and rearranging
+// ============================================================================
+
+const componentsSketch = (p) => {
+  let container;
+  let visibilityHelper;
+  let blocks = [];
+  let time = 0;
+
+  class Block {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.w = p.random(30, 80);
+      this.h = p.random(30, 80);
+      this.rotation = 0;
+      this.targetRotation = 0;
+      this.hue = p.random(160, 200);
+    }
+
+    update() {
+      // Slowly rotate
+      this.rotation += (this.targetRotation - this.rotation) * 0.05;
+
+      // Change target rotation occasionally
+      if (p.frameCount % 120 === 0 && p.random() < 0.1) {
+        this.targetRotation += p.HALF_PI;
+      }
+    }
+
+    display() {
+      p.push();
+      p.translate(this.x, this.y);
+      p.rotate(this.rotation);
+
+      // Draw block with subtle pulsing
+      let pulse = p.sin(time + this.x * 0.01) * 5;
+      p.noStroke();
+      p.fill(this.hue, 60, 75, 200);
+      p.rectMode(p.CENTER);
+      p.rect(0, 0, this.w + pulse, this.h + pulse, 8);
+
+      // Inner highlight
+      p.fill(this.hue, 40, 90, 100);
+      p.rect(0, 0, (this.w + pulse) * 0.7, (this.h + pulse) * 0.7, 4);
+
+      p.pop();
+    }
+  }
+
+  p.setup = () => {
+    container = document.getElementById('components-canvas');
+
+    if (!container) {
+      console.warn('Components canvas container not found');
+      return;
+    }
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+    p.colorMode(p.HSB, 360, 100, 100, 255);
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+
+    // Create blocks in grid pattern
+    for (let x = 60; x < p.width; x += 120) {
+      for (let y = 60; y < p.height; y += 120) {
+        blocks.push(new Block(x, y));
+      }
+    }
+
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) {
+      return;
+    }
+
+    p.background(180, 10, 15);
+    time += 0.02;
+
+    blocks.forEach(block => {
+      block.update();
+      block.display();
+    });
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+      blocks = [];
+      for (let x = 60; x < p.width; x += 120) {
+        for (let y = 60; y < p.height; y += 120) {
+          blocks.push(new Block(x, y));
+        }
+      }
+    }
+  };
+};
+
+// ============================================================================
+// ADOPTION CANVAS - Network connections spreading organically
+// ============================================================================
+
+const adoptionSketch = (p) => {
+  let container;
+  let visibilityHelper;
+  let nodes = [];
+  const NODE_COUNT = 30;
+  let time = 0;
+
+  class Node {
+    constructor() {
+      this.x = p.random(p.width);
+      this.y = p.random(p.height);
+      this.size = p.random(5, 15);
+      this.vx = p.random(-0.5, 0.5);
+      this.vy = p.random(-0.5, 0.5);
+      this.hue = 140;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Bounce off edges
+      if (this.x < 0 || this.x > p.width) this.vx *= -1;
+      if (this.y < 0 || this.y > p.height) this.vy *= -1;
+
+      // Keep in bounds
+      this.x = p.constrain(this.x, 0, p.width);
+      this.y = p.constrain(this.y, 0, p.height);
+    }
+
+    display() {
+      p.noStroke();
+      p.fill(this.hue, 70, 85, 220);
+      p.circle(this.x, this.y, this.size);
+
+      // Glow effect
+      p.fill(this.hue, 50, 95, 80);
+      p.circle(this.x, this.y, this.size * 1.5);
+    }
+  }
+
+  p.setup = () => {
+    container = document.getElementById('adoption-canvas');
+
+    if (!container) {
+      console.warn('Adoption canvas container not found');
+      return;
+    }
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+    p.colorMode(p.HSB, 360, 100, 100, 255);
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+
+    for (let i = 0; i < NODE_COUNT; i++) {
+      nodes.push(new Node());
+    }
+
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) {
+      return;
+    }
+
+    p.background(140, 20, 8, 50);
+    time += 0.01;
+
+    // Update nodes
+    nodes.forEach(node => node.update());
+
+    // Draw connections
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        let d = p.dist(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+        if (d < 150) {
+          let alpha = p.map(d, 0, 150, 150, 0);
+          p.stroke(140, 60, 70, alpha);
+          p.strokeWeight(2);
+          p.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+        }
+      }
+    }
+
+    // Draw nodes
+    nodes.forEach(node => node.display());
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+    }
+  };
+};
+
+// ============================================================================
+// SCALING CANVAS - Expanding concentric circles from center
+// ============================================================================
+
+const scalingSketch = (p) => {
+  let container;
+  let visibilityHelper;
+  let ripples = [];
+  let time = 0;
+  let spawnTimer = 0;
+
+  class Ripple {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = 0;
+      this.maxRadius = p.random(200, 400);
+      this.speed = p.random(2, 4);
+      this.hue = p.random(30, 60);
+      this.alpha = 255;
+    }
+
+    update() {
+      this.radius += this.speed;
+      this.alpha = p.map(this.radius, 0, this.maxRadius, 255, 0);
+    }
+
+    display() {
+      if (this.radius < this.maxRadius) {
+        p.noFill();
+        p.stroke(this.hue, 80, 85, this.alpha);
+        p.strokeWeight(3);
+        p.circle(this.x, this.y, this.radius * 2);
+      }
+    }
+
+    isDead() {
+      return this.radius >= this.maxRadius;
+    }
+  }
+
+  p.setup = () => {
+    container = document.getElementById('scaling-canvas');
+
+    if (!container) {
+      console.warn('Scaling canvas container not found');
+      return;
+    }
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+    p.colorMode(p.HSB, 360, 100, 100, 255);
 
     const { observer, isVisible } = createVisibilityObserver(p);
     visibilityHelper = { observer, isVisible };
@@ -565,49 +1001,145 @@ const challengeSketch = (p) => {
       return;
     }
 
-    p.background(20, 20, 30);
+    p.background(40, 15, 12, 50);
+    time += 0.01;
 
-    // Animated grid - responds to mouse position
-    for (let x = 0; x < p.width; x += gridSize) {
-      for (let y = 0; y < p.height; y += gridSize) {
-        // Distance from center for base animation
-        const centerDistance = p.dist(x, y, p.width / 2, p.height / 2);
-
-        // Distance from mouse for interaction
-        let mouseDistance = p.width; // Default large distance
-        if (p.mouseX > 0 && p.mouseY > 0) {
-          mouseDistance = p.dist(x, y, p.mouseX, p.mouseY);
-        }
-
-        // Combine center animation with mouse interaction
-        const baseSize = p.map(
-          p.sin(centerDistance * 0.05 - time),
-          -1, 1,
-          2, gridSize * 0.8
-        );
-
-        // Make circles larger when mouse is near
-        const mouseEffect = mouseDistance < 200 ?
-          p.map(mouseDistance, 0, 200, gridSize * 1.5, 0) : 0;
-
-        const size = p.constrain(baseSize + mouseEffect, 2, gridSize * 1.5);
-
-        // Color changes based on mouse proximity
-        const hue = mouseDistance < 200 ?
-          p.map(mouseDistance, 0, 200, 180, 60) : 60;
-
-        p.noStroke();
-        p.fill(hue, 100, 180, 100);
-        p.circle(x + gridSize / 2, y + gridSize / 2, size);
-      }
+    // Spawn new ripples
+    spawnTimer++;
+    if (spawnTimer > 30) {
+      ripples.push(new Ripple(p.width / 2, p.height / 2));
+      spawnTimer = 0;
     }
 
-    time += 0.05;
+    // Update and display ripples
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      ripples[i].update();
+      ripples[i].display();
+
+      if (ripples[i].isDead()) {
+        ripples.splice(i, 1);
+      }
+    }
   };
 
   p.windowResized = () => {
     if (container) {
       p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+    }
+  };
+};
+
+// ============================================================================
+// ITERATION CANVAS - Cycling shapes transforming continuously
+// ============================================================================
+
+const iterationSketch = (p) => {
+  let container;
+  let visibilityHelper;
+  let shapes = [];
+  let time = 0;
+
+  class IterativeShape {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.size = p.random(20, 60);
+      this.rotation = p.random(p.TWO_PI);
+      this.rotationSpeed = p.random(0.01, 0.03);
+      this.hue = p.random(260, 320);
+      this.shapeType = p.floor(p.random(3)); // 0: circle, 1: square, 2: triangle
+      this.morphProgress = 0;
+    }
+
+    update() {
+      this.rotation += this.rotationSpeed;
+      this.morphProgress = (p.sin(time + this.x * 0.01) + 1) * 0.5;
+
+      // Cycle through shapes
+      if (p.frameCount % 180 === 0 && p.random() < 0.1) {
+        this.shapeType = (this.shapeType + 1) % 3;
+      }
+    }
+
+    display() {
+      p.push();
+      p.translate(this.x, this.y);
+      p.rotate(this.rotation);
+
+      let dynamicSize = this.size + p.sin(time * 2 + this.x) * 5;
+
+      p.noStroke();
+      p.fill(this.hue, 65, 80, 200);
+
+      if (this.shapeType === 0) {
+        // Circle
+        p.circle(0, 0, dynamicSize);
+      } else if (this.shapeType === 1) {
+        // Square
+        p.rectMode(p.CENTER);
+        p.rect(0, 0, dynamicSize, dynamicSize, 5);
+      } else {
+        // Triangle
+        p.triangle(
+          0, -dynamicSize / 2,
+          -dynamicSize / 2, dynamicSize / 2,
+          dynamicSize / 2, dynamicSize / 2
+        );
+      }
+
+      p.pop();
+    }
+  }
+
+  p.setup = () => {
+    container = document.getElementById('iteration-canvas');
+
+    if (!container) {
+      console.warn('Iteration canvas container not found');
+      return;
+    }
+
+    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+    canvas.parent(container);
+    p.colorMode(p.HSB, 360, 100, 100, 255);
+
+    const { observer, isVisible } = createVisibilityObserver(p);
+    visibilityHelper = { observer, isVisible };
+    observer.observe(container);
+
+    // Create shapes in grid
+    for (let x = 80; x < p.width; x += 120) {
+      for (let y = 80; y < p.height; y += 120) {
+        shapes.push(new IterativeShape(x, y));
+      }
+    }
+
+    p.noLoop();
+  };
+
+  p.draw = () => {
+    if (!visibilityHelper || !visibilityHelper.isVisible()) {
+      return;
+    }
+
+    p.background(280, 20, 10, 40);
+    time += 0.02;
+
+    shapes.forEach(shape => {
+      shape.update();
+      shape.display();
+    });
+  };
+
+  p.windowResized = () => {
+    if (container) {
+      p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+      shapes = [];
+      for (let x = 80; x < p.width; x += 120) {
+        for (let y = 80; y < p.height; y += 120) {
+          shapes.push(new IterativeShape(x, y));
+        }
+      }
     }
   };
 };
@@ -629,11 +1161,31 @@ function initSketches() {
     new p5(heroSketch);
   }
 
-  if (document.getElementById('overview-canvas')) {
-    new p5(overviewSketch);
+  if (document.getElementById('approach-canvas')) {
+    new p5(approachSketch);
   }
 
-  if (document.getElementById('challenge-canvas')) {
-    new p5(challengeSketch);
+  if (document.getElementById('discovery-canvas')) {
+    new p5(discoverySketch);
+  }
+
+  if (document.getElementById('foundation-canvas')) {
+    new p5(foundationSketch);
+  }
+
+  if (document.getElementById('components-canvas')) {
+    new p5(componentsSketch);
+  }
+
+  if (document.getElementById('adoption-canvas')) {
+    new p5(adoptionSketch);
+  }
+
+  if (document.getElementById('scaling-canvas')) {
+    new p5(scalingSketch);
+  }
+
+  if (document.getElementById('iteration-canvas')) {
+    new p5(iterationSketch);
   }
 }

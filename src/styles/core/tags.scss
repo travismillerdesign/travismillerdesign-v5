@@ -28,9 +28,15 @@
 //
 //*******************************************
 * {
+	// Box sizing
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
+	
+	// Font smoothing
+	-webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 html {font-size: $fontSize-root;}
@@ -62,7 +68,12 @@ html {font-size: $fontSize-root;}
 // b {}
 // strong {}
 // dfn {}
-// hr {}
+hr {
+	border: none; /* Remove default border */
+	height: 1.5px; /* Set the height (thickness) of the line */
+	background-color: currentColor; /* Set the color of the line */
+	margin: 1rem 0; /* Add top and bottom margin for spacing */
+}
 // mark {}
 // code {}
 // kbd {}

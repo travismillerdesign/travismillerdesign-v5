@@ -53,26 +53,37 @@ $fontFamily-primary: 'PP Mori', sans-serif;
 	@extend %font-base;
 	font-family: $fontFamily-primary;
 	font-style:  normal;
-	font-weight: 500;	
+	font-weight: normal;
+	line-height: 1.36em;
+}
+.bold, %fontFamily-bold {
+	@extend %fontFamily-primary;
+	font-weight: 600;
+	letter-spacing: 0.01em;
 }
 
 
 //*******************************************
-//
 //	LAYOUT
-//	- Layout size ramp baseline increments
-//	- Should be unitless and used with the baseline-grid function
-//
 //*******************************************
-$gridUnit-base: 		8px;
-$gridUnit-smallest:		$gridUnit-base * 1;
-$gridUnit-smaller:		$gridUnit-base * 2;
-$gridUnit-small:		$gridUnit-base * 3;
-$gridUnit-default: 		$gridUnit-base * 4;
-$gridUnit-large: 		$gridUnit-base * 5;
-$gridUnit-larger:		$gridUnit-base * 6;
-$gridUnit-largest: 		$gridUnit-base * 7;
+// $sitemargin: 4%;
 
+// $gridUnit-base: 		8px;
+// $gridUnit-smallest:		$gridUnit-base * 1;
+// $gridUnit-smaller:		$gridUnit-base * 2;
+// $gridUnit-small:		$gridUnit-base * 3;
+// $gridUnit-default: 		$gridUnit-base * 4;
+// $gridUnit-large: 		$gridUnit-base * 5;
+// $gridUnit-larger:		$gridUnit-base * 6;
+// $gridUnit-largest: 		$gridUnit-base * 7;
+
+@mixin clearfix() {
+  &::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+}
 
 
 //*******************************************
@@ -85,14 +96,15 @@ $gridUnit-largest: 		$gridUnit-base * 7;
 //*******************************************
 h1 {
 	@extend %fontFamily-primary;
-	font-size: 2.986rem;
-	// font-size: 1rem;
-	line-height: 1.4em;
+	font-size: 4.3rem;
+	letter-spacing: -0.03em;
+	line-height: 1.03em;
+	margin-bottom: 0.08em;
 }
 h2 {
 	@extend %fontFamily-primary;
-	font-size: 2.488rem;
-	line-height: 1.4em;
+	font-size: 2.7rem;
+	line-height: 1.05em;
 }
 h3 {
 	@extend %fontFamily-primary;
@@ -105,32 +117,23 @@ h4 {
 	line-height: 1.4em;
 }
 h5 {
-	@extend %fontFamily-primary;
-	font-size: 1.44rem;
-	line-height: 1.4em;
+	@extend %fontFamily-bold;
+	font-size: 1rem;
+	text-transform: uppercase;
+	margin: 1em 0;
 }
 h6 {
 	@extend %fontFamily-primary;
 	font-size: 1.2rem;
 	line-height: 1.4em;
 }
-.p1 {
-	@extend %fontFamily-primary;
-	font-size: 1.2rem;
-	line-height: 1.4em;
-}
-p, .p2 {
+p {
 	@extend %fontFamily-primary;
 	font-size: 1rem;
-	line-height: 1.4em;
+	margin-bottom: 1em;
 }
-small, .p3 {
+small {
 	@extend %fontFamily-primary;
 	font-size: 0.833rem;
-	line-height: 1.4em;
-}
-.p4 {
-	@extend %fontFamily-primary;
-	font-size: 0.694rem;
 	line-height: 1.4em;
 }

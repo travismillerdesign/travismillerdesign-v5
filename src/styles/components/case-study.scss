@@ -1,31 +1,27 @@
 // Case Study Components - P5.js Animated Backgrounds
 // ============================================================================
+$pagemargin: 4rem;
+$p5-margin: 1rem * 0.5;
+
 
 // Full-bleed sections with P5.js canvas backgrounds
 .case-study-section {
   position: relative;
   min-height: 80vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  padding: 4rem 2rem;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-right: calc(-50vw + 50%);
-
-  @media (min-width: 768px) {
-    padding: 6rem 4rem;
-  }
+  padding: 8rem $pagemargin;
+  width: 100%;
 }
 
 // P5.js Canvas Container - Full bleed background
 .p5-canvas-container {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: $p5-margin;
+  bottom: $p5-margin;
+  left: $p5-margin;
+  right: $p5-margin;
+  overflow: hidden;
+  border-radius: $p5-margin * 2;
   z-index: 1;
 
   canvas {
@@ -39,131 +35,19 @@
 .section-content {
   position: relative;
   z-index: 10;
-  max-width: 1200px;
-  width: 100%;
-
-  // Text contrast and readability
-  color: #ffffff;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.8),
-    0 2px 8px rgba(0, 0, 0, 0.5);
-
-  // Optional: Add background blur/tint for better readability
-  padding: 2rem;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
-  border-radius: 8px;
-
-  @media (min-width: 768px) {
-    padding: 3rem 4rem;
-  }
-
-  p {
-    font-size: 1.125rem;
-    line-height: 1.7;
-    margin-bottom: 1.5rem;
-
-    &:first-of-type {
-      font-weight: 600;
-      font-size: 1.25rem;
-      letter-spacing: 0.05em;
-    }
-  }
-
-  h2 {
-    color: #ffffff;
-    margin-bottom: 1.5rem;
-    font-size: 2rem;
-    text-shadow:
-      0 2px 4px rgba(0, 0, 0, 0.8),
-      0 4px 12px rgba(0, 0, 0, 0.6);
-  }
-
-  ul, ol {
-    margin-left: 1.5rem;
-    margin-bottom: 1.5rem;
-
-    li {
-      margin-bottom: 0.75rem;
-      line-height: 1.6;
-    }
-  }
-}
-
-// Two column layout for challenge section
-.leftCol,
-.rightCol {
-  @media (min-width: 968px) {
-    display: inline-block;
-    vertical-align: top;
-  }
-}
-
-.leftCol {
-  @media (min-width: 968px) {
-    width: 35%;
-    padding-right: 2rem;
-  }
-}
-
-.rightCol {
-  @media (min-width: 968px) {
-    width: 65%;
-  }
 }
 
 // Page header styling
 .page-header {
   position: relative;
-  min-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem;
+  height: 75vh;
+  padding: $pagemargin;
   overflow: hidden;
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-right: calc(-50vw + 50%);
-
-  h1 {
-    position: relative;
-    z-index: 10;
-    font-size: 2.5rem;
-    color: #ffffff;
-    text-shadow:
-      0 2px 4px rgba(0, 0, 0, 0.8),
-      0 4px 16px rgba(0, 0, 0, 0.6);
-    margin-bottom: 1rem;
-
-    @media (min-width: 768px) {
-      font-size: 3.5rem;
-    }
-  }
-
-  p {
-    position: relative;
-    z-index: 10;
-    font-size: 1.25rem;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.8),
-      0 2px 8px rgba(0, 0, 0, 0.5);
-    max-width: 600px;
-
-    @media (min-width: 768px) {
-      font-size: 1.5rem;
-    }
-  }
-}
-
-// Hero canvas positioning
-#hero-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  z-index: 1;
+  margin: 0 auto;
+  .section-content {
+    position: absolute;
+    bottom: $pagemargin;
+    width: 66%;
+  }
 }

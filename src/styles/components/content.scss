@@ -1,0 +1,29 @@
+// Shared content elements used across multiple pages
+// ============================================================================
+.dark-theme {
+  background: black;
+  color: #ffffff;
+}
+
+
+.text-section {
+  padding: 7rem 1.5rem;
+  .section-content {
+    max-width: 33%;
+    margin: 0 auto;
+  }
+}
+
+
+.columnContainer {
+  clear: both;
+  .leftCol3 {
+    width: 33%;
+    float: left;
+  }
+  .rightCol3 {
+    width: 33%;
+    float: right;
+
+  }
+}
