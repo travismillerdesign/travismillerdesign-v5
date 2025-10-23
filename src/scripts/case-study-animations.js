@@ -1056,19 +1056,20 @@ const implementationSketch = (p) => {
   // Control Ellipse 1 Configuration (Bottom-Left)
   const ELLIPSE_1_X = 0.2;                              // X position (0-1)
   const ELLIPSE_1_Y = 0.8;                              // Y position (0-1)
-  const ELLIPSE_1_WIDTH = 600;                           // Width in pixels
-  const ELLIPSE_1_HEIGHT = 600;                           // Height in pixels
+  const ELLIPSE_1_WIDTH = 0;                           // Width in pixels
+  const ELLIPSE_1_HEIGHT = 200;                           // Height in pixels
 
   // Control Ellipse 2 Configuration (Top-Right)
   const ELLIPSE_2_X = 0.8;                              // X position (0-1)
   const ELLIPSE_2_Y = 0.2;                              // Y position (0-1)
-  const ELLIPSE_2_WIDTH = 600;                            // Width in pixels
-  const ELLIPSE_2_HEIGHT = 600;                          // Height in pixels
+  const ELLIPSE_2_WIDTH = 0;                            // Width in pixels
+  const ELLIPSE_2_HEIGHT = 200;                          // Height in pixels
 
   // Intermediate Ellipses Configuration
-  const INTERMEDIATE_STEPS = 40;                          // Number of ellipses between control ellipses
-  const INTERMEDIATE_SCALE_MULTIPLIER = 0.1;             // Scale at center (0.5 = half size)
+  const INTERMEDIATE_STEPS = 20;                          // Number of ellipses between control ellipses
+  const INTERMEDIATE_SCALE_MULTIPLIER = 1.0;             // Scale at center (1.0 = no scaling, 0.5 = half size)
   const INTERMEDIATE_SCALE_CURVE = "parabolic";          // "linear", "parabolic", "sine"
+  const INTERMEDIATE_MAX_SIZE = 200;                     // Max size at center when edge ellipses are flat (width/height = 0)
 
   // Path Configuration
   const PATH_ARC_AMOUNT = 0;                          // Curvature (0 = straight, 1 = high arc)
@@ -1076,7 +1077,7 @@ const implementationSketch = (p) => {
 
   // Wave Animation Configuration
   const WAVE_FREQUENCY = 1;                              // Number of complete waves
-  const WAVE_AMPLITUDE = 0.3;                            // Size variation (0.3 = ±30%)
+  const WAVE_AMPLITUDE = 0.8;                            // Size variation (0.3 = ±30%)
   const WAVE_SPEED = 0.01;                               // Speed of wave movement
 
   // Stroke Style (matching hero sketch)
@@ -1224,6 +1225,11 @@ const implementationSketch = (p) => {
 
   // Calculate scale modifier based on position curve
   function calculateScaleModifier(t) {
+    // Edge ellipses always remain at full size (no scaling)
+    if (t === 0 || t === 1) {
+      return 1.0;
+    }
+
     if (INTERMEDIATE_SCALE_MULTIPLIER >= 1.0) {
       return 1.0; // No scaling
     }
@@ -1231,10 +1237,10 @@ const implementationSketch = (p) => {
     let modifier = 1.0;
 
     if (INTERMEDIATE_SCALE_CURVE === "parabolic") {
-      // Parabolic curve - smallest at center
+      // Parabolic curve - smallest at center, 1.0 at edges
       modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * 4 * (t - 0.5) * (t - 0.5);
     } else if (INTERMEDIATE_SCALE_CURVE === "sine") {
-      // Sine curve - smallest at center
+      // Sine curve - smallest at center, 1.0 at edges
       modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * p.sin(t * p.PI);
     } else {
       // Linear - no curve
@@ -1244,10 +1250,26 @@ const implementationSketch = (p) => {
     return modifier;
   }
 
+  // Calculate wave taper (0 at edges, 1 at center)
+  function calculateWaveTaper(t) {
+    // Use sine curve: 0 at t=0, 1 at t=0.5, 0 at t=1
+    return p.sin(t * p.PI);
+  }
+
   // Calculate wave scale multiplier for animation
-  function calculateWaveScale(index, totalEllipses) {
+  function calculateWaveScale(index, totalEllipses, taper) {
     let waveValue = p.sin(wavePhase + index * WAVE_FREQUENCY * p.TWO_PI / totalEllipses);
-    return 1.0 + waveValue * WAVE_AMPLITUDE;
+    return 1.0 + waveValue * WAVE_AMPLITUDE * taper;
+  }
+
+  // Calculate dimension with support for flat ellipses (0 width/height)
+  function calculateDimension(dimension1, dimension2, t) {
+    // If both edges are flat (0), create lens shape using INTERMEDIATE_MAX_SIZE
+    if (dimension1 === 0 && dimension2 === 0) {
+      return INTERMEDIATE_MAX_SIZE * p.sin(t * p.PI);
+    }
+    // Otherwise, linear interpolation between the two values
+    return p.lerp(dimension1, dimension2, t);
   }
 
   // ============================================
@@ -1325,15 +1347,18 @@ const implementationSketch = (p) => {
       let x = pos.x * p.width;
       let y = pos.y * p.height;
 
-      // Interpolate dimensions from ellipse 1 to ellipse 2
-      let baseWidth = p.lerp(ELLIPSE_1_WIDTH, ELLIPSE_2_WIDTH, t);
-      let baseHeight = p.lerp(ELLIPSE_1_HEIGHT, ELLIPSE_2_HEIGHT, t);
+      // Calculate dimensions with support for flat ellipses
+      let baseWidth = calculateDimension(ELLIPSE_1_WIDTH, ELLIPSE_2_WIDTH, t);
+      let baseHeight = calculateDimension(ELLIPSE_1_HEIGHT, ELLIPSE_2_HEIGHT, t);
 
-      // Apply scale modifier based on position curve
+      // Apply scale modifier based on position curve (edges remain 1.0)
       let scaleModifier = calculateScaleModifier(t);
 
-      // Apply wave animation
-      let waveScale = calculateWaveScale(i, totalEllipses);
+      // Calculate wave taper (0 at edges, 1 at center)
+      let taper = calculateWaveTaper(t);
+
+      // Apply wave animation with taper
+      let waveScale = calculateWaveScale(i, totalEllipses, taper);
 
       // Calculate final dimensions
       let width = baseWidth * scaleModifier * waveScale;
