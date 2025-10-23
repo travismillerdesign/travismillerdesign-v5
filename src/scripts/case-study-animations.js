@@ -1802,20 +1802,20 @@ const evolutionSketch = (p) => {
   // ============================================
 
   // Left Group Configuration
-  const LEFT_INSTANCE_COUNT = 10;                    // Number of overlayed infinities
+  const LEFT_INSTANCE_COUNT = 5;                    // Number of overlayed infinities
   const LEFT_BASE_SIZE = 300;                        // Base size of infinity shape
   const LEFT_SCALE_Y_MIN = -1;                    // Minimum vertical scale (negative for bottom half)
   const LEFT_SCALE_Y_MAX = 1;                     // Maximum vertical scale (positive for top half)
-  const LEFT_ANIMATION_SPEED = 0.005;               // Rotation speed
+  const LEFT_ANIMATION_SPEED = -0.005;               // Rotation speed
   const LEFT_CENTER_X = 0.25;                       // X position (0-1)
   const LEFT_CENTER_Y = 0.5;                        // Y position (0-1)
 
   // Right Group Configuration
-  const RIGHT_INSTANCE_COUNT = 10;                  // Number of overlayed infinities (more than left)
+  const RIGHT_INSTANCE_COUNT = 20;                  // Number of overlayed infinities (more than left)
   const RIGHT_BASE_SIZE = 300;                      // Base size of infinity shape
   const RIGHT_SCALE_Y_MIN = -1.0;                   // Minimum vertical scale (negative for bottom half)
   const RIGHT_SCALE_Y_MAX = 1.0;                    // Maximum vertical scale (positive for top half)
-  const RIGHT_ANIMATION_SPEED = 0.008;              // Rotation speed (independent from left)
+  const RIGHT_ANIMATION_SPEED = -0.001;              // Rotation speed (independent from left)
   const RIGHT_CENTER_X = 0.75;                      // X position (0-1)
   const RIGHT_CENTER_Y = 0.5;                       // Y position (0-1)
 
@@ -1828,7 +1828,7 @@ const evolutionSketch = (p) => {
   // Stroke Style (matching hero sketch)
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };       // Black
   const STROKE_WEIGHT = 1.5;                        // Line thickness
-  const STROKE_ALPHA_MIN = 30;                      // Minimum opacity (far instances)
+  const STROKE_ALPHA_MIN = 100;                      // Minimum opacity (far instances)
   const STROKE_ALPHA_MAX = 100;                     // Maximum opacity (close instances)
 
   // Rolling Wheel Effect Configuration
@@ -1837,14 +1837,14 @@ const evolutionSketch = (p) => {
 
   // Gradient Configuration (Amber + Violet)
   const GRADIENT_CENTER_COLOR = { r: 245, g: 158, b: 11 };  // Amber
-  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // Violet
+  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };
   const GRADIENT_CENTER_X = 0.5;                    // Center X position (0-1)
   const GRADIENT_CENTER_Y = 0.5;                    // Center Y position (0-1)
   const GRADIENT_RADIUS_SCALE_X = 0.5;              // X radius scale
   const GRADIENT_RADIUS_SCALE_Y = 0.5;              // Y radius scale
   const GRADIENT_POWER = 1.0;                       // Gradient power curve
   const GRADIENT_EDGE_EASE = 0.25;                  // Edge easing
-  const GRADIENT_SCATTER_INTENSITY = 0.035;         // Scatter effect intensity
+  const GRADIENT_SCATTER_INTENSITY = 0.1;         // Scatter effect intensity
 
   // Animation
   let animationTime = 0;
