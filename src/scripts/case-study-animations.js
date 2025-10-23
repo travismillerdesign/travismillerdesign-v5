@@ -364,7 +364,7 @@ const approachSketch = (p) => {
   // Stroke Configuration
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };                  // Black
   const STROKE_WEIGHT = 2;                                     // Consistent stroke weight
-  const STROKE_ALPHA = 102;                                    // 40% opacity (255 * 0.4 = 102)
+  const STROKE_ALPHA = 40;                                    // 40% opacity (255 * 0.4 = 102)
   const FADE_BACKGROUND_ALPHA = 0;                             // No fade effect
 
   // Animation
