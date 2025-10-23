@@ -1791,45 +1791,63 @@ const enablementSketch = (p) => {
 };
 
 // ============================================
-// 6. EVOLUTION SKETCH - Morphing Complexity
+// 6. EVOLUTION SKETCH - Dual Lissajous Infinity Loops
 // ============================================
-// Theme: Geometric shapes transitioning between simple and complex forms
-// Colors: Ruby Red (#DC2626) + Sky Blue (#0EA5E9)
+// Theme: Two groups of rotating infinity-shaped Lissajous curves
+// Colors: Amber (#F59E0B) + Violet (#8B5CF6)
 
 const evolutionSketch = (p) => {
   // ============================================
   // CUSTOMIZATION VARIABLES
   // ============================================
 
-  // Gradient Configuration (standardized radial gradient)
-  const GRADIENT_CENTER_COLOR = { r: 220, g: 38, b: 38 };      // Ruby Red
-  const GRADIENT_EDGE_COLOR = { r: 14, g: 165, b: 233 };       // Sky Blue
-  const GRADIENT_CENTER_X = 0.5;                                // Center X position (0-1)
-  const GRADIENT_CENTER_Y = 0.5;                                // Center Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.5;                          // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.5;                          // Y radius scale
-  const GRADIENT_POWER = 1.0;                                   // Gradient power curve
-  const GRADIENT_EDGE_EASE = 0.2;                               // Edge easing
-  const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
+  // Left Group Configuration
+  const LEFT_INSTANCE_COUNT = 20;                    // Number of overlayed infinities
+  const LEFT_BASE_SIZE = 300;                        // Base size of infinity shape
+  const LEFT_SCALE_Y_MIN = -1;                     // Minimum vertical scale
+  const LEFT_SCALE_Y_MAX = 1.0;                     // Maximum vertical scale
+  const LEFT_ANIMATION_SPEED = 0.005;               // Rotation speed
+  const LEFT_CENTER_X = 0.25;                       // X position (0-1)
+  const LEFT_CENTER_Y = 0.5;                        // Y position (0-1)
 
-  // Shape Morphing Configuration
-  const SIMPLE_SIDES = 3;                                      // Triangle (simple state)
-  const COMPLEX_SIDES = 12;                                    // Dodecagon (complex state)
-  const SHAPE_COUNT = 6;                                       // Number of shapes
-  const SHAPE_SIZE = 80;                                       // Base shape size
-  const MORPH_CYCLE_DURATION = 300;                            // Frames for full morph cycle
-  const SHAPE_ROTATION_SPEED = 0.01;                           // Shape rotation speed
-  const ORBIT_RADIUS = 140;                                    // Distance from center
+  // Right Group Configuration
+  const RIGHT_INSTANCE_COUNT = 50;                  // Number of overlayed infinities (more than left)
+  const RIGHT_BASE_SIZE = 300;                      // Base size of infinity shape
+  const RIGHT_SCALE_Y_MIN = 0.2;                    // Minimum vertical scale
+  const RIGHT_SCALE_Y_MAX = 1.0;                    // Maximum vertical scale
+  const RIGHT_ANIMATION_SPEED = 0.008;              // Rotation speed (independent from left)
+  const RIGHT_CENTER_X = 0.75;                      // X position (0-1)
+  const RIGHT_CENTER_Y = 0.5;                       // Y position (0-1)
 
-  // Stroke Configuration
-  const STROKE_WEIGHT = 2;                                     // Shape stroke thickness
-  const STROKE_COLOR = { r: 200, g: 200, b: 200 };            // Base stroke color (grey)
-  const STROKE_ALPHA = 160;                                    // Stroke opacity
-  const FADE_BACKGROUND_ALPHA = 80;                            // Background fade effect opacity
+  // Lissajous Parameters
+  const LISSAJOUS_FREQ_RATIO = 2.0;                 // Frequency ratio for infinity (2:1)
+  const LISSAJOUS_PHASE_OFFSET = Math.PI;           // Phase for infinity shape
+  const LISSAJOUS_RESOLUTION = 200;                 // Points in curve
+  const LISSAJOUS_SCALE_X = 1.0;                    // Horizontal scale multiplier
+
+  // Stroke Style (matching hero sketch)
+  const STROKE_COLOR = { r: 0, g: 0, b: 0 };       // Black
+  const STROKE_WEIGHT = 1.5;                        // Line thickness
+  const STROKE_ALPHA_MIN = 30;                      // Minimum opacity (far instances)
+  const STROKE_ALPHA_MAX = 100;                     // Maximum opacity (close instances)
+
+  // Gradient Configuration (Amber + Violet)
+  const GRADIENT_CENTER_COLOR = { r: 245, g: 158, b: 11 };  // Amber
+  const GRADIENT_EDGE_COLOR = { r: 139, g: 92, b: 246 };     // Violet
+  const GRADIENT_CENTER_X = 0.5;                    // Center X position (0-1)
+  const GRADIENT_CENTER_Y = 0.5;                    // Center Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.5;              // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.5;              // Y radius scale
+  const GRADIENT_POWER = 1.0;                       // Gradient power curve
+  const GRADIENT_EDGE_EASE = 0.25;                  // Edge easing
+  const GRADIENT_SCATTER_INTENSITY = 0.035;         // Scatter effect intensity
 
   // Animation
   let animationTime = 0;
   let gradientBuffer;
+  let gradientShader;
+
+  const { observer } = createVisibilityObserver(p);
 
   // ============================================
   // SHADER CODE
@@ -1917,50 +1935,46 @@ const evolutionSketch = (p) => {
   `;
 
   // ============================================
-  // SHAPE CLASS
+  // LISSAJOUS FUNCTIONS
   // ============================================
 
-  class MorphingShape {
-    constructor(index) {
-      this.index = index;
-      this.angleOffset = (index / SHAPE_COUNT) * p.TWO_PI;
-      this.rotation = 0;
-      this.phaseOffset = index * 0.5;
+  // Calculate a single point on the Lissajous curve
+  function calculateLissajousPoint(t, scaleX, scaleY) {
+    let x = Math.sin(t) * scaleX;
+    let y = Math.sin(LISSAJOUS_FREQ_RATIO * t + LISSAJOUS_PHASE_OFFSET) * scaleY;
+    return { x, y };
+  }
+
+  // Draw a single Lissajous infinity curve
+  function drawLissajousInfinity(centerX, centerY, baseSize, scaleY, alpha) {
+    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
+    p.strokeWeight(STROKE_WEIGHT);
+    p.noFill();
+
+    p.beginShape();
+    for (let i = 0; i <= LISSAJOUS_RESOLUTION; i++) {
+      let t = p.map(i, 0, LISSAJOUS_RESOLUTION, 0, p.TWO_PI);
+      let point = calculateLissajousPoint(t, baseSize * LISSAJOUS_SCALE_X, baseSize * scaleY);
+      p.vertex(centerX + point.x, centerY + point.y);
     }
+    p.endShape();
+  }
 
-    update() {
-      this.rotation += SHAPE_ROTATION_SPEED;
-    }
+  // Draw a group of rotating Lissajous infinities
+  function drawLissajousGroup(centerX, centerY, instanceCount, baseSize, scaleMin, scaleMax, animSpeed) {
+    for (let i = 0; i < instanceCount; i++) {
+      // Calculate phase offset for this instance (staggered)
+      let phaseOffset = (i / instanceCount) * p.TWO_PI;
 
-    display(centerX, centerY, morphProgress) {
-      // Position on orbit
-      let orbitAngle = this.angleOffset + animationTime * 0.005;
-      let x = centerX + p.cos(orbitAngle) * ORBIT_RADIUS;
-      let y = centerY + p.sin(orbitAngle) * ORBIT_RADIUS;
+      // Calculate current vertical scale (cycles over time to create rotation illusion)
+      let scaleProgress = (animationTime * animSpeed + phaseOffset) % p.TWO_PI;
+      let scaleY = p.lerp(scaleMin, scaleMax, (p.sin(scaleProgress) + 1) / 2);
 
-      // Calculate number of sides based on morph progress
-      let sides = Math.round(p.lerp(SIMPLE_SIDES, COMPLEX_SIDES, morphProgress));
-      sides = Math.max(SIMPLE_SIDES, sides);
+      // Calculate opacity based on scale (larger = closer = more opaque)
+      let alpha = p.map(scaleY, scaleMin, scaleMax, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
 
-      // Draw polygon
-      p.push();
-      p.translate(x, y);
-      p.rotate(this.rotation);
-
-      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
-      p.strokeWeight(STROKE_WEIGHT);
-      p.noFill();
-
-      p.beginShape();
-      for (let i = 0; i <= sides; i++) {
-        let angle = p.map(i, 0, sides, 0, p.TWO_PI);
-        let vx = p.cos(angle) * SHAPE_SIZE;
-        let vy = p.sin(angle) * SHAPE_SIZE;
-        p.vertex(vx, vy);
-      }
-      p.endShape();
-
-      p.pop();
+      // Draw this instance
+      drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, scaleY, alpha);
     }
   }
 
@@ -1971,33 +1985,32 @@ const evolutionSketch = (p) => {
   function createGradient() {
     gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
     gradientBuffer.pixelDensity(1);
+    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+  }
 
-    const shader = gradientBuffer.createShader(vertShader, fragShader);
-    gradientBuffer.shader(shader);
-
-    shader.setUniform('uResolution', [p.width, p.height]);
-    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    shader.setUniform('uCenterColor', [
+  function drawGradient() {
+    gradientBuffer.shader(gradientShader);
+    gradientShader.setUniform('uResolution', [p.width, p.height]);
+    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    gradientShader.setUniform('uCenterColor', [
       GRADIENT_CENTER_COLOR.r / 255.0,
       GRADIENT_CENTER_COLOR.g / 255.0,
       GRADIENT_CENTER_COLOR.b / 255.0
     ]);
-    shader.setUniform('uEdgeColor', [
+    gradientShader.setUniform('uEdgeColor', [
       GRADIENT_EDGE_COLOR.r / 255.0,
       GRADIENT_EDGE_COLOR.g / 255.0,
       GRADIENT_EDGE_COLOR.b / 255.0
     ]);
-    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    shader.setUniform('uPower', GRADIENT_POWER);
-    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+    gradientShader.setUniform('uPower', GRADIENT_POWER);
+    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
     gradientBuffer.rectMode(p.CENTER);
     gradientBuffer.noStroke();
     gradientBuffer.rect(0, 0, p.width, p.height);
-  }
 
-  function drawGradient() {
     p.image(gradientBuffer, 0, 0);
   }
 
@@ -2005,51 +2018,43 @@ const evolutionSketch = (p) => {
   // P5.JS LIFECYCLE
   // ============================================
 
-  const { observer } = createVisibilityObserver(p);
-
-  let shapes = [];
-
   p.setup = () => {
     const container = document.getElementById('evolution-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('evolution-canvas');
 
     createGradient();
-
-    // Initialize shapes
-    for (let i = 0; i < SHAPE_COUNT; i++) {
-      shapes.push(new MorphingShape(i));
-    }
-
     observer.observe(container);
   };
 
   p.draw = () => {
-    // Calculate morph progress (oscillates between 0 and 1)
-    let morphProgress = (p.sin(animationTime / MORPH_CYCLE_DURATION * p.TWO_PI) + 1) / 2;
-
     // Draw gradient background
     drawGradient();
 
-    // Apply fade effect
-    let fadeR = p.lerp(GRADIENT_CENTER_COLOR.r, GRADIENT_EDGE_COLOR.r, morphProgress);
-    let fadeG = p.lerp(GRADIENT_CENTER_COLOR.g, GRADIENT_EDGE_COLOR.g, morphProgress);
-    let fadeB = p.lerp(GRADIENT_CENTER_COLOR.b, GRADIENT_EDGE_COLOR.b, morphProgress);
-    p.fill(fadeR, fadeG, fadeB, FADE_BACKGROUND_ALPHA);
-    p.noStroke();
-    p.rect(0, 0, p.width, p.height);
-
+    // Increment animation time
     animationTime += 1;
 
-    // Calculate center point
-    let centerX = p.width / 2;
-    let centerY = p.height / 2;
+    // Draw left group
+    drawLissajousGroup(
+      LEFT_CENTER_X,
+      LEFT_CENTER_Y,
+      LEFT_INSTANCE_COUNT,
+      LEFT_BASE_SIZE,
+      LEFT_SCALE_Y_MIN,
+      LEFT_SCALE_Y_MAX,
+      LEFT_ANIMATION_SPEED
+    );
 
-    // Update and draw shapes
-    shapes.forEach(shape => {
-      shape.update();
-      shape.display(centerX, centerY, morphProgress);
-    });
+    // Draw right group
+    drawLissajousGroup(
+      RIGHT_CENTER_X,
+      RIGHT_CENTER_Y,
+      RIGHT_INSTANCE_COUNT,
+      RIGHT_BASE_SIZE,
+      RIGHT_SCALE_Y_MIN,
+      RIGHT_SCALE_Y_MAX,
+      RIGHT_ANIMATION_SPEED
+    );
   };
 
   p.windowResized = () => {
