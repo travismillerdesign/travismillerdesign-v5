@@ -23,165 +23,162 @@ const createVisibilityObserver = (sketch, threshold = 0.1) => {
 };
 
 // ============================================
-// 1. HERO SKETCH - Animated Tile Grid
+// 1. HERO SKETCH - Oscilloscope Lissajous Curves
 // ============================================
-// Theme: Grid of tiles scaling up in circular wave from bottom-right
-// Colors: Sky Blue (#87CEEB) to Deep Blue (#003366)
+// Theme: Animated Lissajous curves (oscilloscope patterns) with grey strokes
+// Interactive: Mouse controls frequency ratios; auto-changes every 4 seconds when idle
 
 const heroSketch = (p) => {
-  let tiles = [];
-  let cols, rows;
-  const TILE_SIZE = 20;
-  const TILE_GAP = 0;
-  const TILE_SPACING = TILE_SIZE + TILE_GAP; // Total space per tile including gap
-  const TILE_CORNER_RADIUS = 1;
-  const ANIMATION_DURATION = 1000; // milliseconds
-  const WAVE_SPEED = 0.5; // Speed of the wave propagation
-  const HOVER_RADIUS = 300; // Radius for mouse hover effect
-  const HOVER_SCALE = 0.1; // Scale down to 70% on hover
+  let currentFreqX = 3;  // Current X frequency ratio
+  let currentFreqY = 2;  // Current Y frequency ratio
+  let lastChangeTime = 0; // Track when frequency last changed
+  let animationOffset = 0; // For animating the gaps
+  let mouseIdleTime = 0;  // Track how long since mouse movement
+  let lastMouseX = -1;
+  let lastMouseY = -1;
 
-  let animationStartTime;
-  let maxDistance; // Maximum distance from bottom-right corner
+  const CHANGE_INTERVAL = 2000; // Change frequency every 4 seconds when idle
+  const CURVE_RESOLUTION = 2000; // Number of points in the curve
+  const GAP_SIZE = 0.03; // Size of gaps as fraction of curve (15%)
+  const NUM_GAPS = 4; // Number of gaps in the curve
+  const GAP_ANIMATION_SPEED = 0.001; // Speed at which gaps move around the curve
 
-  // Colors: Light Sky Blue to Deep Blue
-  const LIGHT_BLUE = { r: 135, g: 206, b: 235 }; // #87CEEB
-  const DEEP_BLUE = { r: 0, g: 51, b: 102 }; // #003366
-
-  class Tile {
-    constructor(col, row, x, y) {
-      this.col = col;
-      this.row = row;
-      this.x = x;
-      this.y = y;
-      this.scale = 0; // Start at 0% scale
-      this.targetScale = 0;
-      this.baseScale = 0; // Start at 0% scale
-
-      // Calculate distance from bottom-right corner
-      this.distanceFromOrigin = p.dist(col, row, cols - 1, rows - 1);
-
-      // Calculate color based on position (gradient from bottom-right to top-left)
-      let gradientProgress = p.dist(col, row, cols - 1, rows - 1) / maxDistance;
-      this.r = p.lerp(LIGHT_BLUE.r, DEEP_BLUE.r, gradientProgress);
-      this.g = p.lerp(LIGHT_BLUE.g, DEEP_BLUE.g, gradientProgress);
-      this.b = p.lerp(LIGHT_BLUE.b, DEEP_BLUE.b, gradientProgress);
-    }
-
-    update(currentTime, mouseX, mouseY) {
-      // Calculate noise-based delay offset for organic feel (continuous)
-      let noiseOffset = p.noise(this.col * 0.1, this.row * 0.1, currentTime * 0.0001) * 200;
-
-      // Calculate animation progress
-      let timeSinceStart = currentTime - animationStartTime;
-      let waveDelay = this.distanceFromOrigin * WAVE_SPEED * 100 + noiseOffset;
-      let animationProgress = (timeSinceStart - waveDelay) / ANIMATION_DURATION;
-
-      // Ease in-out cubic function
-      let easeProgress = animationProgress < 0.5
-        ? 4 * animationProgress * animationProgress * animationProgress
-        : 1 - p.pow(-2 * animationProgress + 2, 3) / 2;
-
-      // Update base scale from animation
-      if (animationProgress >= 0 && animationProgress <= 1) {
-        this.baseScale = p.constrain(easeProgress, 0, 1);
-      } else if (animationProgress > 1) {
-        this.baseScale = 1;
-      } else {
-        this.baseScale = 0; // Before animation starts
-      }
-
-      // Calculate mouse hover effect
-      let hoverScale = 1;
-      if (mouseX > 0 && mouseY > 0) {
-        let distToMouse = p.dist(this.x, this.y, mouseX, mouseY);
-        if (distToMouse < HOVER_RADIUS) {
-          let hoverAmount = p.map(distToMouse, 0, HOVER_RADIUS, 1, 0);
-          hoverScale = p.lerp(1, HOVER_SCALE, hoverAmount);
-        }
-      }
-
-      // Combine base scale and hover scale
-      this.targetScale = this.baseScale * hoverScale;
-
-      // Smooth interpolation to target scale
-      this.scale = p.lerp(this.scale, this.targetScale, 0.15);
-    }
-
-    display() {
-      p.push();
-      p.translate(this.x, this.y);
-      p.scale(this.scale);
-
-      p.noStroke();
-      p.fill(this.r, this.g, this.b);
-      p.rectMode(p.CENTER);
-      p.rect(0, 0, TILE_SIZE, TILE_SIZE, TILE_CORNER_RADIUS);
-
-      p.pop();
-    }
-  }
+  // Grey color palette for strokes
+  const GREYS = [
+    { r: 100, g: 100, b: 100, alpha: 180 }
+    // { r: 120, g: 120, b: 120, alpha: 150 },
+    // { r: 140, g: 140, b: 140, alpha: 120 },
+  ];
 
   const { observer } = createVisibilityObserver(p);
+
+  // Get interesting frequency ratios
+  const getRandomFrequency = () => {
+    const ratios = [3, 4, 5, 6, 8, 10, 20, 32];
+    return ratios[Math.floor(p.random(ratios.length))];
+  };
 
   p.setup = () => {
     const container = document.getElementById('hero-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('hero-canvas');
 
-    // Initialize grid
-    cols = p.ceil(p.width / TILE_SPACING);
-    rows = p.ceil(p.height / TILE_SPACING);
-    maxDistance = p.dist(0, 0, cols - 1, rows - 1);
-
-    // Create tiles
-    tiles = [];
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        let x = col * TILE_SPACING + TILE_SIZE / 2;
-        let y = row * TILE_SPACING + TILE_SIZE / 2;
-        tiles.push(new Tile(col, row, x, y));
-      }
-    }
-
-    // Start animation
-    animationStartTime = p.millis();
-
+    lastChangeTime = p.millis();
     observer.observe(container);
   };
 
   p.draw = () => {
-    // White background
+    // White background with fade for trail effect
+    // p.fill(255, 120);
     p.background(255);
+    p.rect(0, 0, p.width, p.height);
 
     let currentTime = p.millis();
 
-    // Update and draw tiles
-    tiles.forEach(tile => {
-      tile.update(currentTime, p.mouseX, p.mouseY);
-      tile.display();
+    // Check if mouse has moved
+    let mousePresent = p.mouseX > 0 && p.mouseY > 0 &&
+                       p.mouseX < p.width && p.mouseY < p.height;
+
+    if (mousePresent && (p.mouseX !== lastMouseX || p.mouseY !== lastMouseY)) {
+      mouseIdleTime = currentTime;
+      lastMouseX = p.mouseX;
+      lastMouseY = p.mouseY;
+
+      // Mouse controls frequency ratios - snap to integers for closed loops
+      currentFreqX = Math.round(p.map(p.mouseX, 0, p.width, 1, 6));
+      currentFreqY = Math.round(p.map(p.mouseY, 0, p.height, 1, 6));
+    } else {
+      // Auto-change frequency every 4 seconds when mouse is idle
+      if (currentTime - mouseIdleTime > CHANGE_INTERVAL) {
+        if (currentTime - lastChangeTime > CHANGE_INTERVAL) {
+          currentFreqX = getRandomFrequency();
+          currentFreqY = getRandomFrequency();
+          lastChangeTime = currentTime;
+        }
+      }
+    }
+
+    // Animate the gaps moving around the curve
+    animationOffset += GAP_ANIMATION_SPEED;
+
+    // Calculate uniform margins based on smallest dimension
+    let minDimension = Math.min(p.width, p.height);
+    let margin = minDimension * 0.15; // 10% margin
+
+    // Calculate available space with uniform margins
+    let availableWidth = p.width - (margin * 2);
+    let availableHeight = p.height - (margin * 2);
+    let sizeX = availableWidth / 2;
+    let sizeY = availableHeight / 2;
+
+    // Center the pattern
+    let centerX = p.width / 2;
+    let centerY = p.height / 2;
+
+    p.push();
+    p.translate(centerX, centerY);
+
+    // Draw multiple layers of the curve with different grey shades
+    GREYS.forEach((grey, layerIndex) => {
+      p.noFill();
+      p.stroke(grey.r, grey.g, grey.b, grey.alpha);
+      p.strokeWeight(2 - layerIndex * 0.3);
+
+      let offset = layerIndex * 0.1;
+
+      // Draw the Lissajous curve in segments with gaps
+      let isDrawing = false;
+
+      for (let i = 0; i <= CURVE_RESOLUTION; i++) {
+          let t = i / CURVE_RESOLUTION;
+
+          // Check if this point should be drawn (not in a gap)
+          let normalizedT = (t + animationOffset + offset) % 1;
+          let shouldDraw = false;
+
+          for (let s = 0; s < NUM_GAPS; s++) {
+            let gapStart = s / NUM_GAPS;
+            let gapEnd = (s + 1 - GAP_SIZE) / NUM_GAPS;
+
+            if (normalizedT >= gapStart && normalizedT <= gapEnd) {
+              shouldDraw = true;
+              break;
+            }
+          }
+
+          // Lissajous curve parametric equations
+          let angle = t * p.TWO_PI;
+          let x = sizeX * p.sin(currentFreqX * angle + offset);
+          let y = sizeY * p.sin(currentFreqY * angle);
+
+          if (shouldDraw) {
+            if (!isDrawing) {
+              // Start a new segment
+              p.beginShape();
+              isDrawing = true;
+            }
+            p.vertex(x, y);
+          } else {
+            if (isDrawing) {
+              // End the current segment
+              p.endShape();
+              isDrawing = false;
+            }
+          }
+        }
+
+        // Close any open shape
+        if (isDrawing) {
+          p.endShape();
+        }
     });
+
+    p.pop();
   };
 
   p.windowResized = () => {
     const container = document.getElementById('hero-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-
-    // Reinitialize grid
-    cols = p.ceil(p.width / TILE_SPACING);
-    rows = p.ceil(p.height / TILE_SPACING);
-    maxDistance = p.dist(0, 0, cols - 1, rows - 1);
-
-    tiles = [];
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        let x = col * TILE_SPACING + TILE_SIZE / 2;
-        let y = row * TILE_SPACING + TILE_SIZE / 2;
-        tiles.push(new Tile(col, row, x, y));
-      }
-    }
-
-    // Restart animation
-    animationStartTime = p.millis();
   };
 };
 
