@@ -26,16 +26,13 @@ const createVisibilityObserver = (sketch, threshold = 0.1) => {
 // 1. HERO SKETCH - Oscilloscope Lissajous Curves
 // ============================================
 // Theme: Animated Lissajous curves (oscilloscope patterns) with grey strokes
-// Interactive: Mouse controls frequency ratios; auto-changes every 4 seconds when idle
+// Frequency ratios auto-change at regular intervals
 
 const heroSketch = (p) => {
   let currentFreqX = 3;  // Current X frequency ratio
   let currentFreqY = 2;  // Current Y frequency ratio
   let lastChangeTime = 0; // Track when frequency last changed
   let animationOffset = 0; // For animating the gaps
-  let mouseIdleTime = 0;  // Track how long since mouse movement
-  let lastMouseX = -1;
-  let lastMouseY = -1;
 
   const CHANGE_INTERVAL = 2000; // Change frequency every 4 seconds when idle
   const CURVE_RESOLUTION = 2000; // Number of points in the curve
@@ -69,33 +66,16 @@ const heroSketch = (p) => {
 
   p.draw = () => {
     // White background with fade for trail effect
-    // p.fill(255, 120);
-    p.background(255);
+    p.fill(255, 120);
     p.rect(0, 0, p.width, p.height);
 
     let currentTime = p.millis();
 
-    // Check if mouse has moved
-    let mousePresent = p.mouseX > 0 && p.mouseY > 0 &&
-                       p.mouseX < p.width && p.mouseY < p.height;
-
-    if (mousePresent && (p.mouseX !== lastMouseX || p.mouseY !== lastMouseY)) {
-      mouseIdleTime = currentTime;
-      lastMouseX = p.mouseX;
-      lastMouseY = p.mouseY;
-
-      // Mouse controls frequency ratios - snap to integers for closed loops
-      currentFreqX = Math.round(p.map(p.mouseX, 0, p.width, 1, 6));
-      currentFreqY = Math.round(p.map(p.mouseY, 0, p.height, 1, 6));
-    } else {
-      // Auto-change frequency every 4 seconds when mouse is idle
-      if (currentTime - mouseIdleTime > CHANGE_INTERVAL) {
-        if (currentTime - lastChangeTime > CHANGE_INTERVAL) {
-          currentFreqX = getRandomFrequency();
-          currentFreqY = getRandomFrequency();
-          lastChangeTime = currentTime;
-        }
-      }
+    // Auto-change frequency at regular intervals
+    if (currentTime - lastChangeTime > CHANGE_INTERVAL) {
+      currentFreqX = getRandomFrequency();
+      currentFreqY = getRandomFrequency();
+      lastChangeTime = currentTime;
     }
 
     // Animate the gaps moving around the curve
