@@ -1049,6 +1049,12 @@ const implementationSketch = (p) => {
   let gradientShader;
   let wavePhase = 0;
 
+  // Dynamic arc control
+  let currentArcAmount = 0;
+  let currentArcDirection = 1;
+  let targetArcAmount = 0;
+  let targetArcDirection = 1;
+
   // ============================================
   // CUSTOMIZATION VARIABLES
   // ============================================
@@ -1072,10 +1078,15 @@ const implementationSketch = (p) => {
   const INTERMEDIATE_MAX_SIZE = 400;                     // Max size at center when edge ellipses are flat (width/height = 0)
 
   // Path Configuration
-  const PATH_ARC_AMOUNT = 0.03;                          // Curvature (0 = straight, 1 = high arc)
-  const PATH_ARC_DIRECTION = -1;                          // Arc direction (1 = up/right, -1 = down/left)
-  const PATH_SPACING_TAPER_INTENSITY = 1;              // Spacing variation (0 = even spacing, 1 = max variation)
-  const PATH_SPACING_TAPER_CURVE = "parabolic";               // "linear", "parabolic", "sine", "exponential"
+  const PATH_ARC_MAX_AMOUNT = 0.15;                      // Maximum arc curvature when mouse at edge
+  const PATH_ARC_MOUSE_CONTROL = true;                   // Enable/disable mouse control for arc
+  const PATH_ARC_MOUSE_INTENSITY = 0.3;                  // How much mouse affects arc (0 = no effect, 1 = full effect)
+  const PATH_ARC_MOUSE_MOMENTUM = 0.05;                  // Arc change smoothness (0.01 = very smooth, 1 = instant)
+  const PATH_ARC_STRENGTH_MULTIPLIER = 1.0;              // Global multiplier for arc strength (0 = no arc, 2 = double arc)
+  const PATH_ARC_DEFAULT_AMOUNT = 0.03;                  // Default arc when mouse not in canvas
+  const PATH_ARC_DEFAULT_DIRECTION = -1;                 // Default direction when mouse not in canvas (1 = up/right, -1 = down/left)
+  const PATH_SPACING_TAPER_INTENSITY = 1;                // Spacing variation (0 = even spacing, 1 = max variation)
+  const PATH_SPACING_TAPER_CURVE = "parabolic";          // "linear", "parabolic", "sine", "exponential"
 
   // Wave Animation Configuration
   const WAVE_FREQUENCY = 1.5;                              // Number of complete waves
@@ -1244,15 +1255,15 @@ const implementationSketch = (p) => {
   }
 
   // Calculate position along path with arc
-  function calculatePosition(t) {
+  function calculatePosition(t, arcAmount, arcDirection) {
     // Linear interpolation for base position
     let x = p.lerp(ELLIPSE_1_X, ELLIPSE_2_X, t);
     let y = p.lerp(ELLIPSE_1_Y, ELLIPSE_2_Y, t);
 
     // Apply arc offset perpendicular to line
-    if (PATH_ARC_AMOUNT > 0) {
+    if (arcAmount > 0) {
       // Calculate perpendicular offset using sine curve
-      let arcOffset = PATH_ARC_AMOUNT * p.sin(t * p.PI) * PATH_ARC_DIRECTION;
+      let arcOffset = arcAmount * p.sin(t * p.PI) * arcDirection;
 
       // Calculate perpendicular direction to line
       let dx = ELLIPSE_2_X - ELLIPSE_1_X;
@@ -1432,6 +1443,33 @@ const implementationSketch = (p) => {
     // Update wave animation
     wavePhase += WAVE_SPEED;
 
+    // Update arc based on mouse position with momentum and intensity
+    if (PATH_ARC_MOUSE_CONTROL && p.mouseX >= 0 && p.mouseX <= p.width && p.mouseY >= 0 && p.mouseY <= p.height) {
+      // Map mouseX from [0, width] to [-1, 1]
+      let mouseNormalized = (p.mouseX / p.width) * 2.0 - 1.0;
+
+      // Apply intensity to mouse influence
+      let mouseInfluence = mouseNormalized * PATH_ARC_MOUSE_INTENSITY;
+
+      // Calculate target arc amount (0 at center, max at edges) with strength multiplier
+      targetArcAmount = Math.abs(mouseInfluence) * PATH_ARC_MAX_AMOUNT * PATH_ARC_STRENGTH_MULTIPLIER;
+
+      // Calculate target direction based on which side of center
+      targetArcDirection = mouseInfluence >= 0 ? 1 : -1;
+    } else {
+      // Mouse outside canvas, use defaults with strength multiplier
+      targetArcAmount = PATH_ARC_DEFAULT_AMOUNT * PATH_ARC_STRENGTH_MULTIPLIER;
+      targetArcDirection = PATH_ARC_DEFAULT_DIRECTION;
+    }
+
+    // Smoothly interpolate current arc amount toward target using momentum
+    currentArcAmount += (targetArcAmount - currentArcAmount) * PATH_ARC_MOUSE_MOMENTUM;
+
+    // Update direction when arc is very small to avoid abrupt flips
+    if (Math.abs(currentArcAmount) < 0.01) {
+      currentArcDirection = targetArcDirection;
+    }
+
     // Calculate total number of ellipses
     let totalEllipses = INTERMEDIATE_STEPS + 2;
 
@@ -1444,8 +1482,8 @@ const implementationSketch = (p) => {
       // Calculate redistributed position along path with spacing taper
       let t = calculatePathPosition(i, totalEllipses);
 
-      // Get position with arc
-      let pos = calculatePosition(t);
+      // Get position with dynamic arc
+      let pos = calculatePosition(t, currentArcAmount, currentArcDirection);
       let x = pos.x * p.width;
       let y = pos.y * p.height;
 
