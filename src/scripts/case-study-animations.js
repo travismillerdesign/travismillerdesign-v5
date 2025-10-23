@@ -43,7 +43,7 @@ const heroSketch = (p) => {
   const GAP_ANIMATION_SPEED = 0.001; // Speed at which gaps move around the curve
 
   // Radial Gradient configuration (RGB values 0-255)
-  const GRADIENT_CENTER_COLOR = { r: 100, g: 200, b: 255 }; // Color at center
+  const GRADIENT_CENTER_COLOR = { r: 100  , g: 200, b: 255 }; // Color at center
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // Color at edges
   const GRADIENT_CENTER_X = 0.5; // X position of gradient center (0-1, where 0.5 = canvas center)
   const GRADIENT_CENTER_Y = 0.5; // Y position of gradient center (0-1, where 0.5 = canvas center)
@@ -167,7 +167,7 @@ const heroSketch = (p) => {
 
   // Get interesting frequency ratios
   const getRandomFrequency = () => {
-    const ratios = [3, 4, 5, 6, 8, 10, 20, 32];
+    const ratios = [3, 4, 5, 6, 8, 16, 32];
     return ratios[Math.floor(p.random(ratios.length))];
   };
 
@@ -252,6 +252,7 @@ const heroSketch = (p) => {
     // Center the pattern
     p.push();
     p.translate(p.width / 2, p.height / 2);
+    p.scale(-1,1);
 
     // Draw multiple layers of the curve with different grey shades
     GREYS.forEach((grey, layerIndex) => {
