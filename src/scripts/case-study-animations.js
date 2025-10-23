@@ -1039,43 +1039,66 @@ const foundationPrinciplesSketch = (p) => {
 };
 
 // ============================================
-// 4. IMPLEMENTATION SKETCH - Geometric Assembly
+// 4. IMPLEMENTATION SKETCH - Interpolated Ellipses
 // ============================================
-// Theme: Geometric shapes assembling/disassembling in sequence
-// Template: Matches hero sketch structure with conic/angular gradient
+// Theme: Ellipses morphing between two control points with wave animation
+// Gradient: Rotated radial gradient (magenta center to white edge)
 
 const implementationSketch = (p) => {
-  let animationTime = 0;
   let gradientBuffer;
   let gradientShader;
-  let shapes = [];
+  let wavePhase = 0;
 
-  // Animation configuration
-  const SHAPE_COUNT = 12;
-  const ASSEMBLY_SPEED = 0.015; // Speed of assembly animation
-  const ROTATION_SPEED = 0.01; // Shape rotation speed
-  const RADIUS = 180; // Distance from center
+  // ============================================
+  // CUSTOMIZATION VARIABLES
+  // ============================================
 
-  // Radial Gradient Configuration (Standardized - matches hero sketch)
+  // Control Ellipse 1 Configuration (Bottom-Left)
+  const ELLIPSE_1_X = 0.15;                              // X position (0-1)
+  const ELLIPSE_1_Y = 0.85;                              // Y position (0-1)
+  const ELLIPSE_1_WIDTH = 120;                           // Width in pixels
+  const ELLIPSE_1_HEIGHT = 60;                           // Height in pixels
+
+  // Control Ellipse 2 Configuration (Top-Right)
+  const ELLIPSE_2_X = 0.85;                              // X position (0-1)
+  const ELLIPSE_2_Y = 0.15;                              // Y position (0-1)
+  const ELLIPSE_2_WIDTH = 60;                            // Width in pixels
+  const ELLIPSE_2_HEIGHT = 120;                          // Height in pixels
+
+  // Intermediate Ellipses Configuration
+  const INTERMEDIATE_STEPS = 5;                          // Number of ellipses between control ellipses
+  const INTERMEDIATE_SCALE_MULTIPLIER = 0.5;             // Scale at center (0.5 = half size)
+  const INTERMEDIATE_SCALE_CURVE = "parabolic";          // "linear", "parabolic", "sine"
+
+  // Path Configuration
+  const PATH_ARC_AMOUNT = 0.15;                          // Curvature (0 = straight, 1 = high arc)
+  const PATH_ARC_DIRECTION = 1;                          // Arc direction (1 = up/right, -1 = down/left)
+
+  // Wave Animation Configuration
+  const WAVE_FREQUENCY = 2;                              // Number of complete waves
+  const WAVE_AMPLITUDE = 0.3;                            // Size variation (0.3 = ±30%)
+  const WAVE_SPEED = 0.01;                               // Speed of wave movement
+
+  // Stroke Style (matching hero sketch)
+  const STROKE_COLOR = { r: 0, g: 0, b: 0 };            // Black
+  const STROKE_WEIGHT = 1.5;                             // Line thickness
+  const STROKE_ALPHA = 100;                              // Opacity
+
+  // Radial Gradient Configuration
   const GRADIENT_CENTER_COLOR = { r: 236, g: 72, b: 153 }; // Magenta (center)
-  const GRADIENT_EDGE_COLOR = { r: 20, g: 184, b: 166 }; // Teal (edge)
+  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // White (edge)
   const GRADIENT_CENTER_X = 0.5;                         // X position (0-1)
   const GRADIENT_CENTER_Y = 0.5;                         // Y position (0-1)
   const GRADIENT_RADIUS_SCALE_X = 0.5;                   // X radius scale
   const GRADIENT_RADIUS_SCALE_Y = 0.5;                   // Y radius scale
+  const GRADIENT_ROTATION_ANGLE = -45;                   // Rotation angle in degrees (0 = no rotation)
   const GRADIENT_POWER = 1.0;                            // Falloff power
   const GRADIENT_EDGE_EASE = 0.25;                       // Edge ease amount
   const GRADIENT_SCATTER_INTENSITY = 0.035;              // Scatter intensity
 
-  // Stroke style configuration
-  const STROKE_COLOR = { r: 30, g: 20, b: 40 };
-  const STROKE_WEIGHT = 2;
-  const STROKE_ALPHA = 160;
-  const SHAPE_SIZE = 35;
-
   const { observer } = createVisibilityObserver(p);
 
-  // Shader Code (Standardized - matches hero sketch)
+  // Shader Code (Standardized with rotation support)
   const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
@@ -1097,6 +1120,7 @@ const implementationSketch = (p) => {
     uniform vec3 uCenterColor;
     uniform vec3 uEdgeColor;
     uniform vec2 uRadiusScale;
+    uniform float uRotation;
     uniform float uPower;
     uniform float uEdgeEase;
     uniform float uScatterIntensity;
@@ -1134,6 +1158,17 @@ const implementationSketch = (p) => {
       vec2 pos = vTexCoord;
       vec2 center = uCenter;
       vec2 delta = pos - center;
+
+      // Apply rotation to delta vector
+      if (uRotation != 0.0) {
+        float cosR = cos(uRotation);
+        float sinR = sin(uRotation);
+        float rotatedX = delta.x * cosR - delta.y * sinR;
+        float rotatedY = delta.x * sinR + delta.y * cosR;
+        delta = vec2(rotatedX, rotatedY);
+      }
+
+      // Apply scale
       delta.x /= uRadiusScale.x;
       delta.y /= uRadiusScale.y;
       float dist = length(delta);
@@ -1155,11 +1190,78 @@ const implementationSketch = (p) => {
     }
   `;
 
-  const createGradient = () => {
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
-    gradientBuffer.shader(gradientShader);
+  // ============================================
+  // CALCULATION FUNCTIONS
+  // ============================================
 
+  // Calculate position along path with arc
+  function calculatePosition(t) {
+    // Linear interpolation for base position
+    let x = p.lerp(ELLIPSE_1_X, ELLIPSE_2_X, t);
+    let y = p.lerp(ELLIPSE_1_Y, ELLIPSE_2_Y, t);
+
+    // Apply arc offset perpendicular to line
+    if (PATH_ARC_AMOUNT > 0) {
+      // Calculate perpendicular offset using sine curve
+      let arcOffset = PATH_ARC_AMOUNT * p.sin(t * p.PI) * PATH_ARC_DIRECTION;
+
+      // Calculate perpendicular direction to line
+      let dx = ELLIPSE_2_X - ELLIPSE_1_X;
+      let dy = ELLIPSE_2_Y - ELLIPSE_1_Y;
+      let length = p.sqrt(dx * dx + dy * dy);
+
+      // Perpendicular vector (rotated 90 degrees)
+      let perpX = -dy / length;
+      let perpY = dx / length;
+
+      // Apply arc offset
+      x += perpX * arcOffset;
+      y += perpY * arcOffset;
+    }
+
+    return { x, y };
+  }
+
+  // Calculate scale modifier based on position curve
+  function calculateScaleModifier(t) {
+    if (INTERMEDIATE_SCALE_MULTIPLIER >= 1.0) {
+      return 1.0; // No scaling
+    }
+
+    let modifier = 1.0;
+
+    if (INTERMEDIATE_SCALE_CURVE === "parabolic") {
+      // Parabolic curve - smallest at center
+      modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * 4 * (t - 0.5) * (t - 0.5);
+    } else if (INTERMEDIATE_SCALE_CURVE === "sine") {
+      // Sine curve - smallest at center
+      modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * p.sin(t * p.PI);
+    } else {
+      // Linear - no curve
+      modifier = 1.0;
+    }
+
+    return modifier;
+  }
+
+  // Calculate wave scale multiplier for animation
+  function calculateWaveScale(index, totalEllipses) {
+    let waveValue = p.sin(wavePhase + index * WAVE_FREQUENCY * p.TWO_PI / totalEllipses);
+    return 1.0 + waveValue * WAVE_AMPLITUDE;
+  }
+
+  // ============================================
+  // GRADIENT FUNCTIONS
+  // ============================================
+
+  function createGradient() {
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    gradientBuffer.pixelDensity(1);
+    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+  }
+
+  function drawGradient() {
+    gradientBuffer.shader(gradientShader);
     gradientShader.setUniform('uResolution', [p.width, p.height]);
     gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
     gradientShader.setUniform('uCenterColor', [
@@ -1173,6 +1275,7 @@ const implementationSketch = (p) => {
       GRADIENT_EDGE_COLOR.b / 255.0
     ]);
     gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+    gradientShader.setUniform('uRotation', p.radians(GRADIENT_ROTATION_ANGLE));
     gradientShader.setUniform('uPower', GRADIENT_POWER);
     gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
     gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
@@ -1180,11 +1283,13 @@ const implementationSketch = (p) => {
     gradientBuffer.rectMode(p.CENTER);
     gradientBuffer.noStroke();
     gradientBuffer.rect(0, 0, p.width, p.height);
-  };
 
-  const drawGradient = () => {
     p.image(gradientBuffer, 0, 0);
-  };
+  }
+
+  // ============================================
+  // P5.JS LIFECYCLE
+  // ============================================
 
   p.setup = () => {
     const container = document.getElementById('implementation-canvas');
@@ -1192,56 +1297,51 @@ const implementationSketch = (p) => {
     canvas.parent('implementation-canvas');
 
     createGradient();
-
-    // Create shapes in circular arrangement
-    for (let i = 0; i < SHAPE_COUNT; i++) {
-      shapes.push({
-        angle: (i / SHAPE_COUNT) * p.TWO_PI,
-        index: i,
-        offset: i * 0.1
-      });
-    }
-
     observer.observe(container);
   };
 
   p.draw = () => {
+    // Draw rotated gradient background
     drawGradient();
 
-    animationTime += ASSEMBLY_SPEED;
+    // Update wave animation
+    wavePhase += WAVE_SPEED;
 
-    p.push();
-    p.translate(p.width / 2, p.height / 2);
+    // Calculate total number of ellipses
+    let totalEllipses = INTERMEDIATE_STEPS + 2;
+
+    // Draw all ellipses
     p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
     p.strokeWeight(STROKE_WEIGHT);
+    p.strokeCap(p.ROUND);
     p.noFill();
 
-    // Draw assembling/disassembling shapes
-    shapes.forEach(shape => {
-      let assemblyProgress = (p.sin(animationTime + shape.offset) + 1) / 2;
-      let currentRadius = RADIUS * assemblyProgress;
-      let rotation = animationTime * ROTATION_SPEED + shape.angle;
+    for (let i = 0; i < totalEllipses; i++) {
+      // Calculate position along path (0 to 1)
+      let t = i / (totalEllipses - 1);
 
-      let x = p.cos(shape.angle) * currentRadius;
-      let y = p.sin(shape.angle) * currentRadius;
+      // Get position with arc
+      let pos = calculatePosition(t);
+      let x = pos.x * p.width;
+      let y = pos.y * p.height;
 
-      p.push();
-      p.translate(x, y);
-      p.rotate(rotation);
+      // Interpolate dimensions from ellipse 1 to ellipse 2
+      let baseWidth = p.lerp(ELLIPSE_1_WIDTH, ELLIPSE_2_WIDTH, t);
+      let baseHeight = p.lerp(ELLIPSE_1_HEIGHT, ELLIPSE_2_HEIGHT, t);
 
-      // Alternate between different shapes
-      if (shape.index % 3 === 0) {
-        p.rect(-SHAPE_SIZE / 2, -SHAPE_SIZE / 2, SHAPE_SIZE, SHAPE_SIZE);
-      } else if (shape.index % 3 === 1) {
-        p.circle(0, 0, SHAPE_SIZE);
-      } else {
-        p.triangle(-SHAPE_SIZE / 2, SHAPE_SIZE / 2, SHAPE_SIZE / 2, SHAPE_SIZE / 2, 0, -SHAPE_SIZE / 2);
-      }
+      // Apply scale modifier based on position curve
+      let scaleModifier = calculateScaleModifier(t);
 
-      p.pop();
-    });
+      // Apply wave animation
+      let waveScale = calculateWaveScale(i, totalEllipses);
 
-    p.pop();
+      // Calculate final dimensions
+      let width = baseWidth * scaleModifier * waveScale;
+      let height = baseHeight * scaleModifier * waveScale;
+
+      // Draw ellipse
+      p.ellipse(x, y, width, height);
+    }
   };
 
   p.windowResized = () => {
