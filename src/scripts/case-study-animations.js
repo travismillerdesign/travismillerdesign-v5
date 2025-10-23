@@ -1802,38 +1802,38 @@ const evolutionSketch = (p) => {
   // ============================================
 
   // Left Group Configuration
-  const LEFT_INSTANCE_COUNT = 5;                    // Number of overlayed infinities
-  const LEFT_BASE_SIZE = 300;                        // Base size of infinity shape
-  const LEFT_SCALE_Y_MIN = -1;                    // Minimum vertical scale (negative for bottom half)
-  const LEFT_SCALE_Y_MAX = 1;                     // Maximum vertical scale (positive for top half)
-  const LEFT_ANIMATION_SPEED = -0.005;               // Rotation speed
-  const LEFT_CENTER_X = 0.25;                       // X position (0-1)
-  const LEFT_CENTER_Y = 0.5;                        // Y position (0-1)
+  const LEFT_INSTANCE_COUNT = 9;                    // Number of overlayed infinities
+  const LEFT_BASE_SIZE = 150;                        // Base size of infinity shape
+  const LEFT_SCALE_Y_MIN = -2;                    // Minimum vertical scale (negative for bottom half)
+  const LEFT_SCALE_Y_MAX = 2;                     // Maximum vertical scale (positive for top half)
+  const LEFT_ANIMATION_SPEED = 0.003;               // Rotation speed
+  const LEFT_CENTER_X = 0.5;                       // X position (0-1)
+  const LEFT_CENTER_Y = 0.2;                        // Y position (0-1)
 
   // Right Group Configuration
-  const RIGHT_INSTANCE_COUNT = 20;                  // Number of overlayed infinities (more than left)
-  const RIGHT_BASE_SIZE = 300;                      // Base size of infinity shape
-  const RIGHT_SCALE_Y_MIN = -1.0;                   // Minimum vertical scale (negative for bottom half)
-  const RIGHT_SCALE_Y_MAX = 1.0;                    // Maximum vertical scale (positive for top half)
-  const RIGHT_ANIMATION_SPEED = -0.001;              // Rotation speed (independent from left)
-  const RIGHT_CENTER_X = 0.75;                      // X position (0-1)
-  const RIGHT_CENTER_Y = 0.5;                       // Y position (0-1)
+  const RIGHT_INSTANCE_COUNT = 30;                  // Number of overlayed infinities (more than left)
+  const RIGHT_BASE_SIZE = 150;                      // Base size of infinity shape
+  const RIGHT_SCALE_Y_MIN = -2;                   // Minimum vertical scale (negative for bottom half)
+  const RIGHT_SCALE_Y_MAX = 2;                    // Maximum vertical scale (positive for top half)
+  const RIGHT_ANIMATION_SPEED = 0.0015;              // Rotation speed (independent from left)
+  const RIGHT_CENTER_X = 0.8;                      // X position (0-1)
+  const RIGHT_CENTER_Y = 0.2;                       // Y position (0-1)
 
   // Lissajous Parameters
   const LISSAJOUS_FREQ_RATIO = 2.0;                 // Frequency ratio for infinity (2:1)
-  const LISSAJOUS_PHASE_OFFSET = Math.PI;           // Phase for infinity shape
+  const LISSAJOUS_PHASE_OFFSET = 0;           // Phase for infinity shape
   const LISSAJOUS_RESOLUTION = 200;                 // Points in curve
   const LISSAJOUS_SCALE_X = 1;                    // Horizontal scale multiplier
 
   // Stroke Style (matching hero sketch)
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };       // Black
   const STROKE_WEIGHT = 1.5;                        // Line thickness
-  const STROKE_ALPHA_MIN = 100;                      // Minimum opacity (far instances)
-  const STROKE_ALPHA_MAX = 100;                     // Maximum opacity (close instances)
+  const STROKE_ALPHA_MIN = 0;                      // Minimum opacity (far instances)
+  const STROKE_ALPHA_MAX = 200;                     // Maximum opacity (close instances)
 
   // Rolling Wheel Effect Configuration
-  const SHOW_STATIC_OUTER_CURVE = true;             // Show static outer "8" at max scale (background)
-  const VISIBILITY_THRESHOLD = 0;                 // Only show instances with scaleY > this (0-1, creates rolling effect)
+  const SHOW_STATIC_OUTER_CURVE = false;             // Show static outer "8" at max scale (background)
+  const VISIBILITY_THRESHOLD = -0.2;                 // Only show instances with scaleY > this (0-1, creates rolling effect)
 
   // Gradient Configuration (Amber + Violet)
   const GRADIENT_CENTER_COLOR = { r: 245, g: 158, b: 11 };  // Amber
@@ -1986,7 +1986,7 @@ const evolutionSketch = (p) => {
   // Draw static outer curve (background element for rolling wheel effect)
   function drawStaticOuterCurve(centerX, centerY, baseSize) {
     // Draw static "8" at maximum scale with very low opacity (background anchor)
-    let alpha = STROKE_ALPHA_MIN * 0.5;  // Even more subtle than minimum
+    let alpha = STROKE_ALPHA_MIN * 1.0;
     drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, 1.0, alpha, true);
   }
 
@@ -1998,6 +1998,7 @@ const evolutionSketch = (p) => {
 
       // Add animation rotation offset (all instances rotate together)
       let animationOffset = (animationTime * animSpeed) % 1.0;
+      // scalePosition = Math.sin(scalePosition * Math.PI * 0.5);
       scalePosition = (scalePosition + animationOffset) % 1.0;
 
       // Map to scale range (creates even spacing for 3D illusion)
@@ -2011,10 +2012,14 @@ const evolutionSketch = (p) => {
       }
 
       // Calculate opacity based on scale (larger = closer = more opaque)
-      let alpha = p.map(scaleY, scaleMin, scaleMax, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
+      let opacityFalloff = scaleY * scaleY;
+      let alpha = p.lerp(STROKE_ALPHA_MAX, STROKE_ALPHA_MIN, opacityFalloff);
+      // if (scaleY < 0) {
+        // alpha = p.map(scaleY, scaleMin, scaleMax, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
+      // }
 
       // Draw this instance
-      drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, scaleY, alpha);
+      drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, -scaleY, alpha);
     }
   }
 
