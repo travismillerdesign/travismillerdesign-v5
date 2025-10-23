@@ -343,34 +343,44 @@ const approachSketch = (p) => {
   const GRADIENT_CENTER_COLOR = { r: 70, g: 210, b: 100 };     // Green (center)
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White (edge)
   const GRADIENT_CENTER_X = 0.5;                               // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.2;                               // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.66;                         // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 1.25;                         // Y radius scale
-  const GRADIENT_POWER = 1;                                    // Falloff power
+  const GRADIENT_CENTER_Y = 0;                               // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.5;                         // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 1;                         // Y radius scale
+  const GRADIENT_POWER = 1.5;                                    // Falloff power
   const GRADIENT_EDGE_EASE = 1;                                // Edge ease amount
   const GRADIENT_SCATTER_INTENSITY = 0.02;                     // Scatter intensity
 
   // Fractal Tree Configuration
-  const TREE_ANGLE = 60;                                       // Branch angle in degrees (wider spread to reduce overlap)
   const TREE_MAX_DEPTH = 10;                                   // Maximum recursion depth
+
+  // Mouse-Controlled Tree Angle Configuration
+  const TREE_ANGLE_MIN = 10;                                    // Minimum angle (top of canvas)
+  const TREE_ANGLE_MAX = 30;                                   // Maximum angle (bottom of canvas)
+  const TREE_ANGLE_DEFAULT = 30;                               // Default angle (no mouse interaction)
+  const TREE_ANGLE_MOMENTUM = 0.1;                            // How quickly angle approaches target (0-1, lower = more momentum)
+  let currentTreeAngle = TREE_ANGLE_DEFAULT;                   // Current tree angle (changes with mouse)
+  let targetTreeAngle = TREE_ANGLE_DEFAULT;                    // Target angle based on mouse position
 
   // Growth Animation Configuration
   const GROWTH_DURATION = 60;                                  // Frames for each segment to grow
-  const GROWTH_DELAY_PER_LEVEL = 60;                           // Delay between depth levels (frames)
+  const GROWTH_DELAY_PER_LEVEL = 60;                           // Delay .between depth levels (frames)
   let growthProgress = 0;                                      // Current growth progress (0-1)
   let isGrowing = true;                                        // Whether tree is still growing
 
   // Margins (match hero sketch)
-  const MARGIN_PERCENTAGE = 0;                               // 10% margin on all sides
+  const MARGIN_PERCENTAGE = -0.2;                               // 10% margin on all sides
 
   // Dynamic sizing (calculated in setup)
   let segmentLength = 20;                                      // Will be calculated based on canvas height
 
   // Stroke Configuration
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };                  // Black
-  const STROKE_WEIGHT = 1.5;                                     // Consistent stroke weight
-  const STROKE_ALPHA = 20;                                    // 40% opacity (255 * 0.4 = 102)
-  const FADE_BACKGROUND_ALPHA = 40;                             // No fade effect
+  const STROKE_WEIGHT = 1.75;                                   // Consistent stroke weight
+  const STROKE_ALPHA_BASE = 200;                               // Base opacity for initial stem (0-255)
+  const STROKE_ALPHA_FADE_ENABLED = true;                      // Enable/disable opacity fade with depth
+  const STROKE_ALPHA_FADE_RATE = 0.8;                         // Multiplier per depth level (0-1, lower = faster fade)
+  const STROKE_ALPHA_MIN = 1;                                 // Minimum opacity (prevents fully transparent branches)
+  const FADE_BACKGROUND_ALPHA = 40;                            // Background fade effect
 
   // Animation
   let animationTime = 0;
@@ -541,7 +551,19 @@ const approachSketch = (p) => {
 
     // Draw the growing line from origin to current position
     if (depthProgress > 0) {
-      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+      // Calculate opacity based on depth
+      let alpha;
+      if (STROKE_ALPHA_FADE_ENABLED) {
+        // Apply exponential fade: each level multiplies by STROKE_ALPHA_FADE_RATE
+        alpha = STROKE_ALPHA_BASE * Math.pow(STROKE_ALPHA_FADE_RATE, depth);
+        // Clamp to minimum to prevent fully transparent branches
+        alpha = Math.max(alpha, STROKE_ALPHA_MIN);
+      } else {
+        // No fade, use base alpha for all branches
+        alpha = STROKE_ALPHA_BASE;
+      }
+
+      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
       p.strokeWeight(STROKE_WEIGHT);
       p.line(x, y, currentX2, currentY2);
     }
@@ -550,11 +572,11 @@ const approachSketch = (p) => {
     // Use the FULL end point as the origin for child branches
     if (depthProgress >= 1.0) {
       // Draw right branch
-      let rightAngle = angle + p.radians(TREE_ANGLE);
+      let rightAngle = angle + p.radians(currentTreeAngle);
       drawBranch(fullX2, fullY2, rightAngle, depth + 1, segmentLength);
 
       // Draw left branch
-      let leftAngle = angle - p.radians(TREE_ANGLE);
+      let leftAngle = angle - p.radians(currentTreeAngle);
       drawBranch(fullX2, fullY2, leftAngle, depth + 1, segmentLength);
     }
   }
@@ -636,6 +658,18 @@ const approachSketch = (p) => {
       p.noStroke();
       p.rect(0, 0, p.width, p.height);
     }
+
+    // Update target tree angle based on mouse position within canvas
+    if (p.mouseY >= 0 && p.mouseY <= p.height && p.mouseX >= 0 && p.mouseX <= p.width) {
+      // Map mouseY from 0 (top) to canvas height (bottom) to TREE_ANGLE_MIN to TREE_ANGLE_MAX
+      targetTreeAngle = p.map(p.mouseY, 0, p.height, TREE_ANGLE_MIN, TREE_ANGLE_MAX);
+    } else {
+      // Mouse is outside canvas, return to default
+      targetTreeAngle = TREE_ANGLE_DEFAULT;
+    }
+
+    // Apply momentum - gradually approach target angle
+    currentTreeAngle += (targetTreeAngle - currentTreeAngle) * TREE_ANGLE_MOMENTUM;
 
     // Increment animation time (grows the tree)
     if (isGrowing) {
