@@ -329,490 +329,823 @@ const heroSketch = (p) => {
 };
 
 // ============================================
-// 2. APPROACH SKETCH - Modular Grid Building
+// 2. APPROACH SKETCH - Modular Grid Rotation
 // ============================================
-// Theme: Building blocks stacking to form modular system
-// Colors: Deep Purple (#6B46C1) + Bright Cyan (#06B6D4)
+// Theme: Rotating geometric grid with wave animation
+// Template: Matches hero sketch structure with linear gradient
 
 const approachSketch = (p) => {
-  let blocks = [];
-  let time = 0;
-  const COLS = 8;
-  const ROWS = 6;
+  let animationTime = 0;
+  let gradientBuffer;
+  let gradientShader;
 
-  // Colors: Deep Purple + Bright Cyan
-  const PURPLE = { r: 107, g: 70, b: 193 };
-  const CYAN = { r: 6, g: 182, b: 212 };
+  // Animation configuration
+  const GRID_COLS = 8;
+  const GRID_ROWS = 6;
+  const ROTATION_SPEED = 0.02; // Speed of rotation animation
+  const WAVE_SPEED = 0.05; // Speed of wave propagation
+  const WAVE_AMPLITUDE = 0.3; // Amplitude of rotation wave
 
-  class Block {
-    constructor(col, row) {
-      this.col = col;
-      this.row = row;
-      this.targetY = 0;
-      this.currentY = -100;
-      this.width = 0;
-      this.height = 0;
-      this.delay = (col + row) * 0.05;
-      this.hovered = false;
-      this.colorMix = (col + row) / (COLS + ROWS);
-    }
+  // Linear Gradient configuration (RGB values 0-255)
+  const GRADIENT_START_COLOR = { r: 107, g: 70, b: 193 }; // Deep Purple
+  const GRADIENT_END_COLOR = { r: 6, g: 182, b: 212 }; // Bright Cyan
+  const GRADIENT_ANGLE = 45; // Gradient angle in degrees (0 = left to right, 90 = top to bottom)
+  const GRADIENT_POWER = 1.2; // Controls falloff curve
+  const GRADIENT_EDGE_EASE = 0.2; // Edge easing
+  const GRADIENT_SCATTER_INTENSITY = 0.03; // Scattering effect intensity
 
-    update(blockWidth, blockHeight, mouseX, mouseY) {
-      this.width = blockWidth;
-      this.height = blockHeight;
-
-      let x = this.col * blockWidth + blockWidth / 2;
-      this.targetY = this.row * blockHeight + blockHeight / 2;
-
-      // Animate in
-      let progress = p.constrain((time - this.delay * 60) / 60, 0, 1);
-      progress = this.easeOutBounce(progress);
-      this.currentY = p.lerp(-100, this.targetY, progress);
-
-      // Check hover
-      this.hovered = false;
-      if (mouseX > this.col * blockWidth && mouseX < (this.col + 1) * blockWidth &&
-          mouseY > this.row * blockHeight && mouseY < (this.row + 1) * blockHeight) {
-        this.hovered = true;
-      }
-    }
-
-    easeOutBounce(t) {
-      const n1 = 7.5625;
-      const d1 = 2.75;
-      if (t < 1 / d1) {
-        return n1 * t * t;
-      } else if (t < 2 / d1) {
-        return n1 * (t -= 1.5 / d1) * t + 0.75;
-      } else if (t < 2.5 / d1) {
-        return n1 * (t -= 2.25 / d1) * t + 0.9375;
-      } else {
-        return n1 * (t -= 2.625 / d1) * t + 0.984375;
-      }
-    }
-
-    display() {
-      let x = this.col * this.width;
-      let y = this.currentY - this.height / 2;
-
-      // Hover lift
-      if (this.hovered) {
-        y -= 10;
-      }
-
-      // Mix purple and cyan
-      let r = p.lerp(PURPLE.r, CYAN.r, this.colorMix);
-      let g = p.lerp(PURPLE.g, CYAN.g, this.colorMix);
-      let b = p.lerp(PURPLE.b, CYAN.b, this.colorMix);
-
-      p.noStroke();
-      p.fill(r, g, b, this.hovered ? 255 : 200);
-      p.rect(x + 2, y + 2, this.width - 4, this.height - 4, 4);
-
-      // Subtle border
-      p.noFill();
-      p.stroke(255, 255, 255, this.hovered ? 100 : 30);
-      p.strokeWeight(2);
-      p.rect(x + 2, y + 2, this.width - 4, this.height - 4, 4);
-    }
-  }
+  // Stroke style configuration
+  const STROKE_COLOR = { r: 20, g: 20, b: 40 }; // Dark stroke color
+  const STROKE_WEIGHT = 2;
+  const STROKE_ALPHA = 180;
 
   const { observer } = createVisibilityObserver(p);
+
+  // Vertex shader
+  const vertShader = `
+    attribute vec3 aPosition;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+
+    void main() {
+      vTexCoord = aTexCoord;
+      vec4 positionVec4 = vec4(aPosition, 1.0);
+      positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+      gl_Position = positionVec4;
+    }
+  `;
+
+  // Fragment shader (linear gradient with scattering)
+  const fragShader = `
+    precision highp float;
+    varying vec2 vTexCoord;
+
+    uniform vec2 uResolution;
+    uniform vec3 uStartColor;
+    uniform vec3 uEndColor;
+    uniform float uAngle;
+    uniform float uPower;
+    uniform float uEdgeEase;
+    uniform float uScatterIntensity;
+
+    float hash(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    }
+
+    float fractalNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
+        amplitude *= 0.5;
+      }
+      return value;
+    }
+
+    void main() {
+      vec2 pos = vTexCoord;
+      float angleRad = radians(uAngle);
+      vec2 direction = vec2(cos(angleRad), sin(angleRad));
+      float gradientPos = dot(pos, direction) * 0.5 + 0.5;
+
+      if (uScatterIntensity > 0.0) {
+        float noiseValue = fractalNoise(pos * uResolution);
+        gradientPos += (noiseValue - 0.5) * uScatterIntensity;
+      }
+
+      gradientPos = pow(clamp(gradientPos, 0.0, 1.0), uPower);
+
+      if (uEdgeEase > 0.0 && gradientPos > (1.0 - uEdgeEase)) {
+        float edgeRegion = (gradientPos - (1.0 - uEdgeEase)) / uEdgeEase;
+        gradientPos = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
+      }
+
+      vec3 color = mix(uStartColor, uEndColor, gradientPos);
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+
+  // Create gradient buffer and render gradient
+  const createGradient = () => {
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+    gradientBuffer.shader(gradientShader);
+
+    gradientShader.setUniform('uResolution', [p.width, p.height]);
+    gradientShader.setUniform('uStartColor', [
+      GRADIENT_START_COLOR.r / 255.0,
+      GRADIENT_START_COLOR.g / 255.0,
+      GRADIENT_START_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uEndColor', [
+      GRADIENT_END_COLOR.r / 255.0,
+      GRADIENT_END_COLOR.g / 255.0,
+      GRADIENT_END_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uAngle', GRADIENT_ANGLE);
+    gradientShader.setUniform('uPower', GRADIENT_POWER);
+    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
+    gradientBuffer.rect(0, 0, p.width, p.height);
+  };
+
+  const drawGradient = () => {
+    p.image(gradientBuffer, 0, 0);
+  };
 
   p.setup = () => {
     const container = document.getElementById('approach-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('approach-canvas');
 
-    // Create blocks
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        blocks.push(new Block(col, row));
-      }
-    }
-
+    createGradient();
     observer.observe(container);
   };
 
   p.draw = () => {
-    // Gradient background
-    for (let y = 0; y < p.height; y++) {
-      let inter = p.map(y, 0, p.height, 0, 1);
-      let c = p.lerpColor(p.color(15, 15, 25), p.color(25, 20, 40), inter);
-      p.stroke(c);
-      p.line(0, y, p.width, y);
+    drawGradient();
+
+    animationTime += ROTATION_SPEED;
+
+    let cellWidth = p.width / GRID_COLS;
+    let cellHeight = p.height / GRID_ROWS;
+
+    p.push();
+    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+    p.strokeWeight(STROKE_WEIGHT);
+    p.noFill();
+
+    // Draw rotating grid of squares
+    for (let row = 0; row < GRID_ROWS; row++) {
+      for (let col = 0; col < GRID_COLS; col++) {
+        let x = col * cellWidth + cellWidth / 2;
+        let y = row * cellHeight + cellHeight / 2;
+
+        // Wave-based rotation
+        let wave = p.sin(animationTime + (col + row) * WAVE_SPEED) * WAVE_AMPLITUDE;
+        let rotation = animationTime * (1 + wave);
+
+        p.push();
+        p.translate(x, y);
+        p.rotate(rotation);
+
+        let size = Math.min(cellWidth, cellHeight) * 0.6;
+        p.rect(-size / 2, -size / 2, size, size);
+
+        p.pop();
+      }
     }
 
-    time++;
-
-    let blockWidth = p.width / COLS;
-    let blockHeight = p.height / ROWS;
-
-    blocks.forEach(block => {
-      block.update(blockWidth, blockHeight, p.mouseX, p.mouseY);
-      block.display();
-    });
+    p.pop();
   };
 
   p.windowResized = () => {
     const container = document.getElementById('approach-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+    createGradient();
   };
 };
 
 // ============================================
-// 3. FOUNDATION SKETCH - Flexible Grid
+// 3. FOUNDATION SKETCH - Breathing Network
 // ============================================
-// Theme: Grid that breathes and transforms while maintaining structure
-// Colors: Forest Green (#10B981) + Golden Yellow (#F59E0B)
+// Theme: Interconnected node network with breathing animation
+// Template: Matches hero sketch structure with dual-radial gradient
 
 const foundationPrinciplesSketch = (p) => {
-  let cells = [];
-  let time = 0;
-  const GRID_SIZE = 8;
+  let animationTime = 0;
+  let gradientBuffer;
+  let gradientShader;
+  let nodes = [];
 
-  // Colors: Forest Green + Golden Yellow
-  const GREEN = { r: 16, g: 185, b: 129 };
-  const YELLOW = { r: 245, g: 158, b: 11 };
+  // Animation configuration
+  const NODE_COUNT = 25;
+  const BREATHING_SPEED = 0.01; // Speed of breathing animation
+  const BREATHING_AMPLITUDE = 15; // Amplitude of breathing motion
+  const CONNECTION_DISTANCE = 150; // Max distance for connections
 
-  class Cell {
-    constructor(col, row) {
-      this.col = col;
-      this.row = row;
-      this.offset = p.random(100);
-      this.colorMix = (col + row) / (GRID_SIZE * 2);
+  // Dual-Radial Gradient configuration (RGB values 0-255)
+  const GRADIENT_CENTER1_COLOR = { r: 16, g: 185, b: 129 }; // Forest Green
+  const GRADIENT_CENTER2_COLOR = { r: 245, g: 158, b: 11 }; // Golden Yellow
+  const GRADIENT_EDGE_COLOR = { r: 240, g: 240, b: 235 }; // Light background
+  const GRADIENT_CENTER1_X = 0.3; // First focal point X
+  const GRADIENT_CENTER1_Y = 0.3; // First focal point Y
+  const GRADIENT_CENTER2_X = 0.7; // Second focal point X
+  const GRADIENT_CENTER2_Y = 0.7; // Second focal point Y
+  const GRADIENT_RADIUS_SCALE = 0.5;
+  const GRADIENT_POWER = 1.5;
+  const GRADIENT_EDGE_EASE = 0.3;
+  const GRADIENT_SCATTER_INTENSITY = 0.04;
+
+  // Stroke style configuration
+  const STROKE_COLOR = { r: 40, g: 60, b: 50 };
+  const STROKE_WEIGHT = 1.5;
+  const STROKE_ALPHA = 150;
+  const NODE_SIZE = 6;
+
+  const { observer} = createVisibilityObserver(p);
+
+  // Dual-radial gradient shader (simplified - combines two radial gradients)
+  const vertShader = `
+    attribute vec3 aPosition;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+    void main() {
+      vTexCoord = aTexCoord;
+      vec4 positionVec4 = vec4(aPosition, 1.0);
+      positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+      gl_Position = positionVec4;
+    }
+  `;
+
+  const fragShader = `
+    precision highp float;
+    varying vec2 vTexCoord;
+    uniform vec3 uCenter1Color;
+    uniform vec3 uCenter2Color;
+    uniform vec3 uEdgeColor;
+    uniform vec2 uCenter1;
+    uniform vec2 uCenter2;
+    uniform float uRadiusScale;
+    uniform float uPower;
+    uniform float uEdgeEase;
+    uniform float uScatterIntensity;
+    uniform vec2 uResolution;
+
+    float hash(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
     }
 
-    update(cellSize, mouseX, mouseY) {
-      this.cellSize = cellSize;
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+    }
 
-      // Base position
-      this.baseX = this.col * cellSize + cellSize / 2;
-      this.baseY = this.row * cellSize + cellSize / 2;
-
-      // Breathing motion
-      let breathe = p.sin(time * 0.02 + this.offset) * 15;
-      this.x = this.baseX + breathe;
-      this.y = this.baseY + breathe;
-
-      // Mouse proximity effect
-      if (mouseX > 0 && mouseY > 0) {
-        let d = p.dist(this.baseX, this.baseY, mouseX, mouseY);
-        if (d < 150) {
-          let force = p.map(d, 0, 150, 20, 0);
-          let angle = p.atan2(this.baseY - mouseY, this.baseX - mouseX);
-          this.x += p.cos(angle) * force;
-          this.y += p.sin(angle) * force;
-        }
+    float fractalNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p);
+        p *= 2.0;
+        amplitude *= 0.5;
       }
+      return value;
     }
 
-    display() {
-      let size = this.cellSize * 0.7;
+    void main() {
+      vec2 pos = vTexCoord;
+      float dist1 = length((pos - uCenter1) / uRadiusScale);
+      float dist2 = length((pos - uCenter2) / uRadiusScale);
 
-      // Mix green and yellow
-      let r = p.lerp(GREEN.r, YELLOW.r, this.colorMix);
-      let g = p.lerp(GREEN.g, YELLOW.g, this.colorMix);
-      let b = p.lerp(GREEN.b, YELLOW.b, this.colorMix);
+      if (uScatterIntensity > 0.0) {
+        float noiseValue = fractalNoise(pos * uResolution);
+        dist1 += (noiseValue - 0.5) * uScatterIntensity;
+        dist2 += (noiseValue - 0.5) * uScatterIntensity;
+      }
 
-      p.noStroke();
-      p.fill(r, g, b, 180);
-      p.rect(this.x - size/2, this.y - size/2, size, size, 6);
+      dist1 = pow(clamp(dist1, 0.0, 1.0), uPower);
+      dist2 = pow(clamp(dist2, 0.0, 1.0), uPower);
 
-      // Border
-      p.noFill();
-      p.stroke(255, 255, 255, 40);
-      p.strokeWeight(2);
-      p.rect(this.x - size/2, this.y - size/2, size, size, 6);
+      vec3 color1 = mix(uCenter1Color, uEdgeColor, dist1);
+      vec3 color2 = mix(uCenter2Color, uEdgeColor, dist2);
+      vec3 color = mix(color1, color2, 0.5);
+
+      gl_FragColor = vec4(color, 1.0);
     }
-  }
+  `;
 
-  const { observer } = createVisibilityObserver(p);
+  const createGradient = () => {
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+    gradientBuffer.shader(gradientShader);
+
+    gradientShader.setUniform('uResolution', [p.width, p.height]);
+    gradientShader.setUniform('uCenter1', [GRADIENT_CENTER1_X, GRADIENT_CENTER1_Y]);
+    gradientShader.setUniform('uCenter2', [GRADIENT_CENTER2_X, GRADIENT_CENTER2_Y]);
+    gradientShader.setUniform('uCenter1Color', [GRADIENT_CENTER1_COLOR.r / 255, GRADIENT_CENTER1_COLOR.g / 255, GRADIENT_CENTER1_COLOR.b / 255]);
+    gradientShader.setUniform('uCenter2Color', [GRADIENT_CENTER2_COLOR.r / 255, GRADIENT_CENTER2_COLOR.g / 255, GRADIENT_CENTER2_COLOR.b / 255]);
+    gradientShader.setUniform('uEdgeColor', [GRADIENT_EDGE_COLOR.r / 255, GRADIENT_EDGE_COLOR.g / 255, GRADIENT_EDGE_COLOR.b / 255]);
+    gradientShader.setUniform('uRadiusScale', GRADIENT_RADIUS_SCALE);
+    gradientShader.setUniform('uPower', GRADIENT_POWER);
+    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
+    gradientBuffer.rect(0, 0, p.width, p.height);
+  };
+
+  const drawGradient = () => {
+    p.image(gradientBuffer, 0, 0);
+  };
 
   p.setup = () => {
     const container = document.getElementById('foundation-principles-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('foundation-principles-canvas');
 
-    // Create cells
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        cells.push(new Cell(col, row));
-      }
+    createGradient();
+
+    // Create random nodes
+    for (let i = 0; i < NODE_COUNT; i++) {
+      nodes.push({
+        baseX: p.random(p.width),
+        baseY: p.random(p.height),
+        x: 0,
+        y: 0,
+        offset: p.random(p.TWO_PI)
+      });
     }
 
     observer.observe(container);
   };
 
   p.draw = () => {
-    // Gradient background
-    for (let y = 0; y < p.height; y++) {
-      let inter = p.map(y, 0, p.height, 0, 1);
-      let c = p.lerpColor(p.color(10, 20, 15), p.color(20, 30, 20), inter);
-      p.stroke(c);
-      p.line(0, y, p.width, y);
+    drawGradient();
+
+    animationTime += BREATHING_SPEED;
+
+    // Update node positions with breathing
+    nodes.forEach(node => {
+      let breathe = p.sin(animationTime + node.offset) * BREATHING_AMPLITUDE;
+      node.x = node.baseX + breathe;
+      node.y = node.baseY + breathe;
+    });
+
+    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA * 0.5);
+    p.strokeWeight(STROKE_WEIGHT);
+
+    // Draw connections
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        let d = p.dist(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+        if (d < CONNECTION_DISTANCE) {
+          let alpha = p.map(d, 0, CONNECTION_DISTANCE, STROKE_ALPHA, 0);
+          p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5);
+          p.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+        }
+      }
     }
 
-    time++;
-
-    let cellSize = Math.min(p.width, p.height) / GRID_SIZE;
-    let offsetX = (p.width - cellSize * GRID_SIZE) / 2;
-    let offsetY = (p.height - cellSize * GRID_SIZE) / 2;
-
-    p.push();
-    p.translate(offsetX, offsetY);
-
-    // Draw connection lines
-    p.stroke(255, 255, 255, 20);
-    p.strokeWeight(1);
-    cells.forEach((cell, i) => {
-      if (cell.col < GRID_SIZE - 1) {
-        let neighbor = cells[i + 1];
-        p.line(cell.x, cell.y, neighbor.x, neighbor.y);
-      }
-      if (cell.row < GRID_SIZE - 1) {
-        let neighbor = cells[i + GRID_SIZE];
-        p.line(cell.x, cell.y, neighbor.x, neighbor.y);
-      }
+    // Draw nodes
+    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+    p.strokeWeight(STROKE_WEIGHT);
+    p.noFill();
+    nodes.forEach(node => {
+      p.circle(node.x, node.y, NODE_SIZE);
     });
-
-    // Update and draw cells
-    cells.forEach(cell => {
-      cell.update(cellSize, p.mouseX - offsetX, p.mouseY - offsetY);
-      cell.display();
-    });
-
-    p.pop();
   };
 
   p.windowResized = () => {
     const container = document.getElementById('foundation-principles-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+    createGradient();
   };
 };
 
 // ============================================
-// 4. IMPLEMENTATION SKETCH - Token Flow
+// 4. IMPLEMENTATION SKETCH - Geometric Assembly
 // ============================================
-// Theme: Design tokens flowing from abstract to structured
-// Colors: Magenta (#EC4899) + Teal (#14B8A6)
+// Theme: Geometric shapes assembling/disassembling in sequence
+// Template: Matches hero sketch structure with conic/angular gradient
 
 const implementationSketch = (p) => {
-  let tokens = [];
-  let time = 0;
-  const TOKEN_COUNT = 30;
+  let animationTime = 0;
+  let gradientBuffer;
+  let gradientShader;
+  let shapes = [];
 
-  // Colors: Magenta + Teal
-  const MAGENTA = { r: 236, g: 72, b: 153 };
-  const TEAL = { r: 20, g: 184, b: 166 };
+  // Animation configuration
+  const SHAPE_COUNT = 12;
+  const ASSEMBLY_SPEED = 0.015; // Speed of assembly animation
+  const ROTATION_SPEED = 0.01; // Shape rotation speed
+  const RADIUS = 180; // Distance from center
 
-  class Token {
-    constructor() {
-      this.reset();
-      this.progress = p.random(1); // Start at random positions
-    }
+  // Conic/Angular Gradient configuration (RGB values 0-255)
+  const GRADIENT_START_COLOR = { r: 236, g: 72, b: 153 }; // Magenta
+  const GRADIENT_END_COLOR = { r: 20, g: 184, b: 166 }; // Teal
+  const GRADIENT_CENTER_X = 0.5;
+  const GRADIENT_CENTER_Y = 0.5;
+  const GRADIENT_ROTATION = 0; // Rotation offset in degrees
+  const GRADIENT_POWER = 1.0;
+  const GRADIENT_EDGE_EASE = 0.25;
+  const GRADIENT_SCATTER_INTENSITY = 0.035;
 
-    reset() {
-      this.startX = p.random(p.width * 0.1, p.width * 0.3);
-      this.startY = p.random(p.height * 0.2, p.height * 0.8);
-      this.endX = p.random(p.width * 0.7, p.width * 0.9);
-      this.endY = p.random(p.height * 0.2, p.height * 0.8);
-      this.progress = 0;
-      this.speed = p.random(0.003, 0.008);
-      this.size = p.random(8, 16);
-      this.hovered = false;
-    }
-
-    update(mouseX, mouseY) {
-      this.progress += this.speed;
-      if (this.progress > 1) {
-        this.reset();
-      }
-
-      // Ease in-out
-      let t = this.progress;
-      t = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-
-      this.x = p.lerp(this.startX, this.endX, t);
-      this.y = p.lerp(this.startY, this.endY, t);
-
-      // Check hover
-      this.hovered = false;
-      if (mouseX > 0 && mouseY > 0) {
-        let d = p.dist(this.x, this.y, mouseX, mouseY);
-        if (d < 30) {
-          this.hovered = true;
-        }
-      }
-    }
-
-    display() {
-      // Mix magenta and teal based on progress
-      let r = p.lerp(MAGENTA.r, TEAL.r, this.progress);
-      let g = p.lerp(MAGENTA.g, TEAL.g, this.progress);
-      let b = p.lerp(MAGENTA.b, TEAL.b, this.progress);
-
-      let alpha = this.hovered ? 255 : 200;
-      let size = this.hovered ? this.size * 1.5 : this.size;
-
-      p.noStroke();
-      p.fill(r, g, b, alpha);
-
-      // Shape transforms: circle -> square
-      if (this.progress < 0.5) {
-        p.circle(this.x, this.y, size);
-      } else {
-        let roundness = p.map(this.progress, 0.5, 1, size/2, 2);
-        p.rect(this.x - size/2, this.y - size/2, size, size, roundness);
-      }
-
-      // Trail
-      if (this.hovered) {
-        p.stroke(r, g, b, 100);
-        p.strokeWeight(2);
-        p.line(this.startX, this.startY, this.x, this.y);
-      }
-    }
-  }
+  // Stroke style configuration
+  const STROKE_COLOR = { r: 30, g: 20, b: 40 };
+  const STROKE_WEIGHT = 2;
+  const STROKE_ALPHA = 160;
+  const SHAPE_SIZE = 35;
 
   const { observer } = createVisibilityObserver(p);
+
+  // Conic/Angular gradient shader
+  const vertShader = `
+    attribute vec3 aPosition;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+    void main() {
+      vTexCoord = aTexCoord;
+      vec4 positionVec4 = vec4(aPosition, 1.0);
+      positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+      gl_Position = positionVec4;
+    }
+  `;
+
+  const fragShader = `
+    precision highp float;
+    varying vec2 vTexCoord;
+    uniform vec3 uStartColor;
+    uniform vec3 uEndColor;
+    uniform vec2 uCenter;
+    uniform float uRotation;
+    uniform float uPower;
+    uniform float uEdgeEase;
+    uniform float uScatterIntensity;
+    uniform vec2 uResolution;
+
+    float hash(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+    }
+
+    float fractalNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p);
+        p *= 2.0;
+        amplitude *= 0.5;
+      }
+      return value;
+    }
+
+    void main() {
+      vec2 pos = vTexCoord - uCenter;
+      float angle = atan(pos.y, pos.x) + radians(uRotation);
+      float normalizedAngle = (angle + 3.14159265) / (2.0 * 3.14159265);
+
+      if (uScatterIntensity > 0.0) {
+        float noiseValue = fractalNoise(vTexCoord * uResolution);
+        normalizedAngle += (noiseValue - 0.5) * uScatterIntensity;
+      }
+
+      normalizedAngle = fract(normalizedAngle);
+      normalizedAngle = pow(normalizedAngle, uPower);
+
+      if (uEdgeEase > 0.0 && normalizedAngle > (1.0 - uEdgeEase)) {
+        float edgeRegion = (normalizedAngle - (1.0 - uEdgeEase)) / uEdgeEase;
+        normalizedAngle = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
+      }
+
+      vec3 color = mix(uStartColor, uEndColor, normalizedAngle);
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+
+  const createGradient = () => {
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+    gradientBuffer.shader(gradientShader);
+
+    gradientShader.setUniform('uResolution', [p.width, p.height]);
+    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    gradientShader.setUniform('uStartColor', [GRADIENT_START_COLOR.r / 255, GRADIENT_START_COLOR.g / 255, GRADIENT_START_COLOR.b / 255]);
+    gradientShader.setUniform('uEndColor', [GRADIENT_END_COLOR.r / 255, GRADIENT_END_COLOR.g / 255, GRADIENT_END_COLOR.b / 255]);
+    gradientShader.setUniform('uRotation', GRADIENT_ROTATION);
+    gradientShader.setUniform('uPower', GRADIENT_POWER);
+    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
+    gradientBuffer.rect(0, 0, p.width, p.height);
+  };
+
+  const drawGradient = () => {
+    p.image(gradientBuffer, 0, 0);
+  };
 
   p.setup = () => {
     const container = document.getElementById('implementation-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('implementation-canvas');
 
-    for (let i = 0; i < TOKEN_COUNT; i++) {
-      tokens.push(new Token());
+    createGradient();
+
+    // Create shapes in circular arrangement
+    for (let i = 0; i < SHAPE_COUNT; i++) {
+      shapes.push({
+        angle: (i / SHAPE_COUNT) * p.TWO_PI,
+        index: i,
+        offset: i * 0.1
+      });
     }
 
     observer.observe(container);
   };
 
   p.draw = () => {
-    // Gradient background
-    for (let y = 0; y < p.height; y++) {
-      let inter = p.map(y, 0, p.height, 0, 1);
-      let c = p.lerpColor(p.color(20, 10, 20), p.color(15, 25, 25), inter);
-      p.stroke(c);
-      p.line(0, y, p.width, y);
-    }
+    drawGradient();
 
-    time++;
+    animationTime += ASSEMBLY_SPEED;
 
-    tokens.forEach(token => {
-      token.update(p.mouseX, p.mouseY);
-      token.display();
+    p.push();
+    p.translate(p.width / 2, p.height / 2);
+    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+    p.strokeWeight(STROKE_WEIGHT);
+    p.noFill();
+
+    // Draw assembling/disassembling shapes
+    shapes.forEach(shape => {
+      let assemblyProgress = (p.sin(animationTime + shape.offset) + 1) / 2;
+      let currentRadius = RADIUS * assemblyProgress;
+      let rotation = animationTime * ROTATION_SPEED + shape.angle;
+
+      let x = p.cos(shape.angle) * currentRadius;
+      let y = p.sin(shape.angle) * currentRadius;
+
+      p.push();
+      p.translate(x, y);
+      p.rotate(rotation);
+
+      // Alternate between different shapes
+      if (shape.index % 3 === 0) {
+        p.rect(-SHAPE_SIZE / 2, -SHAPE_SIZE / 2, SHAPE_SIZE, SHAPE_SIZE);
+      } else if (shape.index % 3 === 1) {
+        p.circle(0, 0, SHAPE_SIZE);
+      } else {
+        p.triangle(-SHAPE_SIZE / 2, SHAPE_SIZE / 2, SHAPE_SIZE / 2, SHAPE_SIZE / 2, 0, -SHAPE_SIZE / 2);
+      }
+
+      p.pop();
     });
+
+    p.pop();
   };
 
   p.windowResized = () => {
     const container = document.getElementById('implementation-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    tokens = [];
-    for (let i = 0; i < TOKEN_COUNT; i++) {
-      tokens.push(new Token());
-    }
+    createGradient();
   };
 };
 
 // ============================================
-// 5. ENABLEMENT SKETCH - Component Propagation
+// 5. ENABLEMENT SKETCH - Expanding Waves
 // ============================================
-// Theme: Single component replicating and spreading
+// Theme: Concentric rings expanding from center (ripple effect)
 // Colors: Orange (#F97316) + Indigo (#6366F1)
 
 const enablementSketch = (p) => {
-  let components = [];
-  let time = 0;
+  // ============================================
+  // CUSTOMIZATION VARIABLES
+  // ============================================
 
-  // Colors: Orange + Indigo
-  const ORANGE = { r: 249, g: 115, b: 22 };
-  const INDIGO = { r: 99, g: 102, b: 241 };
+  // Radial Gradient Configuration (Offset Center)
+  const GRADIENT_CENTER_COLOR = { r: 249, g: 115, b: 22 };     // Orange
+  const GRADIENT_EDGE_COLOR = { r: 99, g: 102, b: 241 };       // Indigo
+  const GRADIENT_CENTER_X = 0.35;                               // X position (0-1)
+  const GRADIENT_CENTER_Y = 0.4;                                // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.5;                          // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.5;                          // Y radius scale
+  const GRADIENT_POWER = 2.5;                                   // Falloff power
+  const GRADIENT_EDGE_EASE = 0.35;                              // Edge ease amount (0-1)
+  const GRADIENT_SCATTER_INTENSITY = 0.04;                      // Scatter effect intensity
 
-  class Component {
-    constructor(x, y, generation) {
-      this.x = x;
-      this.y = y;
-      this.generation = generation;
-      this.size = 0;
-      this.maxSize = 40 - generation * 8;
-      this.age = 0;
-      this.reproduced = false;
-      this.alpha = 0;
+  // Wave Animation Configuration
+  const WAVE_COUNT = 8;                                         // Number of concentric waves
+  const WAVE_SPACING = 60;                                      // Spacing between waves
+  const WAVE_EXPANSION_SPEED = 0.8;                             // How fast waves expand
+  const WAVE_MAX_RADIUS = 600;                                  // Maximum wave radius before reset
+  const WAVE_SEGMENTS = 120;                                    // Number of segments per wave
+  const WAVE_WOBBLE_AMPLITUDE = 8;                              // Wave distortion amplitude
+  const WAVE_WOBBLE_FREQUENCY = 6;                              // Wave distortion frequency
+  const WAVE_WOBBLE_SPEED = 0.02;                               // Wave distortion animation speed
+
+  // Stroke Configuration
+  const STROKE_WEIGHT = 2;                                      // Wave stroke thickness
+  const STROKE_COLOR = { r: 200, g: 200, b: 200 };             // Base stroke color (grey)
+  const STROKE_ALPHA_MIN = 40;                                  // Minimum stroke opacity
+  const STROKE_ALPHA_MAX = 180;                                 // Maximum stroke opacity
+  const FADE_BACKGROUND_ALPHA = 100;                            // Background fade effect opacity
+
+  // Animation
+  let animationTime = 0;
+  let gradientBuffer;
+  let waves = [];
+
+  // ============================================
+  // SHADER CODE
+  // ============================================
+
+  const vertShader = `
+    precision highp float;
+    attribute vec3 aPosition;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+
+    void main() {
+      vTexCoord = aTexCoord;
+      vec4 positionVec4 = vec4(aPosition, 1.0);
+      positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+      gl_Position = positionVec4;
+    }
+  `;
+
+  const fragShader = `
+    precision highp float;
+    varying vec2 vTexCoord;
+
+    uniform vec3 uCenterColor;
+    uniform vec3 uEdgeColor;
+    uniform vec2 uCenter;
+    uniform vec2 uRadiusScale;
+    uniform vec2 uResolution;
+    uniform float uPower;
+    uniform float uEdgeEase;
+    uniform float uScatterIntensity;
+
+    // Hash function for noise
+    float hash(vec2 p) {
+      p = fract(p * vec2(123.34, 456.21));
+      p += dot(p, p + 45.32);
+      return fract(p.x * p.y);
     }
 
-    update(mouseX, mouseY) {
-      this.age++;
-
-      // Grow
-      if (this.size < this.maxSize) {
-        this.size += 0.5;
-        this.alpha = p.min(this.alpha + 10, 200);
-      }
-
-      // Reproduce
-      if (this.generation < 3 && this.age > 60 && !this.reproduced) {
-        this.reproduced = true;
-        this.reproduce();
-      }
-
-      // Check if near mouse
-      this.hovered = false;
-      if (mouseX > 0 && mouseY > 0) {
-        let d = p.dist(this.x, this.y, mouseX, mouseY);
-        if (d < this.maxSize) {
-          this.hovered = true;
-          // Create component on hover
-          if (this.age % 30 === 0 && components.length < 100) {
-            let angle = p.random(p.TWO_PI);
-            let dist = p.random(60, 100);
-            components.push(new Component(
-              this.x + p.cos(angle) * dist,
-              this.y + p.sin(angle) * dist,
-              this.generation + 1
-            ));
-          }
-        }
-      }
+    // Quintic interpolation
+    float quintic(float t) {
+      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
     }
 
-    reproduce() {
-      if (components.length > 80) return;
+    // 2D noise
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
 
-      let count = p.random() > 0.5 ? 3 : 4;
-      for (let i = 0; i < count; i++) {
-        let angle = (p.TWO_PI / count) * i + p.random(-0.3, 0.3);
-        let dist = p.random(60, 100);
-        components.push(new Component(
-          this.x + p.cos(angle) * dist,
-          this.y + p.sin(angle) * dist,
-          this.generation + 1
-        ));
-      }
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+
+      vec2 u = vec2(quintic(f.x), quintic(f.y));
+
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
-    display() {
-      // Mix orange and indigo based on generation
-      let t = this.generation / 3;
-      let r = p.lerp(ORANGE.r, INDIGO.r, t);
-      let g = p.lerp(ORANGE.g, INDIGO.g, t);
-      let b = p.lerp(ORANGE.b, INDIGO.b, t);
+    // Fractal noise (multi-octave)
+    float fractalNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
 
-      let size = this.hovered ? this.size * 1.2 : this.size;
-      let alpha = this.hovered ? 255 : this.alpha;
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
+        amplitude *= 0.5;
+      }
 
-      p.noStroke();
-      p.fill(r, g, b, alpha);
-      p.rect(this.x - size/2, this.y - size/2, size, size, 4);
+      return value;
+    }
 
-      // Border
+    void main() {
+      vec2 pos = vTexCoord;
+
+      // Add scatter effect
+      if (uScatterIntensity > 0.0) {
+        vec2 scatter = vec2(
+          fractalNoise(pos * uResolution),
+          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
+        );
+        pos += (scatter - 0.5) * uScatterIntensity;
+      }
+
+      // Calculate distance from center (elliptical)
+      float dist = length((pos - uCenter) / uRadiusScale);
+
+      // Apply power curve
+      dist = pow(dist, uPower);
+
+      // Apply edge easing
+      if (dist > 1.0 - uEdgeEase) {
+        float edgeT = (dist - (1.0 - uEdgeEase)) / uEdgeEase;
+        edgeT = smoothstep(0.0, 1.0, edgeT);
+        dist = mix(dist, 1.0, edgeT);
+      }
+
+      // Mix colors
+      vec3 color = mix(uCenterColor, uEdgeColor, dist);
+
+      gl_FragColor = vec4(color / 255.0, 1.0);
+    }
+  `;
+
+  // ============================================
+  // WAVE CLASS
+  // ============================================
+
+  class Wave {
+    constructor(startRadius) {
+      this.radius = startRadius;
+      this.wobbleOffset = p.random(1000);
+    }
+
+    update() {
+      this.radius += WAVE_EXPANSION_SPEED;
+    }
+
+    display(centerX, centerY) {
+      // Calculate alpha based on radius (fade as it expands)
+      let alpha = p.map(this.radius, 0, WAVE_MAX_RADIUS, STROKE_ALPHA_MAX, STROKE_ALPHA_MIN);
+      alpha = p.constrain(alpha, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
+
+      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
+      p.strokeWeight(STROKE_WEIGHT);
       p.noFill();
-      p.stroke(255, 255, 255, this.hovered ? 100 : 40);
-      p.strokeWeight(2);
-      p.rect(this.x - size/2, this.y - size/2, size, size, 4);
+
+      p.beginShape();
+      for (let i = 0; i <= WAVE_SEGMENTS; i++) {
+        let angle = p.map(i, 0, WAVE_SEGMENTS, 0, p.TWO_PI);
+
+        // Add wobble distortion
+        let wobble = p.sin(angle * WAVE_WOBBLE_FREQUENCY + animationTime * WAVE_WOBBLE_SPEED + this.wobbleOffset) * WAVE_WOBBLE_AMPLITUDE;
+        let currentRadius = this.radius + wobble;
+
+        let x = centerX + p.cos(angle) * currentRadius;
+        let y = centerY + p.sin(angle) * currentRadius;
+
+        p.vertex(x, y);
+      }
+      p.endShape();
+    }
+
+    isDead() {
+      return this.radius > WAVE_MAX_RADIUS;
     }
   }
+
+  // ============================================
+  // GRADIENT FUNCTIONS
+  // ============================================
+
+  function createGradient() {
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    gradientBuffer.pixelDensity(1);
+
+    const shader = gradientBuffer.createShader(vertShader, fragShader);
+    gradientBuffer.shader(shader);
+
+    shader.setUniform('uCenterColor', [GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b]);
+    shader.setUniform('uEdgeColor', [GRADIENT_EDGE_COLOR.r, GRADIENT_EDGE_COLOR.g, GRADIENT_EDGE_COLOR.b]);
+    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+    shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uPower', GRADIENT_POWER);
+    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+    gradientBuffer.rect(0, 0, p.width, p.height);
+  }
+
+  function drawGradient() {
+    p.image(gradientBuffer, 0, 0);
+  }
+
+  // ============================================
+  // P5.JS LIFECYCLE
+  // ============================================
 
   const { observer } = createVisibilityObserver(p);
 
@@ -821,311 +1154,547 @@ const enablementSketch = (p) => {
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('enablement-canvas');
 
-    // Start with one component in center
-    components.push(new Component(p.width / 2, p.height / 2, 0));
+    createGradient();
+
+    // Initialize waves with staggered starting positions
+    for (let i = 0; i < WAVE_COUNT; i++) {
+      waves.push(new Wave(i * WAVE_SPACING));
+    }
 
     observer.observe(container);
   };
 
   p.draw = () => {
-    // Gradient background
-    for (let y = 0; y < p.height; y++) {
-      let inter = p.map(y, 0, p.height, 0, 1);
-      let c = p.lerpColor(p.color(25, 15, 10), p.color(15, 15, 30), inter);
-      p.stroke(c);
-      p.line(0, y, p.width, y);
-    }
+    // Draw gradient background
+    drawGradient();
 
-    time++;
+    // Apply fade effect
+    p.fill(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b, FADE_BACKGROUND_ALPHA);
+    p.noStroke();
+    p.rect(0, 0, p.width, p.height);
 
-    // Draw connections
-    p.stroke(255, 255, 255, 20);
-    p.strokeWeight(1);
-    components.forEach((comp, i) => {
-      components.slice(i + 1).forEach(other => {
-        let d = p.dist(comp.x, comp.y, other.x, other.y);
-        if (d < 100 && Math.abs(comp.generation - other.generation) <= 1) {
-          let alpha = p.map(d, 0, 100, 40, 0);
-          p.stroke(255, 255, 255, alpha);
-          p.line(comp.x, comp.y, other.x, other.y);
-        }
-      });
-    });
+    animationTime += 1;
 
-    // Update and draw components
-    components.forEach(comp => {
-      comp.update(p.mouseX, p.mouseY);
-      comp.display();
-    });
+    // Calculate center point
+    let centerX = p.width * GRADIENT_CENTER_X;
+    let centerY = p.height * GRADIENT_CENTER_Y;
 
-    // Limit component count
-    if (components.length > 100) {
-      components = components.slice(-80);
+    // Update and draw waves
+    for (let i = waves.length - 1; i >= 0; i--) {
+      waves[i].update();
+      waves[i].display(centerX, centerY);
+
+      // Remove dead waves and spawn new ones
+      if (waves[i].isDead()) {
+        waves.splice(i, 1);
+        waves.push(new Wave(0));
+      }
     }
   };
 
   p.windowResized = () => {
     const container = document.getElementById('enablement-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    components = [];
-    components.push(new Component(p.width / 2, p.height / 2, 0));
+    createGradient();
   };
 };
 
 // ============================================
-// 6. EVOLUTION SKETCH - System Complexity
+// 6. EVOLUTION SKETCH - Morphing Complexity
 // ============================================
-// Theme: System morphing between simple and complex states
+// Theme: Geometric shapes transitioning between simple and complex forms
 // Colors: Ruby Red (#DC2626) + Sky Blue (#0EA5E9)
 
 const evolutionSketch = (p) => {
-  let nodes = [];
-  let time = 0;
-  const SIMPLE_COUNT = 5;
-  const COMPLEX_COUNT = 20;
+  // ============================================
+  // CUSTOMIZATION VARIABLES
+  // ============================================
 
-  // Colors: Ruby Red + Sky Blue
-  const RED = { r: 220, g: 38, b: 38 };
-  const BLUE = { r: 14, g: 165, b: 233 };
+  // Morphing Gradient Configuration
+  const GRADIENT_START_COLOR = { r: 220, g: 38, b: 38 };      // Ruby Red
+  const GRADIENT_END_COLOR = { r: 14, g: 165, b: 233 };       // Sky Blue
+  const GRADIENT_ANGLE_START = 135;                            // Starting angle (degrees)
+  const GRADIENT_ANGLE_END = 45;                               // Ending angle (degrees)
+  const GRADIENT_MORPH_SPEED = 0.003;                          // How fast gradient rotates
+  const GRADIENT_SCATTER_INTENSITY = 0.03;                     // Scatter effect intensity
 
-  class Node {
-    constructor(index, isComplex) {
-      this.index = index;
-      this.isComplex = isComplex;
-      this.updatePosition();
-      this.size = isComplex ? 15 : 25;
-      this.connections = [];
+  // Shape Morphing Configuration
+  const SIMPLE_SIDES = 3;                                      // Triangle (simple state)
+  const COMPLEX_SIDES = 12;                                    // Dodecagon (complex state)
+  const SHAPE_COUNT = 6;                                       // Number of shapes
+  const SHAPE_SIZE = 80;                                       // Base shape size
+  const MORPH_CYCLE_DURATION = 300;                            // Frames for full morph cycle
+  const SHAPE_ROTATION_SPEED = 0.01;                           // Shape rotation speed
+  const ORBIT_RADIUS = 140;                                    // Distance from center
+
+  // Stroke Configuration
+  const STROKE_WEIGHT = 2;                                     // Shape stroke thickness
+  const STROKE_COLOR = { r: 200, g: 200, b: 200 };            // Base stroke color (grey)
+  const STROKE_ALPHA = 160;                                    // Stroke opacity
+  const FADE_BACKGROUND_ALPHA = 80;                            // Background fade effect opacity
+
+  // Animation
+  let animationTime = 0;
+  let gradientBuffer;
+
+  // ============================================
+  // SHADER CODE
+  // ============================================
+
+  const vertShader = `
+    precision highp float;
+    attribute vec3 aPosition;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+
+    void main() {
+      vTexCoord = aTexCoord;
+      vec4 positionVec4 = vec4(aPosition, 1.0);
+      positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+      gl_Position = positionVec4;
+    }
+  `;
+
+  const fragShader = `
+    precision highp float;
+    varying vec2 vTexCoord;
+
+    uniform vec3 uStartColor;
+    uniform vec3 uEndColor;
+    uniform float uAngle;
+    uniform vec2 uResolution;
+    uniform float uScatterIntensity;
+
+    // Hash function for noise
+    float hash(vec2 p) {
+      p = fract(p * vec2(123.34, 456.21));
+      p += dot(p, p + 45.32);
+      return fract(p.x * p.y);
     }
 
-    updatePosition() {
-      if (this.isComplex) {
-        // More nodes, tighter cluster
-        let angle = (this.index / COMPLEX_COUNT) * p.TWO_PI;
-        let radius = 100 + (this.index % 3) * 40;
-        this.x = p.width / 2 + p.cos(angle) * radius;
-        this.y = p.height / 2 + p.sin(angle) * radius;
-      } else {
-        // Fewer nodes, spread out
-        let angle = (this.index / SIMPLE_COUNT) * p.TWO_PI;
-        let radius = 120;
-        this.x = p.width / 2 + p.cos(angle) * radius;
-        this.y = p.height / 2 + p.sin(angle) * radius;
+    // Quintic interpolation
+    float quintic(float t) {
+      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+    }
+
+    // 2D noise
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+
+      vec2 u = vec2(quintic(f.x), quintic(f.y));
+
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    }
+
+    // Fractal noise (multi-octave)
+    float fractalNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
+
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
+        amplitude *= 0.5;
       }
+
+      return value;
     }
 
-    display(morphProgress, mouseInfluence) {
-      // Mix red and blue based on complexity
-      let t = this.isComplex ? morphProgress : 1 - morphProgress;
-      let r = p.lerp(RED.r, BLUE.r, t);
-      let g = p.lerp(RED.g, BLUE.g, t);
-      let b = p.lerp(RED.b, BLUE.b, t);
+    void main() {
+      vec2 pos = vTexCoord;
 
-      let size = this.size * (1 + mouseInfluence * 0.3);
-      let alpha = 150 + mouseInfluence * 100;
+      // Add scatter effect
+      if (uScatterIntensity > 0.0) {
+        vec2 scatter = vec2(
+          fractalNoise(pos * uResolution),
+          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
+        );
+        pos += (scatter - 0.5) * uScatterIntensity;
+      }
 
-      p.noStroke();
-      p.fill(r, g, b, alpha);
-      p.circle(this.x, this.y, size);
+      // Calculate linear gradient based on angle
+      vec2 center = vec2(0.5, 0.5);
+      vec2 fromCenter = pos - center;
 
-      // Border
+      float angleRad = radians(uAngle);
+      vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
+
+      float gradientPos = dot(fromCenter, gradientDir) + 0.5;
+      gradientPos = clamp(gradientPos, 0.0, 1.0);
+
+      // Mix colors
+      vec3 color = mix(uStartColor, uEndColor, gradientPos);
+
+      gl_FragColor = vec4(color / 255.0, 1.0);
+    }
+  `;
+
+  // ============================================
+  // SHAPE CLASS
+  // ============================================
+
+  class MorphingShape {
+    constructor(index) {
+      this.index = index;
+      this.angleOffset = (index / SHAPE_COUNT) * p.TWO_PI;
+      this.rotation = 0;
+      this.phaseOffset = index * 0.5;
+    }
+
+    update() {
+      this.rotation += SHAPE_ROTATION_SPEED;
+    }
+
+    display(centerX, centerY, morphProgress) {
+      // Position on orbit
+      let orbitAngle = this.angleOffset + animationTime * 0.005;
+      let x = centerX + p.cos(orbitAngle) * ORBIT_RADIUS;
+      let y = centerY + p.sin(orbitAngle) * ORBIT_RADIUS;
+
+      // Calculate number of sides based on morph progress
+      let sides = Math.round(p.lerp(SIMPLE_SIDES, COMPLEX_SIDES, morphProgress));
+      sides = Math.max(SIMPLE_SIDES, sides);
+
+      // Draw polygon
+      p.push();
+      p.translate(x, y);
+      p.rotate(this.rotation);
+
+      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+      p.strokeWeight(STROKE_WEIGHT);
       p.noFill();
-      p.stroke(255, 255, 255, 60 + mouseInfluence * 40);
-      p.strokeWeight(2);
-      p.circle(this.x, this.y, size);
+
+      p.beginShape();
+      for (let i = 0; i <= sides; i++) {
+        let angle = p.map(i, 0, sides, 0, p.TWO_PI);
+        let vx = p.cos(angle) * SHAPE_SIZE;
+        let vy = p.sin(angle) * SHAPE_SIZE;
+        p.vertex(vx, vy);
+      }
+      p.endShape();
+
+      p.pop();
     }
   }
 
+  // ============================================
+  // GRADIENT FUNCTIONS
+  // ============================================
+
+  function createGradient(angle) {
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    gradientBuffer.pixelDensity(1);
+
+    const shader = gradientBuffer.createShader(vertShader, fragShader);
+    gradientBuffer.shader(shader);
+
+    shader.setUniform('uStartColor', [GRADIENT_START_COLOR.r, GRADIENT_START_COLOR.g, GRADIENT_START_COLOR.b]);
+    shader.setUniform('uEndColor', [GRADIENT_END_COLOR.r, GRADIENT_END_COLOR.g, GRADIENT_END_COLOR.b]);
+    shader.setUniform('uAngle', angle);
+    shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+    gradientBuffer.rect(0, 0, p.width, p.height);
+  }
+
+  function drawGradient() {
+    p.image(gradientBuffer, 0, 0);
+  }
+
+  // ============================================
+  // P5.JS LIFECYCLE
+  // ============================================
+
   const { observer } = createVisibilityObserver(p);
+
+  let shapes = [];
 
   p.setup = () => {
     const container = document.getElementById('evolution-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('evolution-canvas');
 
-    createNodes();
+    createGradient(GRADIENT_ANGLE_START);
+
+    // Initialize shapes
+    for (let i = 0; i < SHAPE_COUNT; i++) {
+      shapes.push(new MorphingShape(i));
+    }
 
     observer.observe(container);
   };
 
-  function createNodes() {
-    nodes = [];
-    for (let i = 0; i < SIMPLE_COUNT; i++) {
-      nodes.push(new Node(i, false));
-    }
-  }
-
   p.draw = () => {
-    // Gradient background
-    for (let y = 0; y < p.height; y++) {
-      let inter = p.map(y, 0, p.height, 0, 1);
-      let c = p.lerpColor(p.color(25, 10, 10), p.color(10, 20, 30), inter);
-      p.stroke(c);
-      p.line(0, y, p.width, y);
-    }
+    // Calculate morph progress (oscillates between 0 and 1)
+    let morphProgress = (p.sin(animationTime / MORPH_CYCLE_DURATION * p.TWO_PI) + 1) / 2;
 
-    time++;
+    // Calculate gradient angle based on morph
+    let currentAngle = p.lerp(GRADIENT_ANGLE_START, GRADIENT_ANGLE_END, morphProgress);
+    createGradient(currentAngle);
 
-    // Morph based on mouse X position
-    let morphProgress = p.mouseX > 0 ? p.mouseX / p.width : 0.5;
-    morphProgress = p.constrain(morphProgress, 0, 1);
+    // Draw gradient background
+    drawGradient();
 
-    // Determine node count based on morph
-    let targetCount = Math.floor(p.lerp(SIMPLE_COUNT, COMPLEX_COUNT, morphProgress));
-
-    // Add or remove nodes
-    if (nodes.length < targetCount) {
-      let isComplex = morphProgress > 0.5;
-      nodes.push(new Node(nodes.length, isComplex));
-    } else if (nodes.length > targetCount) {
-      nodes.pop();
-    }
-
-    // Update all nodes
-    nodes.forEach(node => {
-      node.isComplex = morphProgress > 0.5;
-      node.updatePosition();
-    });
-
-    // Draw connections
-    p.stroke(255, 255, 255, 30);
-    p.strokeWeight(1);
-    nodes.forEach((node, i) => {
-      nodes.slice(i + 1).forEach(other => {
-        let d = p.dist(node.x, node.y, other.x, other.y);
-        let maxDist = node.isComplex ? 150 : 300;
-        if (d < maxDist) {
-          let alpha = p.map(d, 0, maxDist, 60, 0);
-          p.stroke(255, 255, 255, alpha);
-          p.line(node.x, node.y, other.x, other.y);
-        }
-      });
-    });
-
-    // Draw nodes
-    nodes.forEach(node => {
-      let d = p.dist(node.x, node.y, p.mouseX, p.mouseY);
-      let mouseInfluence = d < 80 ? p.map(d, 0, 80, 1, 0) : 0;
-      node.display(morphProgress, mouseInfluence);
-    });
-
-    // Draw labels
+    // Apply fade effect
+    let fadeR = p.lerp(GRADIENT_START_COLOR.r, GRADIENT_END_COLOR.r, morphProgress);
+    let fadeG = p.lerp(GRADIENT_START_COLOR.g, GRADIENT_END_COLOR.g, morphProgress);
+    let fadeB = p.lerp(GRADIENT_START_COLOR.b, GRADIENT_END_COLOR.b, morphProgress);
+    p.fill(fadeR, fadeG, fadeB, FADE_BACKGROUND_ALPHA);
     p.noStroke();
-    p.fill(255, 255, 255, 100);
-    p.textSize(12);
-    p.textAlign(p.LEFT);
-    p.text('SIMPLE', 20, 30);
-    p.textAlign(p.RIGHT);
-    p.text('COMPLEX', p.width - 20, 30);
+    p.rect(0, 0, p.width, p.height);
+
+    animationTime += 1;
+
+    // Calculate center point
+    let centerX = p.width / 2;
+    let centerY = p.height / 2;
+
+    // Update and draw shapes
+    shapes.forEach(shape => {
+      shape.update();
+      shape.display(centerX, centerY, morphProgress);
+    });
   };
 
   p.windowResized = () => {
     const container = document.getElementById('evolution-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createNodes();
+    createGradient(GRADIENT_ANGLE_START);
   };
 };
 
 // ============================================
-// 7. IMPACT SKETCH - Influence Hub
+// 7. IMPACT SKETCH - Radiating Rays
 // ============================================
-// Theme: Central design system radiating influence to products
+// Theme: Geometric rays radiating from offset center (burst effect)
 // Colors: Amber (#D97706) + Violet (#8B5CF6)
 
 const impactSketch = (p) => {
-  let hub = { x: 0, y: 0, size: 60 };
-  let products = [];
-  let pulseTime = 0;
-  let time = 0;
-  const PRODUCT_COUNT = 8;
+  // ============================================
+  // CUSTOMIZATION VARIABLES
+  // ============================================
 
-  // Colors: Amber + Violet
-  const AMBER = { r: 217, g: 119, b: 6 };
-  const VIOLET = { r: 139, g: 92, b: 246 };
+  // Radial Gradient Configuration (Offset Center)
+  const GRADIENT_CENTER_COLOR = { r: 217, g: 119, b: 6 };     // Amber
+  const GRADIENT_EDGE_COLOR = { r: 139, g: 92, b: 246 };      // Violet
+  const GRADIENT_CENTER_X = 0.65;                              // X position (0-1)
+  const GRADIENT_CENTER_Y = 0.6;                               // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.55;                        // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.55;                        // Y radius scale
+  const GRADIENT_POWER = 2.2;                                  // Falloff power
+  const GRADIENT_EDGE_EASE = 0.3;                              // Edge ease amount (0-1)
+  const GRADIENT_SCATTER_INTENSITY = 0.035;                    // Scatter effect intensity
 
-  class Product {
+  // Ray Configuration
+  const RAY_COUNT = 16;                                        // Number of radiating rays
+  const RAY_MIN_LENGTH = 80;                                   // Minimum ray length
+  const RAY_MAX_LENGTH = 280;                                  // Maximum ray length
+  const RAY_PULSE_SPEED = 0.015;                               // Ray pulse animation speed
+  const RAY_WIDTH_BASE = 3;                                    // Base width of rays
+  const RAY_WIDTH_VARIATION = 2;                               // Ray width variation
+  const RAY_SEGMENT_COUNT = 8;                                 // Segments per ray for tapering
+
+  // Stroke Configuration
+  const STROKE_WEIGHT = 2;                                     // Ray stroke thickness
+  const STROKE_COLOR = { r: 200, g: 200, b: 200 };            // Base stroke color (grey)
+  const STROKE_ALPHA_MIN = 60;                                 // Minimum stroke opacity
+  const STROKE_ALPHA_MAX = 200;                                // Maximum stroke opacity
+  const FADE_BACKGROUND_ALPHA = 90;                            // Background fade effect opacity
+
+  // Animation
+  let animationTime = 0;
+  let gradientBuffer;
+  let rays = [];
+
+  // ============================================
+  // SHADER CODE
+  // ============================================
+
+  const vertShader = `
+    precision highp float;
+    attribute vec3 aPosition;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+
+    void main() {
+      vTexCoord = aTexCoord;
+      vec4 positionVec4 = vec4(aPosition, 1.0);
+      positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+      gl_Position = positionVec4;
+    }
+  `;
+
+  const fragShader = `
+    precision highp float;
+    varying vec2 vTexCoord;
+
+    uniform vec3 uCenterColor;
+    uniform vec3 uEdgeColor;
+    uniform vec2 uCenter;
+    uniform vec2 uRadiusScale;
+    uniform vec2 uResolution;
+    uniform float uPower;
+    uniform float uEdgeEase;
+    uniform float uScatterIntensity;
+
+    // Hash function for noise
+    float hash(vec2 p) {
+      p = fract(p * vec2(123.34, 456.21));
+      p += dot(p, p + 45.32);
+      return fract(p.x * p.y);
+    }
+
+    // Quintic interpolation
+    float quintic(float t) {
+      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+    }
+
+    // 2D noise
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+
+      vec2 u = vec2(quintic(f.x), quintic(f.y));
+
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    }
+
+    // Fractal noise (multi-octave)
+    float fractalNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
+
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
+        amplitude *= 0.5;
+      }
+
+      return value;
+    }
+
+    void main() {
+      vec2 pos = vTexCoord;
+
+      // Add scatter effect
+      if (uScatterIntensity > 0.0) {
+        vec2 scatter = vec2(
+          fractalNoise(pos * uResolution),
+          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
+        );
+        pos += (scatter - 0.5) * uScatterIntensity;
+      }
+
+      // Calculate distance from center (elliptical)
+      float dist = length((pos - uCenter) / uRadiusScale);
+
+      // Apply power curve
+      dist = pow(dist, uPower);
+
+      // Apply edge easing
+      if (dist > 1.0 - uEdgeEase) {
+        float edgeT = (dist - (1.0 - uEdgeEase)) / uEdgeEase;
+        edgeT = smoothstep(0.0, 1.0, edgeT);
+        dist = mix(dist, 1.0, edgeT);
+      }
+
+      // Mix colors
+      vec3 color = mix(uCenterColor, uEdgeColor, dist);
+
+      gl_FragColor = vec4(color / 255.0, 1.0);
+    }
+  `;
+
+  // ============================================
+  // RAY CLASS
+  // ============================================
+
+  class Ray {
     constructor(index) {
       this.index = index;
-      this.angle = (index / PRODUCT_COUNT) * p.TWO_PI;
-      this.distance = 180;
-      this.size = 30;
-      this.pulse = 0;
-      this.updatePosition();
+      this.angle = (index / RAY_COUNT) * p.TWO_PI;
+      this.baseLength = p.random(RAY_MIN_LENGTH, RAY_MAX_LENGTH);
+      this.width = RAY_WIDTH_BASE + p.random(-RAY_WIDTH_VARIATION, RAY_WIDTH_VARIATION);
+      this.phaseOffset = p.random(p.TWO_PI);
     }
 
-    updatePosition() {
-      this.x = hub.x + p.cos(this.angle) * this.distance;
-      this.y = hub.y + p.sin(this.angle) * this.distance;
-    }
+    display(centerX, centerY) {
+      // Pulse effect - ray length varies with sine wave
+      let pulse = p.sin(animationTime * RAY_PULSE_SPEED + this.phaseOffset);
+      let currentLength = this.baseLength * (0.7 + pulse * 0.3);
 
-    display(mouseOnHub, mouseOnThis) {
-      // Color shifts from amber (hub) to violet (products)
-      let t = 0.7;
-      let r = p.lerp(AMBER.r, VIOLET.r, t);
-      let g = p.lerp(AMBER.g, VIOLET.g, t);
-      let b = p.lerp(AMBER.b, VIOLET.b, t);
+      // Calculate alpha based on pulse (brighter when extended)
+      let alpha = p.map(pulse, -1, 1, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
 
-      let size = this.size;
-      let alpha = 150;
+      // Calculate end point
+      let endX = centerX + p.cos(this.angle) * currentLength;
+      let endY = centerY + p.sin(this.angle) * currentLength;
 
-      // Pulse effect
-      if (this.pulse > 0) {
-        size += this.pulse * 10;
-        alpha += this.pulse * 50;
-        this.pulse -= 0.05;
-      }
-
-      // Mouse hover
-      if (mouseOnThis || mouseOnHub) {
-        size *= 1.2;
-        alpha = 255;
-      }
-
-      p.noStroke();
-      p.fill(r, g, b, alpha);
-      p.circle(this.x, this.y, size);
-
-      // Border
+      // Draw ray as tapered line (thicker at center, thinner at edges)
+      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
       p.noFill();
-      p.stroke(255, 255, 255, mouseOnThis || mouseOnHub ? 100 : 40);
-      p.strokeWeight(2);
-      p.circle(this.x, this.y, size);
-    }
 
-    drawConnection(mouseOnHub, mouseOnThis) {
-      let alpha = 30;
-      let weight = 1;
+      for (let i = 0; i < RAY_SEGMENT_COUNT; i++) {
+        let t1 = i / RAY_SEGMENT_COUNT;
+        let t2 = (i + 1) / RAY_SEGMENT_COUNT;
 
-      if (this.pulse > 0) {
-        alpha = 100;
-        weight = 3;
-      }
+        let x1 = p.lerp(centerX, endX, t1);
+        let y1 = p.lerp(centerY, endY, t1);
+        let x2 = p.lerp(centerX, endX, t2);
+        let y2 = p.lerp(centerY, endY, t2);
 
-      if (mouseOnHub || mouseOnThis) {
-        alpha = 150;
-        weight = 3;
-      }
+        // Taper width (wider at center, thinner at edges)
+        let width = this.width * (1 - t1 * 0.7);
+        p.strokeWeight(width);
 
-      // Gradient line (amber to violet)
-      for (let i = 0; i <= 20; i++) {
-        let t = i / 20;
-        let x = p.lerp(hub.x, this.x, t);
-        let y = p.lerp(hub.y, this.y, t);
-
-        let r = p.lerp(AMBER.r, VIOLET.r, t);
-        let g = p.lerp(AMBER.g, VIOLET.g, t);
-        let b = p.lerp(AMBER.b, VIOLET.b, t);
-
-        p.stroke(r, g, b, alpha);
-        p.strokeWeight(weight);
-        if (i > 0) {
-          let prevT = (i - 1) / 20;
-          let prevX = p.lerp(hub.x, this.x, prevT);
-          let prevY = p.lerp(hub.y, this.y, prevT);
-          p.line(prevX, prevY, x, y);
-        }
+        p.line(x1, y1, x2, y2);
       }
     }
   }
+
+  // ============================================
+  // GRADIENT FUNCTIONS
+  // ============================================
+
+  function createGradient() {
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    gradientBuffer.pixelDensity(1);
+
+    const shader = gradientBuffer.createShader(vertShader, fragShader);
+    gradientBuffer.shader(shader);
+
+    shader.setUniform('uCenterColor', [GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b]);
+    shader.setUniform('uEdgeColor', [GRADIENT_EDGE_COLOR.r, GRADIENT_EDGE_COLOR.g, GRADIENT_EDGE_COLOR.b]);
+    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+    shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uPower', GRADIENT_POWER);
+    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+    gradientBuffer.rect(0, 0, p.width, p.height);
+  }
+
+  function drawGradient() {
+    p.image(gradientBuffer, 0, 0);
+  }
+
+  // ============================================
+  // P5.JS LIFECYCLE
+  // ============================================
 
   const { observer } = createVisibilityObserver(p);
 
@@ -1134,86 +1703,41 @@ const impactSketch = (p) => {
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('impact-canvas');
 
-    hub.x = p.width / 2;
-    hub.y = p.height / 2;
+    createGradient();
 
-    for (let i = 0; i < PRODUCT_COUNT; i++) {
-      products.push(new Product(i));
+    // Initialize rays
+    for (let i = 0; i < RAY_COUNT; i++) {
+      rays.push(new Ray(i));
     }
 
     observer.observe(container);
   };
 
   p.draw = () => {
-    // Gradient background
-    for (let y = 0; y < p.height; y++) {
-      let inter = p.map(y, 0, p.height, 0, 1);
-      let c = p.lerpColor(p.color(20, 15, 10), p.color(15, 10, 25), inter);
-      p.stroke(c);
-      p.line(0, y, p.width, y);
-    }
+    // Draw gradient background
+    drawGradient();
 
-    time++;
-
-    // Check mouse on hub
-    let mouseOnHub = false;
-    if (p.mouseX > 0 && p.mouseY > 0) {
-      let d = p.dist(p.mouseX, p.mouseY, hub.x, hub.y);
-      mouseOnHub = d < hub.size / 2;
-
-      // Pulse on hover
-      if (mouseOnHub && time % 30 === 0) {
-        pulseTime = 1;
-        products.forEach(product => {
-          product.pulse = 1;
-        });
-      }
-    }
-
-    // Draw connections
-    products.forEach(product => {
-      let d = p.dist(p.mouseX, p.mouseY, product.x, product.y);
-      let mouseOnThis = d < product.size / 2;
-      product.drawConnection(mouseOnHub, mouseOnThis);
-    });
-
-    // Draw hub
-    let hubSize = hub.size;
-    if (mouseOnHub) {
-      hubSize *= 1.3;
-    }
-
+    // Apply fade effect
+    p.fill(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b, FADE_BACKGROUND_ALPHA);
     p.noStroke();
-    p.fill(AMBER.r, AMBER.g, AMBER.b, mouseOnHub ? 255 : 200);
-    p.circle(hub.x, hub.y, hubSize);
+    p.rect(0, 0, p.width, p.height);
 
-    // Hub border
-    p.noFill();
-    p.stroke(255, 255, 255, mouseOnHub ? 150 : 60);
-    p.strokeWeight(3);
-    p.circle(hub.x, hub.y, hubSize);
+    animationTime += 1;
 
-    // Draw products
-    products.forEach(product => {
-      let d = p.dist(p.mouseX, p.mouseY, product.x, product.y);
-      let mouseOnThis = d < product.size / 2;
-      product.display(mouseOnHub, mouseOnThis);
+    // Calculate center point (from gradient center position)
+    let centerX = p.width * GRADIENT_CENTER_X;
+    let centerY = p.height * GRADIENT_CENTER_Y;
+
+    // Draw rays
+    rays.forEach(ray => {
+      ray.display(centerX, centerY);
     });
-
-    // Hub label
-    p.noStroke();
-    p.fill(255, 255, 255, mouseOnHub ? 255 : 150);
-    p.textSize(10);
-    p.textAlign(p.CENTER, p.CENTER);
-    p.text('SYSTEM', hub.x, hub.y);
   };
 
   p.windowResized = () => {
     const container = document.getElementById('impact-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    hub.x = p.width / 2;
-    hub.y = p.height / 2;
-    products.forEach(product => product.updatePosition());
+    createGradient();
   };
 };
 

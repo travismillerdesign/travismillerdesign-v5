@@ -71,6 +71,7 @@ html {font-size: $fontSize-root;}
 hr {
 	border: none; /* Remove default border */
 	height: 1.5px; /* Set the height (thickness) of the line */
+	color: inherit;
 	background-color: currentColor; /* Set the color of the line */
 	margin: 1rem 0; /* Add top and bottom margin for spacing */
 }
