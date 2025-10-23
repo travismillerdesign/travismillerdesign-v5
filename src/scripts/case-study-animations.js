@@ -339,11 +339,16 @@ const approachSketch = (p) => {
   // CUSTOMIZATION VARIABLES
   // ============================================
 
-  // Linear Gradient Configuration (Green on White, bottom to top)
-  const GRADIENT_START_COLOR = { r: 34, g: 197, b: 94 };      // Green (bottom)
-  const GRADIENT_END_COLOR = { r: 255, g: 255, b: 255 };      // White (top)
-  const GRADIENT_ANGLE = 90;                                   // Vertical gradient (bottom to top)
-  const GRADIENT_SCATTER_INTENSITY = 0.02;                     // Scatter effect intensity
+  // Radial Gradient Configuration (Standardized - matches hero sketch)
+  const GRADIENT_CENTER_COLOR = { r: 34, g: 197, b: 94 };     // Green (center)
+  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White (edge)
+  const GRADIENT_CENTER_X = 0.5;                               // X position (0-1)
+  const GRADIENT_CENTER_Y = 0.5;                               // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.5;                         // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.5;                         // Y radius scale
+  const GRADIENT_POWER = 1;                                    // Falloff power
+  const GRADIENT_EDGE_EASE = 1;                                // Edge ease amount
+  const GRADIENT_SCATTER_INTENSITY = 0.02;                     // Scatter intensity
 
   // Fractal Tree Configuration
   const TREE_ANGLE = 30;                                       // Branch angle in degrees (wider spread to reduce overlap)
@@ -424,11 +429,10 @@ const approachSketch = (p) => {
   }
 
   // ============================================
-  // SHADER CODE
+  // SHADER CODE (Standardized - matches hero sketch)
   // ============================================
 
   const vertShader = `
-    precision highp float;
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -445,80 +449,66 @@ const approachSketch = (p) => {
     precision highp float;
     varying vec2 vTexCoord;
 
-    uniform vec3 uStartColor;
-    uniform vec3 uEndColor;
-    uniform float uAngle;
     uniform vec2 uResolution;
+    uniform vec2 uCenter;
+    uniform vec3 uCenterColor;
+    uniform vec3 uEdgeColor;
+    uniform vec2 uRadiusScale;
+    uniform float uPower;
+    uniform float uEdgeEase;
     uniform float uScatterIntensity;
 
-    // Hash function for noise
     float hash(vec2 p) {
-      p = fract(p * vec2(123.34, 456.21));
-      p += dot(p, p + 45.32);
-      return fract(p.x * p.y);
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
     }
 
-    // Quintic interpolation
-    float quintic(float t) {
-      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-    }
-
-    // 2D noise
     float noise(vec2 p) {
       vec2 i = floor(p);
       vec2 f = fract(p);
-
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
       float a = hash(i);
       float b = hash(i + vec2(1.0, 0.0));
       float c = hash(i + vec2(0.0, 1.0));
       float d = hash(i + vec2(1.0, 1.0));
-
-      vec2 u = vec2(quintic(f.x), quintic(f.y));
-
       return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
-    // Fractal noise (multi-octave)
     float fractalNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 1.0;
-
       for (int i = 0; i < 4; i++) {
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
       }
-
       return value;
     }
 
     void main() {
       vec2 pos = vTexCoord;
+      vec2 center = uCenter;
+      vec2 delta = pos - center;
+      delta.x /= uRadiusScale.x;
+      delta.y /= uRadiusScale.y;
+      float dist = length(delta);
 
-      // Add scatter effect
       if (uScatterIntensity > 0.0) {
-        vec2 scatter = vec2(
-          fractalNoise(pos * uResolution),
-          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
-        );
-        pos += (scatter - 0.5) * uScatterIntensity;
+        float noiseValue = fractalNoise(pos * uResolution);
+        dist += (noiseValue - 0.5) * uScatterIntensity;
       }
 
-      // Calculate linear gradient based on angle
-      vec2 center = vec2(0.5, 0.5);
-      vec2 fromCenter = pos - center;
+      float normalizedDist = pow(clamp(dist, 0.0, 1.0), uPower);
 
-      float angleRad = radians(uAngle);
-      vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
+      if (uEdgeEase > 0.0 && normalizedDist > (1.0 - uEdgeEase)) {
+        float edgeRegion = (normalizedDist - (1.0 - uEdgeEase)) / uEdgeEase;
+        normalizedDist = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
+      }
 
-      float gradientPos = dot(fromCenter, gradientDir) + 0.5;
-      gradientPos = clamp(gradientPos, 0.0, 1.0);
-
-      // Mix colors
-      vec3 color = mix(uStartColor, uEndColor, gradientPos);
-
-      gl_FragColor = vec4(color / 255.0, 1.0);
+      vec3 color = mix(uCenterColor, uEdgeColor, normalizedDist);
+      gl_FragColor = vec4(color, 1.0);
     }
   `;
 
@@ -580,12 +570,25 @@ const approachSketch = (p) => {
     const shader = gradientBuffer.createShader(vertShader, fragShader);
     gradientBuffer.shader(shader);
 
-    shader.setUniform('uStartColor', [GRADIENT_START_COLOR.r, GRADIENT_START_COLOR.g, GRADIENT_START_COLOR.b]);
-    shader.setUniform('uEndColor', [GRADIENT_END_COLOR.r, GRADIENT_END_COLOR.g, GRADIENT_END_COLOR.b]);
-    shader.setUniform('uAngle', GRADIENT_ANGLE);
     shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    shader.setUniform('uCenterColor', [
+      GRADIENT_CENTER_COLOR.r / 255.0,
+      GRADIENT_CENTER_COLOR.g / 255.0,
+      GRADIENT_CENTER_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uEdgeColor', [
+      GRADIENT_EDGE_COLOR.r / 255.0,
+      GRADIENT_EDGE_COLOR.g / 255.0,
+      GRADIENT_EDGE_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+    shader.setUniform('uPower', GRADIENT_POWER);
+    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
     shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
     gradientBuffer.rect(0, 0, p.width, p.height);
   }
 
@@ -629,7 +632,7 @@ const approachSketch = (p) => {
 
     // Apply subtle fade effect (only if needed)
     if (FADE_BACKGROUND_ALPHA > 0) {
-      p.fill(GRADIENT_START_COLOR.r, GRADIENT_START_COLOR.g, GRADIENT_START_COLOR.b, FADE_BACKGROUND_ALPHA);
+      p.fill(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b, FADE_BACKGROUND_ALPHA);
       p.noStroke();
       p.rect(0, 0, p.width, p.height);
     }
@@ -687,18 +690,16 @@ const foundationPrinciplesSketch = (p) => {
   const BREATHING_AMPLITUDE = 15; // Amplitude of breathing motion
   const CONNECTION_DISTANCE = 150; // Max distance for connections
 
-  // Dual-Radial Gradient configuration (RGB values 0-255)
-  const GRADIENT_CENTER1_COLOR = { r: 16, g: 185, b: 129 }; // Forest Green
-  const GRADIENT_CENTER2_COLOR = { r: 245, g: 158, b: 11 }; // Golden Yellow
-  const GRADIENT_EDGE_COLOR = { r: 240, g: 240, b: 235 }; // Light background
-  const GRADIENT_CENTER1_X = 0.3; // First focal point X
-  const GRADIENT_CENTER1_Y = 0.3; // First focal point Y
-  const GRADIENT_CENTER2_X = 0.7; // Second focal point X
-  const GRADIENT_CENTER2_Y = 0.7; // Second focal point Y
-  const GRADIENT_RADIUS_SCALE = 0.5;
-  const GRADIENT_POWER = 1.5;
-  const GRADIENT_EDGE_EASE = 0.3;
-  const GRADIENT_SCATTER_INTENSITY = 0.04;
+  // Radial Gradient Configuration (Standardized - matches hero sketch)
+  const GRADIENT_CENTER_COLOR = { r: 16, g: 185, b: 129 }; // Forest Green (center)
+  const GRADIENT_EDGE_COLOR = { r: 240, g: 240, b: 235 }; // Light background (edge)
+  const GRADIENT_CENTER_X = 0.5;                           // X position (0-1)
+  const GRADIENT_CENTER_Y = 0.5;                           // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.5;                     // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.5;                     // Y radius scale
+  const GRADIENT_POWER = 1.5;                              // Falloff power
+  const GRADIENT_EDGE_EASE = 0.3;                          // Edge ease amount
+  const GRADIENT_SCATTER_INTENSITY = 0.04;                 // Scatter intensity
 
   // Stroke style configuration
   const STROKE_COLOR = { r: 40, g: 60, b: 50 };
@@ -708,7 +709,7 @@ const foundationPrinciplesSketch = (p) => {
 
   const { observer} = createVisibilityObserver(p);
 
-  // Dual-radial gradient shader (simplified - combines two radial gradients)
+  // Shader Code (Standardized - matches hero sketch)
   const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
@@ -724,16 +725,15 @@ const foundationPrinciplesSketch = (p) => {
   const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
-    uniform vec3 uCenter1Color;
-    uniform vec3 uCenter2Color;
+
+    uniform vec2 uResolution;
+    uniform vec2 uCenter;
+    uniform vec3 uCenterColor;
     uniform vec3 uEdgeColor;
-    uniform vec2 uCenter1;
-    uniform vec2 uCenter2;
-    uniform float uRadiusScale;
+    uniform vec2 uRadiusScale;
     uniform float uPower;
     uniform float uEdgeEase;
     uniform float uScatterIntensity;
-    uniform vec2 uResolution;
 
     float hash(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -745,16 +745,20 @@ const foundationPrinciplesSketch = (p) => {
       vec2 i = floor(p);
       vec2 f = fract(p);
       vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
-      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
-                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
     float fractalNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
+      float frequency = 1.0;
       for (int i = 0; i < 4; i++) {
-        value += amplitude * noise(p);
-        p *= 2.0;
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
         amplitude *= 0.5;
       }
       return value;
@@ -762,22 +766,25 @@ const foundationPrinciplesSketch = (p) => {
 
     void main() {
       vec2 pos = vTexCoord;
-      float dist1 = length((pos - uCenter1) / uRadiusScale);
-      float dist2 = length((pos - uCenter2) / uRadiusScale);
+      vec2 center = uCenter;
+      vec2 delta = pos - center;
+      delta.x /= uRadiusScale.x;
+      delta.y /= uRadiusScale.y;
+      float dist = length(delta);
 
       if (uScatterIntensity > 0.0) {
         float noiseValue = fractalNoise(pos * uResolution);
-        dist1 += (noiseValue - 0.5) * uScatterIntensity;
-        dist2 += (noiseValue - 0.5) * uScatterIntensity;
+        dist += (noiseValue - 0.5) * uScatterIntensity;
       }
 
-      dist1 = pow(clamp(dist1, 0.0, 1.0), uPower);
-      dist2 = pow(clamp(dist2, 0.0, 1.0), uPower);
+      float normalizedDist = pow(clamp(dist, 0.0, 1.0), uPower);
 
-      vec3 color1 = mix(uCenter1Color, uEdgeColor, dist1);
-      vec3 color2 = mix(uCenter2Color, uEdgeColor, dist2);
-      vec3 color = mix(color1, color2, 0.5);
+      if (uEdgeEase > 0.0 && normalizedDist > (1.0 - uEdgeEase)) {
+        float edgeRegion = (normalizedDist - (1.0 - uEdgeEase)) / uEdgeEase;
+        normalizedDist = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
+      }
 
+      vec3 color = mix(uCenterColor, uEdgeColor, normalizedDist);
       gl_FragColor = vec4(color, 1.0);
     }
   `;
@@ -788,12 +795,18 @@ const foundationPrinciplesSketch = (p) => {
     gradientBuffer.shader(gradientShader);
 
     gradientShader.setUniform('uResolution', [p.width, p.height]);
-    gradientShader.setUniform('uCenter1', [GRADIENT_CENTER1_X, GRADIENT_CENTER1_Y]);
-    gradientShader.setUniform('uCenter2', [GRADIENT_CENTER2_X, GRADIENT_CENTER2_Y]);
-    gradientShader.setUniform('uCenter1Color', [GRADIENT_CENTER1_COLOR.r / 255, GRADIENT_CENTER1_COLOR.g / 255, GRADIENT_CENTER1_COLOR.b / 255]);
-    gradientShader.setUniform('uCenter2Color', [GRADIENT_CENTER2_COLOR.r / 255, GRADIENT_CENTER2_COLOR.g / 255, GRADIENT_CENTER2_COLOR.b / 255]);
-    gradientShader.setUniform('uEdgeColor', [GRADIENT_EDGE_COLOR.r / 255, GRADIENT_EDGE_COLOR.g / 255, GRADIENT_EDGE_COLOR.b / 255]);
-    gradientShader.setUniform('uRadiusScale', GRADIENT_RADIUS_SCALE);
+    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    gradientShader.setUniform('uCenterColor', [
+      GRADIENT_CENTER_COLOR.r / 255.0,
+      GRADIENT_CENTER_COLOR.g / 255.0,
+      GRADIENT_CENTER_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uEdgeColor', [
+      GRADIENT_EDGE_COLOR.r / 255.0,
+      GRADIENT_EDGE_COLOR.g / 255.0,
+      GRADIENT_EDGE_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
     gradientShader.setUniform('uPower', GRADIENT_POWER);
     gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
     gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
@@ -889,15 +902,16 @@ const implementationSketch = (p) => {
   const ROTATION_SPEED = 0.01; // Shape rotation speed
   const RADIUS = 180; // Distance from center
 
-  // Conic/Angular Gradient configuration (RGB values 0-255)
-  const GRADIENT_START_COLOR = { r: 236, g: 72, b: 153 }; // Magenta
-  const GRADIENT_END_COLOR = { r: 20, g: 184, b: 166 }; // Teal
-  const GRADIENT_CENTER_X = 0.5;
-  const GRADIENT_CENTER_Y = 0.5;
-  const GRADIENT_ROTATION = 0; // Rotation offset in degrees
-  const GRADIENT_POWER = 1.0;
-  const GRADIENT_EDGE_EASE = 0.25;
-  const GRADIENT_SCATTER_INTENSITY = 0.035;
+  // Radial Gradient Configuration (Standardized - matches hero sketch)
+  const GRADIENT_CENTER_COLOR = { r: 236, g: 72, b: 153 }; // Magenta (center)
+  const GRADIENT_EDGE_COLOR = { r: 20, g: 184, b: 166 }; // Teal (edge)
+  const GRADIENT_CENTER_X = 0.5;                         // X position (0-1)
+  const GRADIENT_CENTER_Y = 0.5;                         // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.5;                   // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.5;                   // Y radius scale
+  const GRADIENT_POWER = 1.0;                            // Falloff power
+  const GRADIENT_EDGE_EASE = 0.25;                       // Edge ease amount
+  const GRADIENT_SCATTER_INTENSITY = 0.035;              // Scatter intensity
 
   // Stroke style configuration
   const STROKE_COLOR = { r: 30, g: 20, b: 40 };
@@ -907,7 +921,7 @@ const implementationSketch = (p) => {
 
   const { observer } = createVisibilityObserver(p);
 
-  // Conic/Angular gradient shader
+  // Shader Code (Standardized - matches hero sketch)
   const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
@@ -923,14 +937,15 @@ const implementationSketch = (p) => {
   const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
-    uniform vec3 uStartColor;
-    uniform vec3 uEndColor;
+
+    uniform vec2 uResolution;
     uniform vec2 uCenter;
-    uniform float uRotation;
+    uniform vec3 uCenterColor;
+    uniform vec3 uEdgeColor;
+    uniform vec2 uRadiusScale;
     uniform float uPower;
     uniform float uEdgeEase;
     uniform float uScatterIntensity;
-    uniform vec2 uResolution;
 
     float hash(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -942,40 +957,46 @@ const implementationSketch = (p) => {
       vec2 i = floor(p);
       vec2 f = fract(p);
       vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
-      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
-                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
     float fractalNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
+      float frequency = 1.0;
       for (int i = 0; i < 4; i++) {
-        value += amplitude * noise(p);
-        p *= 2.0;
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
         amplitude *= 0.5;
       }
       return value;
     }
 
     void main() {
-      vec2 pos = vTexCoord - uCenter;
-      float angle = atan(pos.y, pos.x) + radians(uRotation);
-      float normalizedAngle = (angle + 3.14159265) / (2.0 * 3.14159265);
+      vec2 pos = vTexCoord;
+      vec2 center = uCenter;
+      vec2 delta = pos - center;
+      delta.x /= uRadiusScale.x;
+      delta.y /= uRadiusScale.y;
+      float dist = length(delta);
 
       if (uScatterIntensity > 0.0) {
-        float noiseValue = fractalNoise(vTexCoord * uResolution);
-        normalizedAngle += (noiseValue - 0.5) * uScatterIntensity;
+        float noiseValue = fractalNoise(pos * uResolution);
+        dist += (noiseValue - 0.5) * uScatterIntensity;
       }
 
-      normalizedAngle = fract(normalizedAngle);
-      normalizedAngle = pow(normalizedAngle, uPower);
+      float normalizedDist = pow(clamp(dist, 0.0, 1.0), uPower);
 
-      if (uEdgeEase > 0.0 && normalizedAngle > (1.0 - uEdgeEase)) {
-        float edgeRegion = (normalizedAngle - (1.0 - uEdgeEase)) / uEdgeEase;
-        normalizedAngle = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
+      if (uEdgeEase > 0.0 && normalizedDist > (1.0 - uEdgeEase)) {
+        float edgeRegion = (normalizedDist - (1.0 - uEdgeEase)) / uEdgeEase;
+        normalizedDist = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
       }
 
-      vec3 color = mix(uStartColor, uEndColor, normalizedAngle);
+      vec3 color = mix(uCenterColor, uEdgeColor, normalizedDist);
       gl_FragColor = vec4(color, 1.0);
     }
   `;
@@ -987,9 +1008,17 @@ const implementationSketch = (p) => {
 
     gradientShader.setUniform('uResolution', [p.width, p.height]);
     gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    gradientShader.setUniform('uStartColor', [GRADIENT_START_COLOR.r / 255, GRADIENT_START_COLOR.g / 255, GRADIENT_START_COLOR.b / 255]);
-    gradientShader.setUniform('uEndColor', [GRADIENT_END_COLOR.r / 255, GRADIENT_END_COLOR.g / 255, GRADIENT_END_COLOR.b / 255]);
-    gradientShader.setUniform('uRotation', GRADIENT_ROTATION);
+    gradientShader.setUniform('uCenterColor', [
+      GRADIENT_CENTER_COLOR.r / 255.0,
+      GRADIENT_CENTER_COLOR.g / 255.0,
+      GRADIENT_CENTER_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uEdgeColor', [
+      GRADIENT_EDGE_COLOR.r / 255.0,
+      GRADIENT_EDGE_COLOR.g / 255.0,
+      GRADIENT_EDGE_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
     gradientShader.setUniform('uPower', GRADIENT_POWER);
     gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
     gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
@@ -1113,11 +1142,10 @@ const enablementSketch = (p) => {
   let waves = [];
 
   // ============================================
-  // SHADER CODE
+  // SHADER CODE (Standardized - matches hero sketch)
   // ============================================
 
   const vertShader = `
-    precision highp float;
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -1134,86 +1162,66 @@ const enablementSketch = (p) => {
     precision highp float;
     varying vec2 vTexCoord;
 
+    uniform vec2 uResolution;
+    uniform vec2 uCenter;
     uniform vec3 uCenterColor;
     uniform vec3 uEdgeColor;
-    uniform vec2 uCenter;
     uniform vec2 uRadiusScale;
-    uniform vec2 uResolution;
     uniform float uPower;
     uniform float uEdgeEase;
     uniform float uScatterIntensity;
 
-    // Hash function for noise
     float hash(vec2 p) {
-      p = fract(p * vec2(123.34, 456.21));
-      p += dot(p, p + 45.32);
-      return fract(p.x * p.y);
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
     }
 
-    // Quintic interpolation
-    float quintic(float t) {
-      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-    }
-
-    // 2D noise
     float noise(vec2 p) {
       vec2 i = floor(p);
       vec2 f = fract(p);
-
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
       float a = hash(i);
       float b = hash(i + vec2(1.0, 0.0));
       float c = hash(i + vec2(0.0, 1.0));
       float d = hash(i + vec2(1.0, 1.0));
-
-      vec2 u = vec2(quintic(f.x), quintic(f.y));
-
       return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
-    // Fractal noise (multi-octave)
     float fractalNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 1.0;
-
       for (int i = 0; i < 4; i++) {
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
       }
-
       return value;
     }
 
     void main() {
       vec2 pos = vTexCoord;
+      vec2 center = uCenter;
+      vec2 delta = pos - center;
+      delta.x /= uRadiusScale.x;
+      delta.y /= uRadiusScale.y;
+      float dist = length(delta);
 
-      // Add scatter effect
       if (uScatterIntensity > 0.0) {
-        vec2 scatter = vec2(
-          fractalNoise(pos * uResolution),
-          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
-        );
-        pos += (scatter - 0.5) * uScatterIntensity;
+        float noiseValue = fractalNoise(pos * uResolution);
+        dist += (noiseValue - 0.5) * uScatterIntensity;
       }
 
-      // Calculate distance from center (elliptical)
-      float dist = length((pos - uCenter) / uRadiusScale);
+      float normalizedDist = pow(clamp(dist, 0.0, 1.0), uPower);
 
-      // Apply power curve
-      dist = pow(dist, uPower);
-
-      // Apply edge easing
-      if (dist > 1.0 - uEdgeEase) {
-        float edgeT = (dist - (1.0 - uEdgeEase)) / uEdgeEase;
-        edgeT = smoothstep(0.0, 1.0, edgeT);
-        dist = mix(dist, 1.0, edgeT);
+      if (uEdgeEase > 0.0 && normalizedDist > (1.0 - uEdgeEase)) {
+        float edgeRegion = (normalizedDist - (1.0 - uEdgeEase)) / uEdgeEase;
+        normalizedDist = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
       }
 
-      // Mix colors
-      vec3 color = mix(uCenterColor, uEdgeColor, dist);
-
-      gl_FragColor = vec4(color / 255.0, 1.0);
+      vec3 color = mix(uCenterColor, uEdgeColor, normalizedDist);
+      gl_FragColor = vec4(color, 1.0);
     }
   `;
 
@@ -1272,15 +1280,25 @@ const enablementSketch = (p) => {
     const shader = gradientBuffer.createShader(vertShader, fragShader);
     gradientBuffer.shader(shader);
 
-    shader.setUniform('uCenterColor', [GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b]);
-    shader.setUniform('uEdgeColor', [GRADIENT_EDGE_COLOR.r, GRADIENT_EDGE_COLOR.g, GRADIENT_EDGE_COLOR.b]);
-    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
     shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    shader.setUniform('uCenterColor', [
+      GRADIENT_CENTER_COLOR.r / 255.0,
+      GRADIENT_CENTER_COLOR.g / 255.0,
+      GRADIENT_CENTER_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uEdgeColor', [
+      GRADIENT_EDGE_COLOR.r / 255.0,
+      GRADIENT_EDGE_COLOR.g / 255.0,
+      GRADIENT_EDGE_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
     shader.setUniform('uPower', GRADIENT_POWER);
     shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
     shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
     gradientBuffer.rect(0, 0, p.width, p.height);
   }
 
@@ -1355,13 +1373,16 @@ const evolutionSketch = (p) => {
   // CUSTOMIZATION VARIABLES
   // ============================================
 
-  // Morphing Gradient Configuration
-  const GRADIENT_START_COLOR = { r: 220, g: 38, b: 38 };      // Ruby Red
-  const GRADIENT_END_COLOR = { r: 14, g: 165, b: 233 };       // Sky Blue
-  const GRADIENT_ANGLE_START = 135;                            // Starting angle (degrees)
-  const GRADIENT_ANGLE_END = 45;                               // Ending angle (degrees)
-  const GRADIENT_MORPH_SPEED = 0.003;                          // How fast gradient rotates
-  const GRADIENT_SCATTER_INTENSITY = 0.03;                     // Scatter effect intensity
+  // Gradient Configuration (standardized radial gradient)
+  const GRADIENT_CENTER_COLOR = { r: 220, g: 38, b: 38 };      // Ruby Red
+  const GRADIENT_EDGE_COLOR = { r: 14, g: 165, b: 233 };       // Sky Blue
+  const GRADIENT_CENTER_X = 0.5;                                // Center X position (0-1)
+  const GRADIENT_CENTER_Y = 0.5;                                // Center Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.5;                          // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.5;                          // Y radius scale
+  const GRADIENT_POWER = 1.0;                                   // Gradient power curve
+  const GRADIENT_EDGE_EASE = 0.2;                               // Edge easing
+  const GRADIENT_SCATTER_INTENSITY = 0.03;                      // Scatter effect intensity
 
   // Shape Morphing Configuration
   const SIMPLE_SIDES = 3;                                      // Triangle (simple state)
@@ -1404,80 +1425,66 @@ const evolutionSketch = (p) => {
     precision highp float;
     varying vec2 vTexCoord;
 
-    uniform vec3 uStartColor;
-    uniform vec3 uEndColor;
-    uniform float uAngle;
     uniform vec2 uResolution;
+    uniform vec2 uCenter;
+    uniform vec3 uCenterColor;
+    uniform vec3 uEdgeColor;
+    uniform vec2 uRadiusScale;
+    uniform float uPower;
+    uniform float uEdgeEase;
     uniform float uScatterIntensity;
 
-    // Hash function for noise
     float hash(vec2 p) {
-      p = fract(p * vec2(123.34, 456.21));
-      p += dot(p, p + 45.32);
-      return fract(p.x * p.y);
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
     }
 
-    // Quintic interpolation
-    float quintic(float t) {
-      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-    }
-
-    // 2D noise
     float noise(vec2 p) {
       vec2 i = floor(p);
       vec2 f = fract(p);
-
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
       float a = hash(i);
       float b = hash(i + vec2(1.0, 0.0));
       float c = hash(i + vec2(0.0, 1.0));
       float d = hash(i + vec2(1.0, 1.0));
-
-      vec2 u = vec2(quintic(f.x), quintic(f.y));
-
       return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
-    // Fractal noise (multi-octave)
     float fractalNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 1.0;
-
       for (int i = 0; i < 4; i++) {
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
       }
-
       return value;
     }
 
     void main() {
       vec2 pos = vTexCoord;
+      vec2 center = uCenter;
+      vec2 delta = pos - center;
+      delta.x /= uRadiusScale.x;
+      delta.y /= uRadiusScale.y;
+      float dist = length(delta);
 
-      // Add scatter effect
       if (uScatterIntensity > 0.0) {
-        vec2 scatter = vec2(
-          fractalNoise(pos * uResolution),
-          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
-        );
-        pos += (scatter - 0.5) * uScatterIntensity;
+        float noiseValue = fractalNoise(pos * uResolution);
+        dist += (noiseValue - 0.5) * uScatterIntensity;
       }
 
-      // Calculate linear gradient based on angle
-      vec2 center = vec2(0.5, 0.5);
-      vec2 fromCenter = pos - center;
+      float normalizedDist = pow(clamp(dist, 0.0, 1.0), uPower);
 
-      float angleRad = radians(uAngle);
-      vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
+      if (uEdgeEase > 0.0 && normalizedDist > (1.0 - uEdgeEase)) {
+        float edgeRegion = (normalizedDist - (1.0 - uEdgeEase)) / uEdgeEase;
+        normalizedDist = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
+      }
 
-      float gradientPos = dot(fromCenter, gradientDir) + 0.5;
-      gradientPos = clamp(gradientPos, 0.0, 1.0);
-
-      // Mix colors
-      vec3 color = mix(uStartColor, uEndColor, gradientPos);
-
-      gl_FragColor = vec4(color / 255.0, 1.0);
+      vec3 color = mix(uCenterColor, uEdgeColor, normalizedDist);
+      gl_FragColor = vec4(color, 1.0);
     }
   `;
 
@@ -1533,19 +1540,32 @@ const evolutionSketch = (p) => {
   // GRADIENT FUNCTIONS
   // ============================================
 
-  function createGradient(angle) {
+  function createGradient() {
     gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
     gradientBuffer.pixelDensity(1);
 
     const shader = gradientBuffer.createShader(vertShader, fragShader);
     gradientBuffer.shader(shader);
 
-    shader.setUniform('uStartColor', [GRADIENT_START_COLOR.r, GRADIENT_START_COLOR.g, GRADIENT_START_COLOR.b]);
-    shader.setUniform('uEndColor', [GRADIENT_END_COLOR.r, GRADIENT_END_COLOR.g, GRADIENT_END_COLOR.b]);
-    shader.setUniform('uAngle', angle);
     shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    shader.setUniform('uCenterColor', [
+      GRADIENT_CENTER_COLOR.r / 255.0,
+      GRADIENT_CENTER_COLOR.g / 255.0,
+      GRADIENT_CENTER_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uEdgeColor', [
+      GRADIENT_EDGE_COLOR.r / 255.0,
+      GRADIENT_EDGE_COLOR.g / 255.0,
+      GRADIENT_EDGE_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+    shader.setUniform('uPower', GRADIENT_POWER);
+    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
     shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
     gradientBuffer.rect(0, 0, p.width, p.height);
   }
 
@@ -1566,7 +1586,7 @@ const evolutionSketch = (p) => {
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('evolution-canvas');
 
-    createGradient(GRADIENT_ANGLE_START);
+    createGradient();
 
     // Initialize shapes
     for (let i = 0; i < SHAPE_COUNT; i++) {
@@ -1580,17 +1600,13 @@ const evolutionSketch = (p) => {
     // Calculate morph progress (oscillates between 0 and 1)
     let morphProgress = (p.sin(animationTime / MORPH_CYCLE_DURATION * p.TWO_PI) + 1) / 2;
 
-    // Calculate gradient angle based on morph
-    let currentAngle = p.lerp(GRADIENT_ANGLE_START, GRADIENT_ANGLE_END, morphProgress);
-    createGradient(currentAngle);
-
     // Draw gradient background
     drawGradient();
 
     // Apply fade effect
-    let fadeR = p.lerp(GRADIENT_START_COLOR.r, GRADIENT_END_COLOR.r, morphProgress);
-    let fadeG = p.lerp(GRADIENT_START_COLOR.g, GRADIENT_END_COLOR.g, morphProgress);
-    let fadeB = p.lerp(GRADIENT_START_COLOR.b, GRADIENT_END_COLOR.b, morphProgress);
+    let fadeR = p.lerp(GRADIENT_CENTER_COLOR.r, GRADIENT_EDGE_COLOR.r, morphProgress);
+    let fadeG = p.lerp(GRADIENT_CENTER_COLOR.g, GRADIENT_EDGE_COLOR.g, morphProgress);
+    let fadeB = p.lerp(GRADIENT_CENTER_COLOR.b, GRADIENT_EDGE_COLOR.b, morphProgress);
     p.fill(fadeR, fadeG, fadeB, FADE_BACKGROUND_ALPHA);
     p.noStroke();
     p.rect(0, 0, p.width, p.height);
@@ -1611,7 +1627,7 @@ const evolutionSketch = (p) => {
   p.windowResized = () => {
     const container = document.getElementById('evolution-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createGradient(GRADIENT_ANGLE_START);
+    createGradient();
   };
 };
 
@@ -1680,86 +1696,66 @@ const impactSketch = (p) => {
     precision highp float;
     varying vec2 vTexCoord;
 
+    uniform vec2 uResolution;
+    uniform vec2 uCenter;
     uniform vec3 uCenterColor;
     uniform vec3 uEdgeColor;
-    uniform vec2 uCenter;
     uniform vec2 uRadiusScale;
-    uniform vec2 uResolution;
     uniform float uPower;
     uniform float uEdgeEase;
     uniform float uScatterIntensity;
 
-    // Hash function for noise
     float hash(vec2 p) {
-      p = fract(p * vec2(123.34, 456.21));
-      p += dot(p, p + 45.32);
-      return fract(p.x * p.y);
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
     }
 
-    // Quintic interpolation
-    float quintic(float t) {
-      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-    }
-
-    // 2D noise
     float noise(vec2 p) {
       vec2 i = floor(p);
       vec2 f = fract(p);
-
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
       float a = hash(i);
       float b = hash(i + vec2(1.0, 0.0));
       float c = hash(i + vec2(0.0, 1.0));
       float d = hash(i + vec2(1.0, 1.0));
-
-      vec2 u = vec2(quintic(f.x), quintic(f.y));
-
       return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
-    // Fractal noise (multi-octave)
     float fractalNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 1.0;
-
       for (int i = 0; i < 4; i++) {
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
       }
-
       return value;
     }
 
     void main() {
       vec2 pos = vTexCoord;
+      vec2 center = uCenter;
+      vec2 delta = pos - center;
+      delta.x /= uRadiusScale.x;
+      delta.y /= uRadiusScale.y;
+      float dist = length(delta);
 
-      // Add scatter effect
       if (uScatterIntensity > 0.0) {
-        vec2 scatter = vec2(
-          fractalNoise(pos * uResolution),
-          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
-        );
-        pos += (scatter - 0.5) * uScatterIntensity;
+        float noiseValue = fractalNoise(pos * uResolution);
+        dist += (noiseValue - 0.5) * uScatterIntensity;
       }
 
-      // Calculate distance from center (elliptical)
-      float dist = length((pos - uCenter) / uRadiusScale);
+      float normalizedDist = pow(clamp(dist, 0.0, 1.0), uPower);
 
-      // Apply power curve
-      dist = pow(dist, uPower);
-
-      // Apply edge easing
-      if (dist > 1.0 - uEdgeEase) {
-        float edgeT = (dist - (1.0 - uEdgeEase)) / uEdgeEase;
-        edgeT = smoothstep(0.0, 1.0, edgeT);
-        dist = mix(dist, 1.0, edgeT);
+      if (uEdgeEase > 0.0 && normalizedDist > (1.0 - uEdgeEase)) {
+        float edgeRegion = (normalizedDist - (1.0 - uEdgeEase)) / uEdgeEase;
+        normalizedDist = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
       }
 
-      // Mix colors
-      vec3 color = mix(uCenterColor, uEdgeColor, dist);
-
-      gl_FragColor = vec4(color / 255.0, 1.0);
+      vec3 color = mix(uCenterColor, uEdgeColor, normalizedDist);
+      gl_FragColor = vec4(color, 1.0);
     }
   `;
 
@@ -1821,15 +1817,25 @@ const impactSketch = (p) => {
     const shader = gradientBuffer.createShader(vertShader, fragShader);
     gradientBuffer.shader(shader);
 
-    shader.setUniform('uCenterColor', [GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b]);
-    shader.setUniform('uEdgeColor', [GRADIENT_EDGE_COLOR.r, GRADIENT_EDGE_COLOR.g, GRADIENT_EDGE_COLOR.b]);
-    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
     shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    shader.setUniform('uCenterColor', [
+      GRADIENT_CENTER_COLOR.r / 255.0,
+      GRADIENT_CENTER_COLOR.g / 255.0,
+      GRADIENT_CENTER_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uEdgeColor', [
+      GRADIENT_EDGE_COLOR.r / 255.0,
+      GRADIENT_EDGE_COLOR.g / 255.0,
+      GRADIENT_EDGE_COLOR.b / 255.0
+    ]);
+    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
     shader.setUniform('uPower', GRADIENT_POWER);
     shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
     shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
     gradientBuffer.rect(0, 0, p.width, p.height);
   }
 
