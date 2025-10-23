@@ -1802,19 +1802,19 @@ const evolutionSketch = (p) => {
   // ============================================
 
   // Left Group Configuration
-  const LEFT_INSTANCE_COUNT = 20;                    // Number of overlayed infinities
+  const LEFT_INSTANCE_COUNT = 10;                    // Number of overlayed infinities
   const LEFT_BASE_SIZE = 300;                        // Base size of infinity shape
-  const LEFT_SCALE_Y_MIN = -1;                     // Minimum vertical scale
-  const LEFT_SCALE_Y_MAX = 1.0;                     // Maximum vertical scale
+  const LEFT_SCALE_Y_MIN = -1;                    // Minimum vertical scale (negative for bottom half)
+  const LEFT_SCALE_Y_MAX = 1;                     // Maximum vertical scale (positive for top half)
   const LEFT_ANIMATION_SPEED = 0.005;               // Rotation speed
   const LEFT_CENTER_X = 0.25;                       // X position (0-1)
   const LEFT_CENTER_Y = 0.5;                        // Y position (0-1)
 
   // Right Group Configuration
-  const RIGHT_INSTANCE_COUNT = 50;                  // Number of overlayed infinities (more than left)
+  const RIGHT_INSTANCE_COUNT = 10;                  // Number of overlayed infinities (more than left)
   const RIGHT_BASE_SIZE = 300;                      // Base size of infinity shape
-  const RIGHT_SCALE_Y_MIN = 0.2;                    // Minimum vertical scale
-  const RIGHT_SCALE_Y_MAX = 1.0;                    // Maximum vertical scale
+  const RIGHT_SCALE_Y_MIN = -1.0;                   // Minimum vertical scale (negative for bottom half)
+  const RIGHT_SCALE_Y_MAX = 1.0;                    // Maximum vertical scale (positive for top half)
   const RIGHT_ANIMATION_SPEED = 0.008;              // Rotation speed (independent from left)
   const RIGHT_CENTER_X = 0.75;                      // X position (0-1)
   const RIGHT_CENTER_Y = 0.5;                       // Y position (0-1)
@@ -1823,7 +1823,7 @@ const evolutionSketch = (p) => {
   const LISSAJOUS_FREQ_RATIO = 2.0;                 // Frequency ratio for infinity (2:1)
   const LISSAJOUS_PHASE_OFFSET = Math.PI;           // Phase for infinity shape
   const LISSAJOUS_RESOLUTION = 200;                 // Points in curve
-  const LISSAJOUS_SCALE_X = 1.0;                    // Horizontal scale multiplier
+  const LISSAJOUS_SCALE_X = 1;                    // Horizontal scale multiplier
 
   // Stroke Style (matching hero sketch)
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };       // Black
@@ -1831,9 +1831,13 @@ const evolutionSketch = (p) => {
   const STROKE_ALPHA_MIN = 30;                      // Minimum opacity (far instances)
   const STROKE_ALPHA_MAX = 100;                     // Maximum opacity (close instances)
 
+  // Rolling Wheel Effect Configuration
+  const SHOW_STATIC_OUTER_CURVE = true;             // Show static outer "8" at max scale (background)
+  const VISIBILITY_THRESHOLD = 0;                 // Only show instances with scaleY > this (0-1, creates rolling effect)
+
   // Gradient Configuration (Amber + Violet)
   const GRADIENT_CENTER_COLOR = { r: 245, g: 158, b: 11 };  // Amber
-  const GRADIENT_EDGE_COLOR = { r: 139, g: 92, b: 246 };     // Violet
+  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // Violet
   const GRADIENT_CENTER_X = 0.5;                    // Center X position (0-1)
   const GRADIENT_CENTER_Y = 0.5;                    // Center Y position (0-1)
   const GRADIENT_RADIUS_SCALE_X = 0.5;              // X radius scale
@@ -1940,35 +1944,71 @@ const evolutionSketch = (p) => {
 
   // Calculate a single point on the Lissajous curve
   function calculateLissajousPoint(t, scaleX, scaleY) {
-    let x = Math.sin(t) * scaleX;
-    let y = Math.sin(LISSAJOUS_FREQ_RATIO * t + LISSAJOUS_PHASE_OFFSET) * scaleY;
+    // Swap x and y to rotate 90 degrees - creates vertical "8" instead of horizontal "∞"
+    let x = Math.sin(LISSAJOUS_FREQ_RATIO * t + LISSAJOUS_PHASE_OFFSET) * scaleX;
+    let y = Math.sin(t) * scaleY;
     return { x, y };
   }
 
   // Draw a single Lissajous infinity curve
-  function drawLissajousInfinity(centerX, centerY, baseSize, scaleY, alpha) {
+  function drawLissajousInfinity(centerX, centerY, baseSize, scaleY, alpha, drawFullCurve = false) {
     p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
     p.strokeWeight(STROKE_WEIGHT);
     p.noFill();
 
+    // Determine which half of the curve to draw based on scale sign
+    let tStart, tEnd;
+    let absScaleY = Math.abs(scaleY);
+
+    if (drawFullCurve) {
+      // Draw complete "8" shape (for static outer curve)
+      tStart = 0;
+      tEnd = p.TWO_PI;
+    } else if (scaleY >= 0) {
+      // Positive scale: draw top half (teardrop shape)
+      tStart = 0;
+      tEnd = p.PI;
+    } else {
+      // Negative scale: draw bottom half (upside-down teardrop)
+      tStart = p.PI;
+      tEnd = p.TWO_PI;
+    }
+
     p.beginShape();
     for (let i = 0; i <= LISSAJOUS_RESOLUTION; i++) {
-      let t = p.map(i, 0, LISSAJOUS_RESOLUTION, 0, p.TWO_PI);
-      let point = calculateLissajousPoint(t, baseSize * LISSAJOUS_SCALE_X, baseSize * scaleY);
+      let t = p.map(i, 0, LISSAJOUS_RESOLUTION, tStart, tEnd);
+      let point = calculateLissajousPoint(t, baseSize * LISSAJOUS_SCALE_X, baseSize * absScaleY);
       p.vertex(centerX + point.x, centerY + point.y);
     }
     p.endShape();
   }
 
+  // Draw static outer curve (background element for rolling wheel effect)
+  function drawStaticOuterCurve(centerX, centerY, baseSize) {
+    // Draw static "8" at maximum scale with very low opacity (background anchor)
+    let alpha = STROKE_ALPHA_MIN * 0.5;  // Even more subtle than minimum
+    drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, 1.0, alpha, true);
+  }
+
   // Draw a group of rotating Lissajous infinities
   function drawLissajousGroup(centerX, centerY, instanceCount, baseSize, scaleMin, scaleMax, animSpeed) {
     for (let i = 0; i < instanceCount; i++) {
-      // Calculate phase offset for this instance (staggered)
-      let phaseOffset = (i / instanceCount) * p.TWO_PI;
+      // Evenly distribute instances across the scale range (0 to 1)
+      let scalePosition = i / (instanceCount - 1);
 
-      // Calculate current vertical scale (cycles over time to create rotation illusion)
-      let scaleProgress = (animationTime * animSpeed + phaseOffset) % p.TWO_PI;
-      let scaleY = p.lerp(scaleMin, scaleMax, (p.sin(scaleProgress) + 1) / 2);
+      // Add animation rotation offset (all instances rotate together)
+      let animationOffset = (animationTime * animSpeed) % 1.0;
+      scalePosition = (scalePosition + animationOffset) % 1.0;
+
+      // Map to scale range (creates even spacing for 3D illusion)
+      let scaleY = p.lerp(scaleMin, scaleMax, scalePosition);
+
+      // ONLY DRAW INSTANCES IN THE FRONT (above visibility threshold)
+      // This creates the rolling wheel effect - back half is hidden
+      let normalizedScale = (scaleY - scaleMin) / (scaleMax - scaleMin);  // 0 to 1
+      if (normalizedScale < VISIBILITY_THRESHOLD) {
+        continue;  // Skip this instance - it's in the "back"
+      }
 
       // Calculate opacity based on scale (larger = closer = more opaque)
       let alpha = p.map(scaleY, scaleMin, scaleMax, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
@@ -2034,7 +2074,13 @@ const evolutionSketch = (p) => {
     // Increment animation time
     animationTime += 1;
 
-    // Draw left group
+    // Draw static outer curves FIRST (background)
+    if (SHOW_STATIC_OUTER_CURVE) {
+      drawStaticOuterCurve(LEFT_CENTER_X, LEFT_CENTER_Y, LEFT_BASE_SIZE);
+      drawStaticOuterCurve(RIGHT_CENTER_X, RIGHT_CENTER_Y, RIGHT_BASE_SIZE);
+    }
+
+    // Draw animated left group (foreground)
     drawLissajousGroup(
       LEFT_CENTER_X,
       LEFT_CENTER_Y,
@@ -2045,7 +2091,7 @@ const evolutionSketch = (p) => {
       LEFT_ANIMATION_SPEED
     );
 
-    // Draw right group
+    // Draw animated right group (foreground)
     drawLissajousGroup(
       RIGHT_CENTER_X,
       RIGHT_CENTER_Y,
