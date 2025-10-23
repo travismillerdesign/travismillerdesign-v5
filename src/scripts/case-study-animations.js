@@ -1075,12 +1075,13 @@ const implementationSketch = (p) => {
   const PATH_ARC_AMOUNT = 0.03;                          // Curvature (0 = straight, 1 = high arc)
   const PATH_ARC_DIRECTION = -1;                          // Arc direction (1 = up/right, -1 = down/left)
   const PATH_SPACING_TAPER_INTENSITY = 1;              // Spacing variation (0 = even spacing, 1 = max variation)
-  const PATH_SPACING_TAPER_CURVE = "sine";               // "linear", "parabolic", "sine", "exponential"
+  const PATH_SPACING_TAPER_CURVE = "parabolic";               // "linear", "parabolic", "sine", "exponential"
 
   // Wave Animation Configuration
-  const WAVE_FREQUENCY = 1;                              // Number of complete waves
-  const WAVE_AMPLITUDE = 0.8;                            // Size variation (0.3 = ±30%)
+  const WAVE_FREQUENCY = 1.5;                              // Number of complete waves
+  const WAVE_AMPLITUDE = 0.9;                            // Size variation (0.3 = ±30%)
   const WAVE_SPEED = 0.005;                               // Speed of wave movement
+  const WAVE_CIRCULARITY_INTENSITY = 0.8;                // How circular ellipses become when scaled (0 = no change, 1 = perfect circle when smallest)
 
   // Stroke Style (matching hero sketch)
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };            // Black
@@ -1224,10 +1225,10 @@ const implementationSketch = (p) => {
       // Smooth S-curve: compresses edges, expands center
       tEased = (1.0 - p.cos(tLinear * p.PI)) / 2.0;
     } else if (PATH_SPACING_TAPER_CURVE === "parabolic") {
-      // Quadratic ease in-out
+      // Cubic ease in-out: stronger compression at edges, more expansion at center
       tEased = tLinear < 0.5
-        ? 2.0 * tLinear * tLinear
-        : 1.0 - 2.0 * (1.0 - tLinear) * (1.0 - tLinear);
+        ? 4.0 * tLinear * tLinear * tLinear
+        : 1.0 - 4.0 * (1.0 - tLinear) * (1.0 - tLinear) * (1.0 - tLinear);
     } else if (PATH_SPACING_TAPER_CURVE === "exponential") {
       // Symmetric exponential: compress both edges, expand center
       let distance = Math.abs(tLinear - 0.5) * 2.0; // 0 at center, 1 at edges
@@ -1349,6 +1350,31 @@ const implementationSketch = (p) => {
     return p.lerp(STROKE_ALPHA_MIN, STROKE_ALPHA_MAX, fade);
   }
 
+  // Apply circularity adjustment - makes scaled ellipses more circular
+  function applyCircularity(width, height, waveScale) {
+    // If no circularity intensity, return unchanged
+    if (WAVE_CIRCULARITY_INTENSITY === 0) {
+      return { width, height };
+    }
+
+    // Calculate how much the ellipse is scaled down from full size (1.0)
+    // waveScale ranges from (1 - WAVE_AMPLITUDE) to 1.0
+    // scaleFactor: 0 = full size, 1 = most scaled down
+    let scaleFactor = (1.0 - waveScale) / WAVE_AMPLITUDE;
+
+    // Calculate the circularity amount based on scale and intensity
+    let circularityAmount = scaleFactor * WAVE_CIRCULARITY_INTENSITY;
+
+    // Calculate the average dimension (what a perfect circle would be)
+    let avgDimension = (width + height) / 2.0;
+
+    // Lerp width and height toward avgDimension based on circularity amount
+    let adjustedWidth = p.lerp(width, avgDimension, circularityAmount);
+    let adjustedHeight = p.lerp(height, avgDimension, circularityAmount);
+
+    return { width: adjustedWidth, height: adjustedHeight };
+  }
+
   // ============================================
   // GRADIENT FUNCTIONS
   // ============================================
@@ -1439,6 +1465,11 @@ const implementationSketch = (p) => {
       // Calculate final dimensions
       let width = baseWidth * scaleModifier * waveScale;
       let height = baseHeight * scaleModifier * waveScale;
+
+      // Apply circularity adjustment - smaller ellipses become more circular
+      let adjusted = applyCircularity(width, height, waveScale);
+      width = adjusted.width;
+      height = adjusted.height;
 
       // Calculate opacity based on position (fade at edges)
       let opacity = calculateOpacity(t);
