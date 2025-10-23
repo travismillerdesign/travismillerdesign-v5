@@ -354,10 +354,12 @@ const approachSketch = (p) => {
   const TREE_MAX_DEPTH = 10;                                   // Maximum recursion depth
 
   // Mouse-Controlled Tree Angle Configuration
-  const TREE_ANGLE_MIN = 2;                                    // Minimum angle (top of canvas)
-  const TREE_ANGLE_MAX = 15;                                   // Maximum angle (bottom of canvas)
-  const TREE_ANGLE_DEFAULT = 15;                               // Default angle (no mouse interaction)
-  const TREE_ANGLE_MOMENTUM = 0.1;                            // How quickly angle approaches target (0-1, lower = more momentum)
+  const TREE_ANGLE_MIN = 10;                                    // Minimum angle (top of canvas)
+  const TREE_ANGLE_MAX = 60;                                   // Maximum angle (bottom of canvas)
+  const TREE_ANGLE_DEFAULT = 30;                               // Default angle (no mouse interaction)
+  const TREE_ANGLE_MOMENTUM = 0.02;                            // How quickly angle approaches target (0-1, lower = more momentum)
+  const TREE_ANGLE_REDUCTION_ENABLED = true;                   // Enable/disable angle reduction by depth
+  const TREE_ANGLE_REDUCTION_MULTIPLIER = 0.8;                 // Multiplier per depth level (e.g., 0.5 = half angle each level)
   let currentTreeAngle = TREE_ANGLE_DEFAULT;                   // Current tree angle (changes with mouse)
   let targetTreeAngle = TREE_ANGLE_DEFAULT;                    // Target angle based on mouse position
 
@@ -378,7 +380,7 @@ const approachSketch = (p) => {
   const STROKE_WEIGHT = 1.75;                                   // Consistent stroke weight
   const STROKE_ALPHA_BASE = 200;                               // Base opacity for initial stem (0-255)
   const STROKE_ALPHA_FADE_ENABLED = true;                      // Enable/disable opacity fade with depth
-  const STROKE_ALPHA_FADE_RATE = 0.8;                         // Multiplier per depth level (0-1, lower = faster fade)
+  const STROKE_ALPHA_FADE_RATE = 0.75;                         // Multiplier per depth level (0-1, lower = faster fade)
   const STROKE_ALPHA_MIN = 1;                                 // Minimum opacity (prevents fully transparent branches)
   const FADE_BACKGROUND_ALPHA = 40;                            // Background fade effect
 
@@ -566,17 +568,30 @@ const approachSketch = (p) => {
       p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
       p.strokeWeight(STROKE_WEIGHT);
       p.line(x, y, currentX2, currentY2);
+      // p.fill(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5)
+      // p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5);
+      // p.ellipse(x,y,1,1);
     }
 
     // Only recurse if this branch is fully grown
     // Use the FULL end point as the origin for child branches
     if (depthProgress >= 1.0) {
+      // Calculate angle for this depth level
+      let branchAngle;
+      if (TREE_ANGLE_REDUCTION_ENABLED) {
+        // Apply reduction multiplier based on depth
+        branchAngle = currentTreeAngle * Math.pow(TREE_ANGLE_REDUCTION_MULTIPLIER, depth + 1);
+      } else {
+        // Use constant angle for all levels
+        branchAngle = currentTreeAngle;
+      }
+
       // Draw right branch
-      let rightAngle = angle + p.radians(currentTreeAngle);
+      let rightAngle = angle + p.radians(branchAngle);
       drawBranch(fullX2, fullY2, rightAngle, depth + 1, segmentLength);
 
       // Draw left branch
-      let leftAngle = angle - p.radians(currentTreeAngle);
+      let leftAngle = angle - p.radians(branchAngle);
       drawBranch(fullX2, fullY2, leftAngle, depth + 1, segmentLength);
     }
   }
