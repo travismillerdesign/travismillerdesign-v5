@@ -265,7 +265,7 @@ const heroSketch = (p) => {
     GREYS.forEach((grey, layerIndex) => {
       p.noFill();
       p.stroke(grey.r, grey.g, grey.b, grey.alpha);
-      p.strokeWeight(2 - layerIndex * 0.3);
+      p.strokeWeight(1.5 - layerIndex * 0.3);
 
       let offset = layerIndex * 0.1;
 
@@ -340,12 +340,12 @@ const approachSketch = (p) => {
   // ============================================
 
   // Radial Gradient Configuration (Standardized - matches hero sketch)
-  const GRADIENT_CENTER_COLOR = { r: 34, g: 197, b: 94 };     // Green (center)
+  const GRADIENT_CENTER_COLOR = { r: 70, g: 210, b: 100 };     // Green (center)
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White (edge)
   const GRADIENT_CENTER_X = 0.5;                               // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.5;                               // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.5;                         // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.5;                         // Y radius scale
+  const GRADIENT_CENTER_Y = 0.2;                               // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.66;                         // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 1.25;                         // Y radius scale
   const GRADIENT_POWER = 1;                                    // Falloff power
   const GRADIENT_EDGE_EASE = 1;                                // Edge ease amount
   const GRADIENT_SCATTER_INTENSITY = 0.02;                     // Scatter intensity
@@ -368,9 +368,9 @@ const approachSketch = (p) => {
 
   // Stroke Configuration
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };                  // Black
-  const STROKE_WEIGHT = 2;                                     // Consistent stroke weight
-  const STROKE_ALPHA = 40;                                    // 40% opacity (255 * 0.4 = 102)
-  const FADE_BACKGROUND_ALPHA = 0;                             // No fade effect
+  const STROKE_WEIGHT = 1.5;                                     // Consistent stroke weight
+  const STROKE_ALPHA = 20;                                    // 40% opacity (255 * 0.4 = 102)
+  const FADE_BACKGROUND_ALPHA = 40;                             // No fade effect
 
   // Animation
   let animationTime = 0;
