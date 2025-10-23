@@ -351,17 +351,17 @@ const approachSketch = (p) => {
   const GRADIENT_SCATTER_INTENSITY = 0.02;                     // Scatter intensity
 
   // Fractal Tree Configuration
-  const TREE_ANGLE = 30;                                       // Branch angle in degrees (wider spread to reduce overlap)
-  const TREE_MAX_DEPTH = 11;                                   // Maximum recursion depth
+  const TREE_ANGLE = 60;                                       // Branch angle in degrees (wider spread to reduce overlap)
+  const TREE_MAX_DEPTH = 10;                                   // Maximum recursion depth
 
   // Growth Animation Configuration
-  const GROWTH_DURATION = 30;                                  // Frames for each segment to grow
-  const GROWTH_DELAY_PER_LEVEL = 30;                           // Delay between depth levels (frames)
+  const GROWTH_DURATION = 60;                                  // Frames for each segment to grow
+  const GROWTH_DELAY_PER_LEVEL = 60;                           // Delay between depth levels (frames)
   let growthProgress = 0;                                      // Current growth progress (0-1)
   let isGrowing = true;                                        // Whether tree is still growing
 
   // Margins (match hero sketch)
-  const MARGIN_PERCENTAGE = 0.1;                               // 10% margin on all sides
+  const MARGIN_PERCENTAGE = 0;                               // 10% margin on all sides
 
   // Dynamic sizing (calculated in setup)
   let segmentLength = 20;                                      // Will be calculated based on canvas height
