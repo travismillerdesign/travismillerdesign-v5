@@ -33,6 +33,8 @@ const heroSketch = (p) => {
   let currentFreqY = 2;  // Current Y frequency ratio
   let lastChangeTime = 0; // Track when frequency last changed
   let animationOffset = 0; // For animating the gaps
+  let gradientBuffer; // Graphics buffer for shader-based gradient
+  let gradientShader; // Shader for radial gradient
 
   const CHANGE_INTERVAL = 2000; // Change frequency every 4 seconds when idle
   const CURVE_RESOLUTION = 2000; // Number of points in the curve
@@ -40,14 +42,128 @@ const heroSketch = (p) => {
   const NUM_GAPS = 4; // Number of gaps in the curve
   const GAP_ANIMATION_SPEED = 0.001; // Speed at which gaps move around the curve
 
+  // Radial Gradient configuration (RGB values 0-255)
+  const GRADIENT_CENTER_COLOR = { r: 100, g: 200, b: 255 }; // Color at center
+  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // Color at edges
+  const GRADIENT_CENTER_X = 0.5; // X position of gradient center (0-1, where 0.5 = canvas center)
+  const GRADIENT_CENTER_Y = 0.5; // Y position of gradient center (0-1, where 0.5 = canvas center)
+  const GRADIENT_RADIUS_SCALE_X = 0.5; // Controls horizontal gradient spread (1.0 = edge, <1.0 = tighter, >1.0 = softer)
+  const GRADIENT_RADIUS_SCALE_Y = 0.5; // Controls vertical gradient spread (1.0 = edge, <1.0 = tighter, >1.0 = softer)
+  const GRADIENT_POWER = 1; // Controls falloff curve (1.0 = linear, >1.0 = concentrated center, <1.0 = softer)
+  const GRADIENT_EDGE_EASE = 1; // Controls edge easing (0 = sharp edge, higher = more gradual ease-out at edges)
+  const GRADIENT_SCATTER_INTENSITY = 0.05; // Scattering effect intensity (0 = no scatter, higher = more scatter)
+
   // Grey color palette for strokes
   const GREYS = [
-    { r: 100, g: 100, b: 100, alpha: 180 }
+    { r: 0, g: 0, b: 0, alpha: 150 }
     // { r: 120, g: 120, b: 120, alpha: 150 },
     // { r: 140, g: 140, b: 140, alpha: 120 },
   ];
 
   const { observer } = createVisibilityObserver(p);
+
+  // Vertex shader (standard pass-through for p5.js)
+  const vertShader = `
+    attribute vec3 aPosition;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+
+    void main() {
+      vTexCoord = aTexCoord;
+      vec4 positionVec4 = vec4(aPosition, 1.0);
+      positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+      gl_Position = positionVec4;
+    }
+  `;
+
+  // Fragment shader (radial gradient with scattering)
+  const fragShader = `
+    precision highp float;
+    varying vec2 vTexCoord;
+
+    uniform vec2 uResolution;
+    uniform vec2 uCenter;
+    uniform vec3 uCenterColor;
+    uniform vec3 uEdgeColor;
+    uniform vec2 uRadiusScale;
+    uniform float uPower;
+    uniform float uEdgeEase;
+    uniform float uScatterIntensity;
+
+    // Improved noise function for scattering
+    float hash(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+
+      // Quintic interpolation for smoother transitions
+      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    }
+
+    // Fractal noise with multiple octaves for varied appearance
+    float fractalNoise(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
+
+      for (int i = 0; i < 4; i++) {
+        value += amplitude * noise(p * frequency);
+        frequency *= 2.0;
+        amplitude *= 0.5;
+      }
+
+      return value;
+    }
+
+    void main() {
+      // Calculate position relative to center
+      vec2 pos = vTexCoord;
+      vec2 center = uCenter;
+
+      // Calculate distance from center
+      vec2 delta = pos - center;
+
+      // Scale by independent X and Y radius scales
+      delta.x /= uRadiusScale.x;
+      delta.y /= uRadiusScale.y;
+
+      float dist = length(delta);
+
+      // Add scattering effect using fractal noise at pixel level
+      if (uScatterIntensity > 0.0) {
+        float noiseValue = fractalNoise(pos * uResolution);
+        dist += (noiseValue - 0.5) * uScatterIntensity;
+      }
+
+      // Apply power function for falloff control
+      float normalizedDist = pow(clamp(dist, 0.0, 1.0), uPower);
+
+      // Apply edge easing for gradual fade at edges
+      if (uEdgeEase > 0.0 && normalizedDist > (1.0 - uEdgeEase)) {
+        // Apply smooth easing in the edge region
+        float edgeRegion = (normalizedDist - (1.0 - uEdgeEase)) / uEdgeEase;
+        // Use smoothstep for gradual ease-out
+        normalizedDist = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
+      }
+
+      // Mix colors based on distance
+      vec3 color = mix(uCenterColor, uEdgeColor, normalizedDist);
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
 
   // Get interesting frequency ratios
   const getRandomFrequency = () => {
@@ -55,21 +171,63 @@ const heroSketch = (p) => {
     return ratios[Math.floor(p.random(ratios.length))];
   };
 
+  // Create gradient buffer and render gradient
+  const createGradient = () => {
+    // Create WEBGL graphics buffer
+    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+
+    // Create shader
+    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+
+    // Render gradient to buffer
+    gradientBuffer.shader(gradientShader);
+
+    // Set shader uniforms
+    gradientShader.setUniform('uResolution', [p.width, p.height]);
+    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+    gradientShader.setUniform('uCenterColor', [
+      GRADIENT_CENTER_COLOR.r / 255.0,
+      GRADIENT_CENTER_COLOR.g / 255.0,
+      GRADIENT_CENTER_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uEdgeColor', [
+      GRADIENT_EDGE_COLOR.r / 255.0,
+      GRADIENT_EDGE_COLOR.g / 255.0,
+      GRADIENT_EDGE_COLOR.b / 255.0
+    ]);
+    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+    gradientShader.setUniform('uPower', GRADIENT_POWER);
+    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+    // Draw full-screen quad
+    gradientBuffer.rectMode(p.CENTER);
+    gradientBuffer.noStroke();
+    gradientBuffer.rect(0, 0, p.width, p.height);
+  };
+
+  // Draw gradient background from buffer
+  const drawGradient = () => {
+    p.image(gradientBuffer, 0, 0);
+  };
+
   p.setup = () => {
     const container = document.getElementById('hero-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('hero-canvas');
+
+    // Create gradient buffer with shader
+    createGradient();
 
     lastChangeTime = p.millis();
     observer.observe(container);
   };
 
   p.draw = () => {
-    // White background with fade for trail effect
-    p.fill(255, 120);
-    p.rect(0, 0, p.width, p.height);
-
     let currentTime = p.millis();
+
+    // Draw gradient background
+    drawGradient();
 
     // Auto-change frequency at regular intervals
     if (currentTime - lastChangeTime > CHANGE_INTERVAL) {
@@ -83,7 +241,7 @@ const heroSketch = (p) => {
 
     // Calculate uniform margins based on smallest dimension
     let minDimension = Math.min(p.width, p.height);
-    let margin = minDimension * 0.15; // 10% margin
+    let margin = minDimension * 0.15; // 15% margin
 
     // Calculate available space with uniform margins
     let availableWidth = p.width - (margin * 2);
@@ -92,11 +250,8 @@ const heroSketch = (p) => {
     let sizeY = availableHeight / 2;
 
     // Center the pattern
-    let centerX = p.width / 2;
-    let centerY = p.height / 2;
-
     p.push();
-    p.translate(centerX, centerY);
+    p.translate(p.width / 2, p.height / 2);
 
     // Draw multiple layers of the curve with different grey shades
     GREYS.forEach((grey, layerIndex) => {
@@ -159,6 +314,9 @@ const heroSketch = (p) => {
   p.windowResized = () => {
     const container = document.getElementById('hero-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+
+    // Recreate gradient buffer at new size
+    createGradient();
   };
 };
 
