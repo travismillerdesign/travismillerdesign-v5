@@ -1054,28 +1054,28 @@ const implementationSketch = (p) => {
   // ============================================
 
   // Control Ellipse 1 Configuration (Bottom-Left)
-  const ELLIPSE_1_X = 0.15;                              // X position (0-1)
-  const ELLIPSE_1_Y = 0.85;                              // Y position (0-1)
-  const ELLIPSE_1_WIDTH = 120;                           // Width in pixels
-  const ELLIPSE_1_HEIGHT = 60;                           // Height in pixels
+  const ELLIPSE_1_X = 0.2;                              // X position (0-1)
+  const ELLIPSE_1_Y = 0.8;                              // Y position (0-1)
+  const ELLIPSE_1_WIDTH = 600;                           // Width in pixels
+  const ELLIPSE_1_HEIGHT = 600;                           // Height in pixels
 
   // Control Ellipse 2 Configuration (Top-Right)
-  const ELLIPSE_2_X = 0.85;                              // X position (0-1)
-  const ELLIPSE_2_Y = 0.15;                              // Y position (0-1)
-  const ELLIPSE_2_WIDTH = 60;                            // Width in pixels
-  const ELLIPSE_2_HEIGHT = 120;                          // Height in pixels
+  const ELLIPSE_2_X = 0.8;                              // X position (0-1)
+  const ELLIPSE_2_Y = 0.2;                              // Y position (0-1)
+  const ELLIPSE_2_WIDTH = 600;                            // Width in pixels
+  const ELLIPSE_2_HEIGHT = 600;                          // Height in pixels
 
   // Intermediate Ellipses Configuration
-  const INTERMEDIATE_STEPS = 5;                          // Number of ellipses between control ellipses
-  const INTERMEDIATE_SCALE_MULTIPLIER = 0.5;             // Scale at center (0.5 = half size)
+  const INTERMEDIATE_STEPS = 40;                          // Number of ellipses between control ellipses
+  const INTERMEDIATE_SCALE_MULTIPLIER = 0.1;             // Scale at center (0.5 = half size)
   const INTERMEDIATE_SCALE_CURVE = "parabolic";          // "linear", "parabolic", "sine"
 
   // Path Configuration
-  const PATH_ARC_AMOUNT = 0.15;                          // Curvature (0 = straight, 1 = high arc)
+  const PATH_ARC_AMOUNT = 0;                          // Curvature (0 = straight, 1 = high arc)
   const PATH_ARC_DIRECTION = 1;                          // Arc direction (1 = up/right, -1 = down/left)
 
   // Wave Animation Configuration
-  const WAVE_FREQUENCY = 2;                              // Number of complete waves
+  const WAVE_FREQUENCY = 1;                              // Number of complete waves
   const WAVE_AMPLITUDE = 0.3;                            // Size variation (0.3 = ±30%)
   const WAVE_SPEED = 0.01;                               // Speed of wave movement
 
