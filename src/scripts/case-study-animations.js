@@ -51,7 +51,7 @@ const heroSketch = (p) => {
   const GRADIENT_RADIUS_SCALE_Y = 0.5; // Controls vertical gradient spread (1.0 = edge, <1.0 = tighter, >1.0 = softer)
   const GRADIENT_POWER = 1; // Controls falloff curve (1.0 = linear, >1.0 = concentrated center, <1.0 = softer)
   const GRADIENT_EDGE_EASE = 1; // Controls edge easing (0 = sharp edge, higher = more gradual ease-out at edges)
-  const GRADIENT_SCATTER_INTENSITY = 0.05; // Scattering effect intensity (0 = no scatter, higher = more scatter)
+  const GRADIENT_SCATTER_INTENSITY = 0.1; // Scattering effect intensity (0 = no scatter, higher = more scatter)
 
   // Grey color palette for strokes
   const GREYS = [
@@ -348,7 +348,7 @@ const approachSketch = (p) => {
   const GRADIENT_RADIUS_SCALE_Y = 1;                         // Y radius scale
   const GRADIENT_POWER = 1.5;                                    // Falloff power
   const GRADIENT_EDGE_EASE = 1;                                // Edge ease amount
-  const GRADIENT_SCATTER_INTENSITY = 0.02;                     // Scatter intensity
+  const GRADIENT_SCATTER_INTENSITY = 0.1;                     // Scatter intensity
 
   // Fractal Tree Configuration
   const TREE_MAX_DEPTH = 10;                                   // Maximum recursion depth
@@ -1054,48 +1054,56 @@ const implementationSketch = (p) => {
   // ============================================
 
   // Control Ellipse 1 Configuration (Bottom-Left)
-  const ELLIPSE_1_X = 0.2;                              // X position (0-1)
-  const ELLIPSE_1_Y = 0.8;                              // Y position (0-1)
-  const ELLIPSE_1_WIDTH = 0;                           // Width in pixels
-  const ELLIPSE_1_HEIGHT = 200;                           // Height in pixels
+  const ELLIPSE_1_X = .5;                              // X position (0-1)
+  const ELLIPSE_1_Y = 1;                                // Y position (0-1)
+  const ELLIPSE_1_WIDTH = 500;                           // Width in pixels
+  const ELLIPSE_1_HEIGHT = 0;                           // Height in pixels
 
   // Control Ellipse 2 Configuration (Top-Right)
-  const ELLIPSE_2_X = 0.8;                              // X position (0-1)
-  const ELLIPSE_2_Y = 0.2;                              // Y position (0-1)
-  const ELLIPSE_2_WIDTH = 0;                            // Width in pixels
-  const ELLIPSE_2_HEIGHT = 200;                          // Height in pixels
+  const ELLIPSE_2_X = 0.5;                              // X position (0-1)
+  const ELLIPSE_2_Y = 0;                              // Y position (0-1)
+  const ELLIPSE_2_WIDTH = 500;                            // Width in pixels
+  const ELLIPSE_2_HEIGHT = 0;                          // Height in pixels
 
   // Intermediate Ellipses Configuration
-  const INTERMEDIATE_STEPS = 20;                          // Number of ellipses between control ellipses
+  const INTERMEDIATE_STEPS = 60;                          // Number of ellipses between control ellipses
   const INTERMEDIATE_SCALE_MULTIPLIER = 1.0;             // Scale at center (1.0 = no scaling, 0.5 = half size)
   const INTERMEDIATE_SCALE_CURVE = "parabolic";          // "linear", "parabolic", "sine"
-  const INTERMEDIATE_MAX_SIZE = 200;                     // Max size at center when edge ellipses are flat (width/height = 0)
+  const INTERMEDIATE_MAX_SIZE = 400;                     // Max size at center when edge ellipses are flat (width/height = 0)
 
   // Path Configuration
-  const PATH_ARC_AMOUNT = 0;                          // Curvature (0 = straight, 1 = high arc)
-  const PATH_ARC_DIRECTION = 1;                          // Arc direction (1 = up/right, -1 = down/left)
+  const PATH_ARC_AMOUNT = 0.03;                          // Curvature (0 = straight, 1 = high arc)
+  const PATH_ARC_DIRECTION = -1;                          // Arc direction (1 = up/right, -1 = down/left)
+  const PATH_SPACING_TAPER_INTENSITY = 1;              // Spacing variation (0 = even spacing, 1 = max variation)
+  const PATH_SPACING_TAPER_CURVE = "sine";               // "linear", "parabolic", "sine", "exponential"
 
   // Wave Animation Configuration
   const WAVE_FREQUENCY = 1;                              // Number of complete waves
   const WAVE_AMPLITUDE = 0.8;                            // Size variation (0.3 = ±30%)
-  const WAVE_SPEED = 0.01;                               // Speed of wave movement
+  const WAVE_SPEED = 0.005;                               // Speed of wave movement
 
   // Stroke Style (matching hero sketch)
   const STROKE_COLOR = { r: 0, g: 0, b: 0 };            // Black
   const STROKE_WEIGHT = 1.5;                             // Line thickness
-  const STROKE_ALPHA = 100;                              // Opacity
+  const STROKE_ALPHA = 100;                              // Base opacity (used when taper disabled)
+
+  // Stroke Opacity Taper Configuration
+  const STROKE_ALPHA_TAPER_ENABLED = true;               // Enable/disable opacity taper
+  const STROKE_ALPHA_TAPER_CURVE = "sine";               // "linear", "parabolic", "sine", "exponential"
+  const STROKE_ALPHA_MIN = 20;                           // Minimum opacity at edges (0-255)
+  const STROKE_ALPHA_MAX = 100;                          // Maximum opacity at center (0-255)
 
   // Radial Gradient Configuration
-  const GRADIENT_CENTER_COLOR = { r: 236, g: 72, b: 153 }; // Magenta (center)
+  const GRADIENT_CENTER_COLOR = { r: 255, g: 120, b: 200 }; // Magenta (center)
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // White (edge)
   const GRADIENT_CENTER_X = 0.5;                         // X position (0-1)
   const GRADIENT_CENTER_Y = 0.5;                         // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.5;                   // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.5;                   // Y radius scale
-  const GRADIENT_ROTATION_ANGLE = -45;                   // Rotation angle in degrees (0 = no rotation)
-  const GRADIENT_POWER = 1.0;                            // Falloff power
-  const GRADIENT_EDGE_EASE = 0.25;                       // Edge ease amount
-  const GRADIENT_SCATTER_INTENSITY = 0.035;              // Scatter intensity
+  const GRADIENT_RADIUS_SCALE_X = 0.3;                   // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 10;                   // Y radius scale
+  const GRADIENT_ROTATION_ANGLE = 0;                   // Rotation angle in degrees (0 = no rotation)
+  const GRADIENT_POWER = 0.75;                            // Falloff power
+  const GRADIENT_EDGE_EASE = 1;                       // Edge ease amount
+  const GRADIENT_SCATTER_INTENSITY = 0.1;              // Scatter intensity
 
   const { observer } = createVisibilityObserver(p);
 
@@ -1195,6 +1203,45 @@ const implementationSketch = (p) => {
   // CALCULATION FUNCTIONS
   // ============================================
 
+  // Calculate redistributed position along path for spacing taper
+  function calculatePathPosition(index, totalEllipses) {
+    // Edge ellipses must remain at exact positions
+    if (index === 0) return 0;
+    if (index === totalEllipses - 1) return 1;
+
+    // Linear progress (0 to 1)
+    let tLinear = index / (totalEllipses - 1);
+
+    // If no spacing taper, return linear
+    if (PATH_SPACING_TAPER_INTENSITY === 0) {
+      return tLinear;
+    }
+
+    // Calculate eased position based on curve type
+    let tEased = tLinear;
+
+    if (PATH_SPACING_TAPER_CURVE === "sine") {
+      // Smooth S-curve: compresses edges, expands center
+      tEased = (1.0 - p.cos(tLinear * p.PI)) / 2.0;
+    } else if (PATH_SPACING_TAPER_CURVE === "parabolic") {
+      // Quadratic ease in-out
+      tEased = tLinear < 0.5
+        ? 2.0 * tLinear * tLinear
+        : 1.0 - 2.0 * (1.0 - tLinear) * (1.0 - tLinear);
+    } else if (PATH_SPACING_TAPER_CURVE === "exponential") {
+      // Symmetric exponential: compress both edges, expand center
+      let distance = Math.abs(tLinear - 0.5) * 2.0; // 0 at center, 1 at edges
+      let compressionFactor = Math.exp(3.0 * distance) / Math.exp(3.0);
+      tEased = tLinear < 0.5
+        ? 0.5 - (0.5 - tLinear) * compressionFactor
+        : 0.5 + (tLinear - 0.5) * compressionFactor;
+    }
+    // "linear" or unknown: use tLinear
+
+    // Blend between linear and eased based on intensity
+    return p.lerp(tLinear, tEased, PATH_SPACING_TAPER_INTENSITY);
+  }
+
   // Calculate position along path with arc
   function calculatePosition(t) {
     // Linear interpolation for base position
@@ -1259,7 +1306,9 @@ const implementationSketch = (p) => {
   // Calculate wave scale multiplier for animation
   function calculateWaveScale(index, totalEllipses, taper) {
     let waveValue = p.sin(wavePhase + index * WAVE_FREQUENCY * p.TWO_PI / totalEllipses);
-    return 1.0 + waveValue * WAVE_AMPLITUDE * taper;
+    // Map waveValue from [-1, 1] to [1-AMPLITUDE, 1] so it can only reduce size, never increase
+    let scale = 1.0 - ((1.0 - waveValue) / 2.0) * WAVE_AMPLITUDE * taper;
+    return scale;
   }
 
   // Calculate dimension with support for flat ellipses (0 width/height)
@@ -1270,6 +1319,34 @@ const implementationSketch = (p) => {
     }
     // Otherwise, linear interpolation between the two values
     return p.lerp(dimension1, dimension2, t);
+  }
+
+  // Calculate opacity based on position (fade at edges, opaque at center)
+  function calculateOpacity(t) {
+    // If opacity taper is disabled, use base alpha
+    if (!STROKE_ALPHA_TAPER_ENABLED) {
+      return STROKE_ALPHA;
+    }
+
+    // Calculate fade value (1.0 at center, 0.0 at edges)
+    let fade;
+
+    if (STROKE_ALPHA_TAPER_CURVE === "sine") {
+      // Smooth sine curve
+      fade = p.sin(t * p.PI);
+    } else if (STROKE_ALPHA_TAPER_CURVE === "parabolic") {
+      // Parabolic curve
+      fade = 1.0 - 4.0 * (t - 0.5) * (t - 0.5);
+    } else if (STROKE_ALPHA_TAPER_CURVE === "exponential") {
+      // Exponential (Gaussian-like) curve
+      fade = Math.exp(-8.0 * (t - 0.5) * (t - 0.5));
+    } else {
+      // Linear fallback
+      fade = 1.0 - 2.0 * Math.abs(t - 0.5);
+    }
+
+    // Interpolate between min and max alpha based on fade
+    return p.lerp(STROKE_ALPHA_MIN, STROKE_ALPHA_MAX, fade);
   }
 
   // ============================================
@@ -1333,14 +1410,13 @@ const implementationSketch = (p) => {
     let totalEllipses = INTERMEDIATE_STEPS + 2;
 
     // Draw all ellipses
-    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
     p.strokeWeight(STROKE_WEIGHT);
     p.strokeCap(p.ROUND);
     p.noFill();
 
     for (let i = 0; i < totalEllipses; i++) {
-      // Calculate position along path (0 to 1)
-      let t = i / (totalEllipses - 1);
+      // Calculate redistributed position along path with spacing taper
+      let t = calculatePathPosition(i, totalEllipses);
 
       // Get position with arc
       let pos = calculatePosition(t);
@@ -1364,7 +1440,11 @@ const implementationSketch = (p) => {
       let width = baseWidth * scaleModifier * waveScale;
       let height = baseHeight * scaleModifier * waveScale;
 
-      // Draw ellipse
+      // Calculate opacity based on position (fade at edges)
+      let opacity = calculateOpacity(t);
+
+      // Draw ellipse with tapered opacity
+      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, opacity);
       p.ellipse(x, y, width, height);
     }
   };
@@ -1396,7 +1476,7 @@ const enablementSketch = (p) => {
   const GRADIENT_RADIUS_SCALE_Y = 0.5;                          // Y radius scale
   const GRADIENT_POWER = 2.5;                                   // Falloff power
   const GRADIENT_EDGE_EASE = 0.35;                              // Edge ease amount (0-1)
-  const GRADIENT_SCATTER_INTENSITY = 0.04;                      // Scatter effect intensity
+  const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
 
   // Wave Animation Configuration
   const WAVE_COUNT = 8;                                         // Number of concentric waves
@@ -1661,7 +1741,7 @@ const evolutionSketch = (p) => {
   const GRADIENT_RADIUS_SCALE_Y = 0.5;                          // Y radius scale
   const GRADIENT_POWER = 1.0;                                   // Gradient power curve
   const GRADIENT_EDGE_EASE = 0.2;                               // Edge easing
-  const GRADIENT_SCATTER_INTENSITY = 0.03;                      // Scatter effect intensity
+  const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
 
   // Shape Morphing Configuration
   const SIMPLE_SIDES = 3;                                      // Triangle (simple state)
@@ -1930,7 +2010,7 @@ const impactSketch = (p) => {
   const GRADIENT_RADIUS_SCALE_Y = 0.55;                        // Y radius scale
   const GRADIENT_POWER = 2.2;                                  // Falloff power
   const GRADIENT_EDGE_EASE = 0.3;                              // Edge ease amount (0-1)
-  const GRADIENT_SCATTER_INTENSITY = 0.035;                    // Scatter effect intensity
+  const GRADIENT_SCATTER_INTENSITY = 0.1;                    // Scatter effect intensity
 
   // Ray Configuration
   const RAY_COUNT = 16;                                        // Number of radiating rays
