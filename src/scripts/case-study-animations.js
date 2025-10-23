@@ -329,40 +329,106 @@ const heroSketch = (p) => {
 };
 
 // ============================================
-// 2. APPROACH SKETCH - Modular Grid Rotation
+// 2. APPROACH SKETCH - Fractal Tree Growth
 // ============================================
-// Theme: Rotating geometric grid with wave animation
-// Template: Matches hero sketch structure with linear gradient
+// Theme: Fractal tree structure growing from single point
+// Colors: Green gradient on white background
 
 const approachSketch = (p) => {
+  // ============================================
+  // CUSTOMIZATION VARIABLES
+  // ============================================
+
+  // Linear Gradient Configuration (Green on White, bottom to top)
+  const GRADIENT_START_COLOR = { r: 34, g: 197, b: 94 };      // Green (bottom)
+  const GRADIENT_END_COLOR = { r: 255, g: 255, b: 255 };      // White (top)
+  const GRADIENT_ANGLE = 90;                                   // Vertical gradient (bottom to top)
+  const GRADIENT_SCATTER_INTENSITY = 0.02;                     // Scatter effect intensity
+
+  // Fractal Tree Configuration
+  const TREE_ANGLE = 30;                                       // Branch angle in degrees (wider spread to reduce overlap)
+  const TREE_MAX_DEPTH = 11;                                   // Maximum recursion depth
+
+  // Growth Animation Configuration
+  const GROWTH_DURATION = 30;                                  // Frames for each segment to grow
+  const GROWTH_DELAY_PER_LEVEL = 30;                           // Delay between depth levels (frames)
+  let growthProgress = 0;                                      // Current growth progress (0-1)
+  let isGrowing = true;                                        // Whether tree is still growing
+
+  // Margins (match hero sketch)
+  const MARGIN_PERCENTAGE = 0.1;                               // 10% margin on all sides
+
+  // Dynamic sizing (calculated in setup)
+  let segmentLength = 20;                                      // Will be calculated based on canvas height
+
+  // Stroke Configuration
+  const STROKE_COLOR = { r: 0, g: 0, b: 0 };                  // Black
+  const STROKE_WEIGHT = 2;                                     // Consistent stroke weight
+  const STROKE_ALPHA = 102;                                    // 40% opacity (255 * 0.4 = 102)
+  const FADE_BACKGROUND_ALPHA = 0;                             // No fade effect
+
+  // Animation
   let animationTime = 0;
   let gradientBuffer;
-  let gradientShader;
 
-  // Animation configuration
-  const GRID_COLS = 8;
-  const GRID_ROWS = 6;
-  const ROTATION_SPEED = 0.02; // Speed of rotation animation
-  const WAVE_SPEED = 0.05; // Speed of wave propagation
-  const WAVE_AMPLITUDE = 0.3; // Amplitude of rotation wave
+  // Line tracking for collision detection
+  let allLines = []; // Store all completed line segments {x1, y1, x2, y2}
 
-  // Linear Gradient configuration (RGB values 0-255)
-  const GRADIENT_START_COLOR = { r: 107, g: 70, b: 193 }; // Deep Purple
-  const GRADIENT_END_COLOR = { r: 6, g: 182, b: 212 }; // Bright Cyan
-  const GRADIENT_ANGLE = 45; // Gradient angle in degrees (0 = left to right, 90 = top to bottom)
-  const GRADIENT_POWER = 1.2; // Controls falloff curve
-  const GRADIENT_EDGE_EASE = 0.2; // Edge easing
-  const GRADIENT_SCATTER_INTENSITY = 0.03; // Scattering effect intensity
+  // ============================================
+  // COLLISION DETECTION
+  // ============================================
 
-  // Stroke style configuration
-  const STROKE_COLOR = { r: 20, g: 20, b: 40 }; // Dark stroke color
-  const STROKE_WEIGHT = 2;
-  const STROKE_ALPHA = 180;
+  function lineSegmentsIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+    // Check if line segment (x1,y1)-(x2,y2) intersects with (x3,y3)-(x4,y4)
+    // Using parametric line equation
+    let denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
 
-  const { observer } = createVisibilityObserver(p);
+    if (denom === 0) {
+      return false; // Lines are parallel
+    }
 
-  // Vertex shader
+    let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+    let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+
+    // Check if intersection point is within both line segments
+    return (ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99); // Small buffer to avoid endpoint touches
+  }
+
+  function findIntersectionPoint(x1, y1, x2, y2) {
+    // Find the closest intersection point along the line from (x1,y1) to (x2,y2)
+    let closestDist = Infinity;
+    let closestT = null;
+
+    for (let line of allLines) {
+      // Calculate intersection point
+      let denom = (line.y2 - line.y1) * (x2 - x1) - (line.x2 - line.x1) * (y2 - y1);
+      if (denom === 0) continue; // Parallel lines
+
+      let ua = ((line.x2 - line.x1) * (y1 - line.y1) - (line.y2 - line.y1) * (x1 - line.x1)) / denom;
+      let ub = ((x2 - x1) * (y1 - line.y1) - (y2 - y1) * (x1 - line.x1)) / denom;
+
+      if (ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99) {
+        // Intersection found
+        let ix = x1 + ua * (x2 - x1);
+        let iy = y1 + ua * (y2 - y1);
+        let dist = p.dist(x1, y1, ix, iy);
+
+        if (dist < closestDist && ua > 0.01) { // Only consider forward intersections
+          closestDist = dist;
+          closestT = ua;
+        }
+      }
+    }
+
+    return closestT;
+  }
+
+  // ============================================
+  // SHADER CODE
+  // ============================================
+
   const vertShader = `
+    precision highp float;
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -375,101 +441,176 @@ const approachSketch = (p) => {
     }
   `;
 
-  // Fragment shader (linear gradient with scattering)
   const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
-    uniform vec2 uResolution;
     uniform vec3 uStartColor;
     uniform vec3 uEndColor;
     uniform float uAngle;
-    uniform float uPower;
-    uniform float uEdgeEase;
+    uniform vec2 uResolution;
     uniform float uScatterIntensity;
 
+    // Hash function for noise
     float hash(vec2 p) {
-      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-      p3 += dot(p3, p3.yzx + 33.33);
-      return fract((p3.x + p3.y) * p3.z);
+      p = fract(p * vec2(123.34, 456.21));
+      p += dot(p, p + 45.32);
+      return fract(p.x * p.y);
     }
 
+    // Quintic interpolation
+    float quintic(float t) {
+      return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+    }
+
+    // 2D noise
     float noise(vec2 p) {
       vec2 i = floor(p);
       vec2 f = fract(p);
-      vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+
       float a = hash(i);
       float b = hash(i + vec2(1.0, 0.0));
       float c = hash(i + vec2(0.0, 1.0));
       float d = hash(i + vec2(1.0, 1.0));
+
+      vec2 u = vec2(quintic(f.x), quintic(f.y));
+
       return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
     }
 
+    // Fractal noise (multi-octave)
     float fractalNoise(vec2 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 1.0;
+
       for (int i = 0; i < 4; i++) {
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
       }
+
       return value;
     }
 
     void main() {
       vec2 pos = vTexCoord;
-      float angleRad = radians(uAngle);
-      vec2 direction = vec2(cos(angleRad), sin(angleRad));
-      float gradientPos = dot(pos, direction) * 0.5 + 0.5;
 
+      // Add scatter effect
       if (uScatterIntensity > 0.0) {
-        float noiseValue = fractalNoise(pos * uResolution);
-        gradientPos += (noiseValue - 0.5) * uScatterIntensity;
+        vec2 scatter = vec2(
+          fractalNoise(pos * uResolution),
+          fractalNoise(pos * uResolution + vec2(100.0, 100.0))
+        );
+        pos += (scatter - 0.5) * uScatterIntensity;
       }
 
-      gradientPos = pow(clamp(gradientPos, 0.0, 1.0), uPower);
+      // Calculate linear gradient based on angle
+      vec2 center = vec2(0.5, 0.5);
+      vec2 fromCenter = pos - center;
 
-      if (uEdgeEase > 0.0 && gradientPos > (1.0 - uEdgeEase)) {
-        float edgeRegion = (gradientPos - (1.0 - uEdgeEase)) / uEdgeEase;
-        gradientPos = 1.0 - uEdgeEase + uEdgeEase * smoothstep(0.0, 1.0, edgeRegion);
-      }
+      float angleRad = radians(uAngle);
+      vec2 gradientDir = vec2(cos(angleRad), sin(angleRad));
 
+      float gradientPos = dot(fromCenter, gradientDir) + 0.5;
+      gradientPos = clamp(gradientPos, 0.0, 1.0);
+
+      // Mix colors
       vec3 color = mix(uStartColor, uEndColor, gradientPos);
-      gl_FragColor = vec4(color, 1.0);
+
+      gl_FragColor = vec4(color / 255.0, 1.0);
     }
   `;
 
-  // Create gradient buffer and render gradient
-  const createGradient = () => {
+  // ============================================
+  // FRACTAL TREE FUNCTIONS
+  // ============================================
+
+  function drawBranch(x, y, angle, depth, segmentLength) {
+    // Check if this depth level should be visible based on growth progress
+    let depthStartTime = depth * GROWTH_DELAY_PER_LEVEL;
+
+    if (animationTime < depthStartTime || depth > TREE_MAX_DEPTH) {
+      return;
+    }
+
+    // Calculate growth progress for this depth level (0 to 1)
+    let depthProgress = p.constrain((animationTime - depthStartTime) / GROWTH_DURATION, 0, 1);
+
+    // Use easing for smoother growth
+    depthProgress = p.pow(depthProgress, 0.8); // Gentle easing
+
+    // Calculate the FULL end point (where this segment will end when complete)
+    let fullX2 = x + p.cos(angle) * segmentLength;
+    let fullY2 = y + p.sin(angle) * segmentLength;
+
+    // Calculate CURRENT end point based on growth progress
+    // The line grows FROM the origin (x, y) TO the final position
+    let currentX2 = x + p.cos(angle) * segmentLength * depthProgress;
+    let currentY2 = y + p.sin(angle) * segmentLength * depthProgress;
+
+    // Draw the growing line from origin to current position
+    if (depthProgress > 0) {
+      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+      p.strokeWeight(STROKE_WEIGHT);
+      p.line(x, y, currentX2, currentY2);
+    }
+
+    // Only recurse if this branch is fully grown
+    // Use the FULL end point as the origin for child branches
+    if (depthProgress >= 1.0) {
+      // Draw right branch
+      let rightAngle = angle + p.radians(TREE_ANGLE);
+      drawBranch(fullX2, fullY2, rightAngle, depth + 1, segmentLength);
+
+      // Draw left branch
+      let leftAngle = angle - p.radians(TREE_ANGLE);
+      drawBranch(fullX2, fullY2, leftAngle, depth + 1, segmentLength);
+    }
+  }
+
+  // ============================================
+  // GRADIENT FUNCTIONS
+  // ============================================
+
+  function createGradient() {
     gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
-    gradientBuffer.shader(gradientShader);
+    gradientBuffer.pixelDensity(1);
 
-    gradientShader.setUniform('uResolution', [p.width, p.height]);
-    gradientShader.setUniform('uStartColor', [
-      GRADIENT_START_COLOR.r / 255.0,
-      GRADIENT_START_COLOR.g / 255.0,
-      GRADIENT_START_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uEndColor', [
-      GRADIENT_END_COLOR.r / 255.0,
-      GRADIENT_END_COLOR.g / 255.0,
-      GRADIENT_END_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uAngle', GRADIENT_ANGLE);
-    gradientShader.setUniform('uPower', GRADIENT_POWER);
-    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+    const shader = gradientBuffer.createShader(vertShader, fragShader);
+    gradientBuffer.shader(shader);
 
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
+    shader.setUniform('uStartColor', [GRADIENT_START_COLOR.r, GRADIENT_START_COLOR.g, GRADIENT_START_COLOR.b]);
+    shader.setUniform('uEndColor', [GRADIENT_END_COLOR.r, GRADIENT_END_COLOR.g, GRADIENT_END_COLOR.b]);
+    shader.setUniform('uAngle', GRADIENT_ANGLE);
+    shader.setUniform('uResolution', [p.width, p.height]);
+    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
     gradientBuffer.rect(0, 0, p.width, p.height);
-  };
+  }
 
-  const drawGradient = () => {
+  function drawGradient() {
     p.image(gradientBuffer, 0, 0);
-  };
+  }
+
+  // ============================================
+  // P5.JS LIFECYCLE
+  // ============================================
+
+  const { observer } = createVisibilityObserver(p);
+
+  function calculateSegmentLength() {
+    // Calculate margins
+    let minDimension = Math.min(p.width, p.height);
+    let margin = minDimension * MARGIN_PERCENTAGE;
+    let drawableHeight = p.height - (margin * 2);
+
+    // Calculate segment length to fill the canvas height
+    // The tree grows upward through TREE_MAX_DEPTH levels
+    // With angle branching, the effective vertical distance per segment is cos(0) = 1 for the trunk
+    // We want the total height to fill the drawable area
+    segmentLength = drawableHeight / (TREE_MAX_DEPTH * 0.95); // 0.95 to leave small buffer
+  }
 
   p.setup = () => {
     const container = document.getElementById('approach-canvas');
@@ -477,50 +618,54 @@ const approachSketch = (p) => {
     canvas.parent('approach-canvas');
 
     createGradient();
+    calculateSegmentLength();
+
     observer.observe(container);
   };
 
   p.draw = () => {
+    // Draw gradient background
     drawGradient();
 
-    animationTime += ROTATION_SPEED;
+    // Apply subtle fade effect (only if needed)
+    if (FADE_BACKGROUND_ALPHA > 0) {
+      p.fill(GRADIENT_START_COLOR.r, GRADIENT_START_COLOR.g, GRADIENT_START_COLOR.b, FADE_BACKGROUND_ALPHA);
+      p.noStroke();
+      p.rect(0, 0, p.width, p.height);
+    }
 
-    let cellWidth = p.width / GRID_COLS;
-    let cellHeight = p.height / GRID_ROWS;
+    // Increment animation time (grows the tree)
+    if (isGrowing) {
+      animationTime += 1;
 
-    p.push();
-    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
-    p.strokeWeight(STROKE_WEIGHT);
-    p.noFill();
-
-    // Draw rotating grid of squares
-    for (let row = 0; row < GRID_ROWS; row++) {
-      for (let col = 0; col < GRID_COLS; col++) {
-        let x = col * cellWidth + cellWidth / 2;
-        let y = row * cellHeight + cellHeight / 2;
-
-        // Wave-based rotation
-        let wave = p.sin(animationTime + (col + row) * WAVE_SPEED) * WAVE_AMPLITUDE;
-        let rotation = animationTime * (1 + wave);
-
-        p.push();
-        p.translate(x, y);
-        p.rotate(rotation);
-
-        let size = Math.min(cellWidth, cellHeight) * 0.6;
-        p.rect(-size / 2, -size / 2, size, size);
-
-        p.pop();
+      // Check if tree is fully grown
+      let maxGrowthTime = (TREE_MAX_DEPTH + 1) * GROWTH_DELAY_PER_LEVEL + GROWTH_DURATION;
+      if (animationTime >= maxGrowthTime) {
+        isGrowing = false;
+        growthProgress = 1;
+      } else {
+        growthProgress = animationTime / maxGrowthTime;
       }
     }
 
-    p.pop();
+    // Calculate margins (matching hero sketch)
+    let minDimension = Math.min(p.width, p.height);
+    let margin = minDimension * MARGIN_PERCENTAGE;
+
+    // Calculate tree starting position (bottom center of drawable area)
+    let startX = p.width / 2;
+    let startY = p.height - margin;
+
+    // Draw fractal tree with dynamically calculated segment length
+    p.noFill();
+    drawBranch(startX, startY, -p.HALF_PI, 0, segmentLength);
   };
 
   p.windowResized = () => {
     const container = document.getElementById('approach-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
     createGradient();
+    calculateSegmentLength();
   };
 };
 
