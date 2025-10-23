@@ -55,7 +55,7 @@ const heroSketch = (p) => {
 
   // Grey color palette for strokes
   const GREYS = [
-    { r: 0, g: 0, b: 0, alpha: 150 }
+    { r: 0, g: 0, b: 0, alpha: 100 }
     // { r: 120, g: 120, b: 120, alpha: 150 },
     // { r: 140, g: 140, b: 140, alpha: 120 },
   ];
@@ -231,8 +231,15 @@ const heroSketch = (p) => {
 
     // Auto-change frequency at regular intervals
     if (currentTime - lastChangeTime > CHANGE_INTERVAL) {
-      currentFreqX = getRandomFrequency();
-      currentFreqY = getRandomFrequency();
+      // Keep selecting until we get different frequencies (avoid straight lines)
+      let newFreqX, newFreqY;
+      do {
+        newFreqX = getRandomFrequency();
+        newFreqY = getRandomFrequency();
+      } while (newFreqX === newFreqY);
+
+      currentFreqX = newFreqX;
+      currentFreqY = newFreqY;
       lastChangeTime = currentTime;
     }
 
