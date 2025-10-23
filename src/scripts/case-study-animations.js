@@ -36,7 +36,7 @@ const heroSketch = (p) => {
   let gradientBuffer; // Graphics buffer for shader-based gradient
   let gradientShader; // Shader for radial gradient
 
-  const CHANGE_INTERVAL = 2000; // Change frequency every 4 seconds when idle
+  const CHANGE_INTERVAL = 3000; // Change frequency every x seconds when idle
   const CURVE_RESOLUTION = 2000; // Number of points in the curve
   const GAP_SIZE = 0.03; // Size of gaps as fraction of curve (15%)
   const NUM_GAPS = 4; // Number of gaps in the curve
@@ -354,16 +354,16 @@ const approachSketch = (p) => {
   const TREE_MAX_DEPTH = 10;                                   // Maximum recursion depth
 
   // Mouse-Controlled Tree Angle Configuration
-  const TREE_ANGLE_MIN = 10;                                    // Minimum angle (top of canvas)
-  const TREE_ANGLE_MAX = 30;                                   // Maximum angle (bottom of canvas)
-  const TREE_ANGLE_DEFAULT = 30;                               // Default angle (no mouse interaction)
+  const TREE_ANGLE_MIN = 2;                                    // Minimum angle (top of canvas)
+  const TREE_ANGLE_MAX = 15;                                   // Maximum angle (bottom of canvas)
+  const TREE_ANGLE_DEFAULT = 15;                               // Default angle (no mouse interaction)
   const TREE_ANGLE_MOMENTUM = 0.1;                            // How quickly angle approaches target (0-1, lower = more momentum)
   let currentTreeAngle = TREE_ANGLE_DEFAULT;                   // Current tree angle (changes with mouse)
   let targetTreeAngle = TREE_ANGLE_DEFAULT;                    // Target angle based on mouse position
 
   // Growth Animation Configuration
-  const GROWTH_DURATION = 60;                                  // Frames for each segment to grow
-  const GROWTH_DELAY_PER_LEVEL = 60;                           // Delay .between depth levels (frames)
+  const GROWTH_DURATION = 80;                                  // Frames for each segment to grow
+  const GROWTH_DELAY_PER_LEVEL = 80;                           // Delay .between depth levels (frames)
   let growthProgress = 0;                                      // Current growth progress (0-1)
   let isGrowing = true;                                        // Whether tree is still growing
 
@@ -707,41 +707,47 @@ const approachSketch = (p) => {
 };
 
 // ============================================
-// 3. FOUNDATION SKETCH - Breathing Network
+// 3. FOUNDATION SKETCH - Rounded Truchet Tiles
 // ============================================
-// Theme: Interconnected node network with breathing animation
-// Template: Matches hero sketch structure with dual-radial gradient
+// Theme: Modular truchet tile pattern with random rotations
+// Gradient: Radial gradient (green center to light edge)
 
 const foundationPrinciplesSketch = (p) => {
-  let animationTime = 0;
   let gradientBuffer;
   let gradientShader;
-  let nodes = [];
-
-  // Animation configuration
-  const NODE_COUNT = 25;
-  const BREATHING_SPEED = 0.01; // Speed of breathing animation
-  const BREATHING_AMPLITUDE = 15; // Amplitude of breathing motion
-  const CONNECTION_DISTANCE = 150; // Max distance for connections
+  let tiles = [];
+  let cols, rows;
 
   // Radial Gradient Configuration (Standardized - matches hero sketch)
   const GRADIENT_CENTER_COLOR = { r: 16, g: 185, b: 129 }; // Forest Green (center)
   const GRADIENT_EDGE_COLOR = { r: 240, g: 240, b: 235 }; // Light background (edge)
   const GRADIENT_CENTER_X = 0.5;                           // X position (0-1)
   const GRADIENT_CENTER_Y = 0.5;                           // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.5;                     // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.5;                     // Y radius scale
-  const GRADIENT_POWER = 1.5;                              // Falloff power
-  const GRADIENT_EDGE_EASE = 0.3;                          // Edge ease amount
-  const GRADIENT_SCATTER_INTENSITY = 0.04;                 // Scatter intensity
+  const GRADIENT_RADIUS_SCALE_X = 0.4;                     // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.3;                     // Y radius scale
+  const GRADIENT_POWER = 0.5;                              // Falloff power
+  const GRADIENT_EDGE_EASE = 0.5;                          // Edge ease amount
+  const GRADIENT_SCATTER_INTENSITY = 0.1;                 // Scatter intensity
 
-  // Stroke style configuration
-  const STROKE_COLOR = { r: 40, g: 60, b: 50 };
-  const STROKE_WEIGHT = 1.5;
-  const STROKE_ALPHA = 150;
-  const NODE_SIZE = 6;
+  // Tile Grid Configuration
+  const TILE_SIZE = 100;                                    // Size of each tile in pixels
+  const TILE_MARGIN = 0.2;                                // Margin around grid (percentage of canvas)
 
-  const { observer} = createVisibilityObserver(p);
+  // Line Style Configuration (matching hero sketch)
+  const STROKE_COLOR = { r: 0, g: 0, b: 0 };              // Black
+  const STROKE_WEIGHT = 1.5;                               // Line thickness
+  const STROKE_ALPHA = 80;                                // Line opacity
+
+  // Tile Corner Radius
+  const TILE_CORNER_RADIUS = 0.5;                          // Radius for rounded arcs (fraction of tile size)
+
+  // Animation Timing Configuration
+  const ROTATION_INTERVAL_MIN = 3000;                      // Min time between rotations (ms)
+  const ROTATION_INTERVAL_MAX = 3000;                      // Max time between rotations (ms)
+  const ROTATION_DURATION = 1500;                           // Duration of rotation animation (ms)
+  const SIMULTANEOUS_ROTATIONS = 100;                        // Max tiles rotating at once
+
+  const { observer } = createVisibilityObserver(p);
 
   // Shader Code (Standardized - matches hero sketch)
   const vertShader = `
@@ -854,60 +860,158 @@ const foundationPrinciplesSketch = (p) => {
     p.image(gradientBuffer, 0, 0);
   };
 
+  // ============================================
+  // TILE CLASS
+  // ============================================
+
+  class Tile {
+    constructor(row, col) {
+      this.row = row;
+      this.col = col;
+      // Random initial rotation (0, 90, 180, or 270 degrees)
+      this.currentRotation = p.floor(p.random(4)) * 90;
+      this.targetRotation = this.currentRotation;
+      this.animationProgress = 1; // 0 to 1 (1 = not animating)
+      this.nextRotationTime = p.millis() + p.random(ROTATION_INTERVAL_MIN, ROTATION_INTERVAL_MAX);
+      this.isAnimating = false;
+    }
+
+    update(currentTime) {
+      // Check if it's time to start a new rotation
+      if (!this.isAnimating && currentTime >= this.nextRotationTime) {
+        // Check if we've hit the simultaneous rotation limit
+        let animatingCount = getAnimatingTilesCount();
+        if (animatingCount >= SIMULTANEOUS_ROTATIONS) {
+          // Defer this rotation
+          this.nextRotationTime = currentTime + 100; // Try again in 100ms
+          return;
+        }
+
+        // Randomly rotate 90 degrees clockwise or counterclockwise
+        let direction = p.random() < 0.5 ? 90 : -90;
+        this.targetRotation = this.currentRotation + direction;
+        this.animationProgress = 0;
+        this.isAnimating = true;
+      }
+
+      // Update animation
+      if (this.isAnimating) {
+        this.animationProgress += p.deltaTime / ROTATION_DURATION;
+
+        if (this.animationProgress >= 1) {
+          // Animation complete
+          this.animationProgress = 1;
+          this.currentRotation = this.targetRotation;
+          this.isAnimating = false;
+          // Schedule next rotation
+          this.nextRotationTime = currentTime + p.random(ROTATION_INTERVAL_MIN, ROTATION_INTERVAL_MAX);
+        }
+      }
+    }
+
+    getCurrentRotation() {
+      if (!this.isAnimating) {
+        return this.currentRotation;
+      }
+      // Apply easing to animation progress (ease-in-out cubic)
+      let t = this.animationProgress;
+      let eased = t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      return p.lerp(this.currentRotation, this.targetRotation, eased);
+    }
+
+    draw(startX, startY) {
+      let x = startX + this.col * TILE_SIZE;
+      let y = startY + this.row * TILE_SIZE;
+
+      p.push();
+      p.translate(x + TILE_SIZE / 2, y + TILE_SIZE / 2);
+      p.rotate(p.radians(this.getCurrentRotation()));
+
+      // Draw truchet tile (two quarter-circle arcs)
+      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+      p.strokeWeight(STROKE_WEIGHT);
+      p.strokeCap(p.ROUND);
+      p.noFill();
+
+      let radius = TILE_SIZE * TILE_CORNER_RADIUS;
+      let offset = TILE_SIZE / 2;
+
+      // Arc from top-left corner
+      p.arc(-offset, -offset, radius * 2, radius * 2, 0, p.HALF_PI);
+
+      // Arc from bottom-right corner
+      p.arc(offset, offset, radius * 2, radius * 2, p.PI, p.PI + p.HALF_PI);
+
+      p.pop();
+    }
+  }
+
+  // ============================================
+  // HELPER FUNCTIONS
+  // ============================================
+
+  function initializeTiles() {
+    tiles = [];
+
+    // Calculate grid dimensions with margins
+    let minDimension = Math.min(p.width, p.height);
+    let margin = minDimension * TILE_MARGIN;
+
+    let gridWidth = p.width - (margin * 2);
+    let gridHeight = p.height - (margin * 2);
+
+    cols = Math.floor(gridWidth / TILE_SIZE);
+    rows = Math.floor(gridHeight / TILE_SIZE);
+
+    // Calculate centered starting position
+    let startX = (p.width - cols * TILE_SIZE) / 2;
+    let startY = (p.height - rows * TILE_SIZE) / 2;
+
+    // Create tiles
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        tiles.push(new Tile(row, col));
+      }
+    }
+
+    return { startX, startY };
+  }
+
+  function getAnimatingTilesCount() {
+    return tiles.filter(tile => tile.isAnimating).length;
+  }
+
+  // Store grid offset for centered positioning
+  let gridOffset = { startX: 0, startY: 0 };
+
+  // ============================================
+  // P5.JS LIFECYCLE
+  // ============================================
+
   p.setup = () => {
     const container = document.getElementById('foundation-principles-canvas');
     const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
     canvas.parent('foundation-principles-canvas');
 
     createGradient();
-
-    // Create random nodes
-    for (let i = 0; i < NODE_COUNT; i++) {
-      nodes.push({
-        baseX: p.random(p.width),
-        baseY: p.random(p.height),
-        x: 0,
-        y: 0,
-        offset: p.random(p.TWO_PI)
-      });
-    }
+    gridOffset = initializeTiles();
 
     observer.observe(container);
   };
 
   p.draw = () => {
+    let currentTime = p.millis();
+
+    // Draw gradient background
     drawGradient();
 
-    animationTime += BREATHING_SPEED;
-
-    // Update node positions with breathing
-    nodes.forEach(node => {
-      let breathe = p.sin(animationTime + node.offset) * BREATHING_AMPLITUDE;
-      node.x = node.baseX + breathe;
-      node.y = node.baseY + breathe;
-    });
-
-    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA * 0.5);
-    p.strokeWeight(STROKE_WEIGHT);
-
-    // Draw connections
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        let d = p.dist(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
-        if (d < CONNECTION_DISTANCE) {
-          let alpha = p.map(d, 0, CONNECTION_DISTANCE, STROKE_ALPHA, 0);
-          p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5);
-          p.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
-        }
-      }
-    }
-
-    // Draw nodes
-    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
-    p.strokeWeight(STROKE_WEIGHT);
-    p.noFill();
-    nodes.forEach(node => {
-      p.circle(node.x, node.y, NODE_SIZE);
+    // Update and draw tiles
+    tiles.forEach(tile => {
+      tile.update(currentTime);
+      tile.draw(gridOffset.startX, gridOffset.startY);
     });
   };
 
@@ -915,6 +1019,7 @@ const foundationPrinciplesSketch = (p) => {
     const container = document.getElementById('foundation-principles-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
     createGradient();
+    gridOffset = initializeTiles();
   };
 };
 
