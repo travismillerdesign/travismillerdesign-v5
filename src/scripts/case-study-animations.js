@@ -2128,35 +2128,38 @@ const impactSketch = (p) => {
 
   // Radial Gradient Configuration (Offset Center)
   const GRADIENT_CENTER_COLOR = { r: 217, g: 119, b: 6 };     // Amber
-  const GRADIENT_EDGE_COLOR = { r: 139, g: 92, b: 246 };      // Violet
+  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White
   const GRADIENT_CENTER_X = 0.65;                              // X position (0-1)
   const GRADIENT_CENTER_Y = 0.6;                               // Y position (0-1)
   const GRADIENT_RADIUS_SCALE_X = 0.55;                        // X radius scale
   const GRADIENT_RADIUS_SCALE_Y = 0.55;                        // Y radius scale
   const GRADIENT_POWER = 2.2;                                  // Falloff power
   const GRADIENT_EDGE_EASE = 0.3;                              // Edge ease amount (0-1)
-  const GRADIENT_SCATTER_INTENSITY = 0.1;                    // Scatter effect intensity
+  const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
 
-  // Ray Configuration
-  const RAY_COUNT = 16;                                        // Number of radiating rays
-  const RAY_MIN_LENGTH = 80;                                   // Minimum ray length
-  const RAY_MAX_LENGTH = 280;                                  // Maximum ray length
-  const RAY_PULSE_SPEED = 0.015;                               // Ray pulse animation speed
-  const RAY_WIDTH_BASE = 3;                                    // Base width of rays
-  const RAY_WIDTH_VARIATION = 2;                               // Ray width variation
-  const RAY_SEGMENT_COUNT = 8;                                 // Segments per ray for tapering
+  // Ripple Origin Configuration (Upper Right)
+  const RIPPLE_ORIGIN_X = 0.75;                                // X position of ripple center (0-1)
+  const RIPPLE_ORIGIN_Y = 0.25;                                // Y position of ripple center (0-1)
 
-  // Stroke Configuration
-  const STROKE_WEIGHT = 2;                                     // Ray stroke thickness
-  const STROKE_COLOR = { r: 200, g: 200, b: 200 };            // Base stroke color (grey)
-  const STROKE_ALPHA_MIN = 60;                                 // Minimum stroke opacity
-  const STROKE_ALPHA_MAX = 200;                                // Maximum stroke opacity
-  const FADE_BACKGROUND_ALPHA = 90;                            // Background fade effect opacity
+  // Ripple Animation Configuration
+  const RIPPLE_SPAWN_INTERVAL = 800;                           // Milliseconds between new ripples
+  const RIPPLE_EXPANSION_SPEED = 1.5;                          // Pixels per frame expansion rate
+  const RIPPLE_SPACING = 50;                                   // Spacing between ripples (pixels)
+  const RIPPLE_MAX_RADIUS = 500;                               // Maximum radius before removal (pixels)
+  const RIPPLE_START_RADIUS = 0;                              // Starting radius for new ripples (pixels)
+
+  // Ripple Appearance Configuration
+  const RIPPLE_STROKE_WEIGHT = 1.5;                            // Line thickness (matching hero sketch)
+  const RIPPLE_STROKE_COLOR = { r: 0, g: 0, b: 0 };           // Black stroke (matching hero sketch)
+  const RIPPLE_BASE_ALPHA = 100;                               // Starting opacity (matching hero sketch)
+  const RIPPLE_FADE_START = 200;                               // Radius at which fading begins (pixels)
+  const RIPPLE_FADE_POWER = 1.5;                               // Controls fade rate (higher = faster fade)
 
   // Animation
   let animationTime = 0;
+  let lastRippleTime = 0;
   let gradientBuffer;
-  let rays = [];
+  let ripples = [];
 
   // ============================================
   // SHADER CODE
@@ -2244,48 +2247,48 @@ const impactSketch = (p) => {
   `;
 
   // ============================================
-  // RAY CLASS
+  // RIPPLE CLASS
   // ============================================
 
-  class Ray {
-    constructor(index) {
-      this.index = index;
-      this.angle = (index / RAY_COUNT) * p.TWO_PI;
-      this.baseLength = p.random(RAY_MIN_LENGTH, RAY_MAX_LENGTH);
-      this.width = RAY_WIDTH_BASE + p.random(-RAY_WIDTH_VARIATION, RAY_WIDTH_VARIATION);
-      this.phaseOffset = p.random(p.TWO_PI);
+  class Ripple {
+    constructor(originX, originY) {
+      this.originX = originX;
+      this.originY = originY;
+      this.radius = RIPPLE_START_RADIUS;
+      this.isAlive = true;
     }
 
-    display(centerX, centerY) {
-      // Pulse effect - ray length varies with sine wave
-      let pulse = p.sin(animationTime * RAY_PULSE_SPEED + this.phaseOffset);
-      let currentLength = this.baseLength * (0.7 + pulse * 0.3);
+    update() {
+      // Expand the ripple
+      this.radius += RIPPLE_EXPANSION_SPEED;
 
-      // Calculate alpha based on pulse (brighter when extended)
-      let alpha = p.map(pulse, -1, 1, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
+      // Remove ripple if it exceeds max radius
+      if (this.radius > RIPPLE_MAX_RADIUS) {
+        this.isAlive = false;
+      }
+    }
 
-      // Calculate end point
-      let endX = centerX + p.cos(this.angle) * currentLength;
-      let endY = centerY + p.sin(this.angle) * currentLength;
+    display() {
+      // Calculate opacity based on distance from origin
+      let alpha = RIPPLE_BASE_ALPHA;
 
-      // Draw ray as tapered line (thicker at center, thinner at edges)
-      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
-      p.noFill();
+      // Apply fade effect as ripple expands beyond fade threshold
+      if (this.radius > RIPPLE_FADE_START) {
+        let fadeProgress = (this.radius - RIPPLE_FADE_START) / (RIPPLE_MAX_RADIUS - RIPPLE_FADE_START);
+        fadeProgress = p.constrain(fadeProgress, 0, 1);
 
-      for (let i = 0; i < RAY_SEGMENT_COUNT; i++) {
-        let t1 = i / RAY_SEGMENT_COUNT;
-        let t2 = (i + 1) / RAY_SEGMENT_COUNT;
+        // Apply power curve for fade
+        fadeProgress = p.pow(fadeProgress, RIPPLE_FADE_POWER);
 
-        let x1 = p.lerp(centerX, endX, t1);
-        let y1 = p.lerp(centerY, endY, t1);
-        let x2 = p.lerp(centerX, endX, t2);
-        let y2 = p.lerp(centerY, endY, t2);
+        alpha = RIPPLE_BASE_ALPHA * (1 - fadeProgress);
+      }
 
-        // Taper width (wider at center, thinner at edges)
-        let width = this.width * (1 - t1 * 0.7);
-        p.strokeWeight(width);
-
-        p.line(x1, y1, x2, y2);
+      // Only draw if opacity is visible
+      if (alpha > 0) {
+        p.stroke(RIPPLE_STROKE_COLOR.r, RIPPLE_STROKE_COLOR.g, RIPPLE_STROKE_COLOR.b, alpha);
+        p.strokeWeight(RIPPLE_STROKE_WEIGHT);
+        p.noFill();
+        p.circle(this.originX, this.originY, this.radius * 2);
       }
     }
   }
@@ -2340,10 +2343,8 @@ const impactSketch = (p) => {
 
     createGradient();
 
-    // Initialize rays
-    for (let i = 0; i < RAY_COUNT; i++) {
-      rays.push(new Ray(i));
-    }
+    // Initialize with first ripple
+    lastRippleTime = p.millis();
 
     observer.observe(container);
   };
@@ -2352,21 +2353,30 @@ const impactSketch = (p) => {
     // Draw gradient background
     drawGradient();
 
-    // Apply fade effect
-    p.fill(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b, FADE_BACKGROUND_ALPHA);
-    p.noStroke();
-    p.rect(0, 0, p.width, p.height);
+    let currentTime = p.millis();
+
+    // Calculate ripple origin point (upper right)
+    let originX = p.width * RIPPLE_ORIGIN_X;
+    let originY = p.height * RIPPLE_ORIGIN_Y;
+
+    // Spawn new ripples at regular intervals
+    if (currentTime - lastRippleTime >= RIPPLE_SPAWN_INTERVAL) {
+      ripples.push(new Ripple(originX, originY));
+      lastRippleTime = currentTime;
+    }
+
+    // Update and draw all ripples
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      ripples[i].update();
+      ripples[i].display();
+
+      // Remove dead ripples
+      if (!ripples[i].isAlive) {
+        ripples.splice(i, 1);
+      }
+    }
 
     animationTime += 1;
-
-    // Calculate center point (from gradient center position)
-    let centerX = p.width * GRADIENT_CENTER_X;
-    let centerY = p.height * GRADIENT_CENTER_Y;
-
-    // Draw rays
-    rays.forEach(ray => {
-      ray.display(centerX, centerY);
-    });
   };
 
   p.windowResized = () => {
