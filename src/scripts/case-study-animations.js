@@ -248,7 +248,7 @@ const heroSketch = (p) => {
 
     // Calculate uniform margins based on smallest dimension
     let minDimension = Math.min(p.width, p.height);
-    let margin = minDimension * 0.15; // 15% margin
+    let margin = minDimension * 0.2; // margin %
 
     // Calculate available space with uniform margins
     let availableWidth = p.width - (margin * 2);
@@ -1536,22 +1536,22 @@ const enablementSketch = (p) => {
   // CUSTOMIZATION VARIABLES
   // ============================================
 
-  const GRADIENT_CENTER_COLOR = { r: 200, g: 100, b: 225 };   // Random vibrant color
+  const GRADIENT_CENTER_COLOR = { r: 255, g: 100, b: 100 };   // Random vibrant color
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };      // White (matching implementation)
-  const GRADIENT_CENTER_X = 0.35;                               // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.4;                                // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.5;                          // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.5;                          // Y radius scale
-  const GRADIENT_POWER = 2.5;                                   // Falloff power
-  const GRADIENT_EDGE_EASE = 0.35;                              // Edge ease amount (0-1)
+  const GRADIENT_CENTER_X = 0.5;                               // X position (0-1)
+  const GRADIENT_CENTER_Y = 0.5;                                // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.2;                          // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.8;                          // Y radius scale
+  const GRADIENT_POWER = 1;                                   // Falloff power
+  const GRADIENT_EDGE_EASE = 0.91;                              // Edge ease amount (0-1)
   const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
 
   // ============================================
   // FLOWFIELD GRID CONFIGURATION
   // ============================================
-  const GRID_RESOLUTION = 25;                                   // Spacing between grid points (pixels) - lower = denser
+  const GRID_RESOLUTION = 50;                                   // Spacing between grid points (pixels) - lower = denser
   const MARGIN_X = 620;                                          // Horizontal margin from canvas edge (pixels)
-  const MARGIN_Y = 120;                                          // Vertical margin from canvas edge (pixels)
+  const MARGIN_Y = 0;                                          // Vertical margin from canvas edge (pixels)
 
   // ============================================
   // NOISE CONFIGURATION (Low Octaves = Smoother)
@@ -1559,12 +1559,12 @@ const enablementSketch = (p) => {
   const NOISE_SCALE = 0.05;                                    // Scale of noise sampling - lower = larger patterns
   const NOISE_OCTAVES = 2;                                      // Number of noise octaves (low = smooth)
   const NOISE_FALLOFF = 0.2;                                    // Amplitude falloff per octave (0-1)
-  const NOISE_Z_SPEED = 0.015;                                  // Animation speed in Z-axis (time)
+  const NOISE_Z_SPEED = 0.008;                                  // Animation speed in Z-axis (time)
 
   // ============================================
   // FLOWFIELD LINE CONFIGURATION
   // ============================================
-  const LINE_VISUAL_LENGTH = 24;                                // Length of each rendered line segment (pixels)
+  const LINE_VISUAL_LENGTH = GRID_RESOLUTION;                   // Length of each rendered line segment (pixels)
   const LINE_WEIGHT = 1.5;                                      // Stroke thickness (matching hero sketch)
   const LINE_COLOR = { r: 0, g: 0, b: 0 };                     // Stroke color (black, matching hero)
   const LINE_ALPHA = 160;                                       // Opacity (constant)
@@ -1919,10 +1919,10 @@ const evolutionSketch = (p) => {
   const VISIBILITY_THRESHOLD = -0.2;                 // Only show instances with scaleY > this (0-1, creates rolling effect)
 
   // Gradient Configuration (Amber + Violet)
-  const GRADIENT_CENTER_COLOR = { r: 245, g: 158, b: 11 };  // Amber
+  const GRADIENT_CENTER_COLOR = { r: 245, g: 118, b: 22 };  // Amber
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };
-  const GRADIENT_CENTER_X = 0.5;                    // Center X position (0-1)
-  const GRADIENT_CENTER_Y = 0.5;                    // Center Y position (0-1)
+  const GRADIENT_CENTER_X = 0.6;                    // Center X position (0-1)
+  const GRADIENT_CENTER_Y = 0.95;                    // Center Y position (0-1)
   const GRADIENT_RADIUS_SCALE_X = 0.5;              // X radius scale
   const GRADIENT_RADIUS_SCALE_Y = 0.5;              // Y radius scale
   const GRADIENT_POWER = 1.0;                       // Gradient power curve
@@ -2210,7 +2210,7 @@ const impactSketch = (p) => {
   // ============================================
 
   // Radial Gradient Configuration (Offset Center)
-  const GRADIENT_CENTER_COLOR = { r: 217, g: 119, b: 6 };     // Amber
+  const GRADIENT_CENTER_COLOR = { r: 255, g: 200, b: 80 };     // Amber
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White
   const GRADIENT_CENTER_X = 0.5;                              // X position (0-1)
   const GRADIENT_CENTER_Y = 0.85;                               // Y position (0-1)

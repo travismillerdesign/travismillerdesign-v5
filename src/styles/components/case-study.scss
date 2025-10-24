@@ -7,7 +7,7 @@ $p5-margin: 1rem * 0.5;
 // Full-bleed sections with P5.js canvas backgrounds
 .case-study-section {
   position: relative;
-  min-height: 80vh;
+  min-height: 100vh;
   overflow: hidden;
   padding: 6rem $pagemargin;
   width: 100%;
@@ -41,7 +41,7 @@ $p5-margin: 1rem * 0.5;
 // Page header styling
 .page-header {
   position: relative;
-  height: 90vh;
+  height: 100vh;
   padding: $pagemargin;
   overflow: hidden;
   width: 100%;
