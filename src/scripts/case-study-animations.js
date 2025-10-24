@@ -1533,12 +1533,51 @@ const implementationSketch = (p) => {
 
 const enablementSketch = (p) => {
   // ============================================
+  // HELPER FUNCTIONS
+  // ============================================
+
+  // Convert HSL to RGB
+  function hslToRgb(h, s, l) {
+    h = h / 360;
+    s = s / 100;
+    l = l / 100;
+
+    let r, g, b;
+
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255)
+    };
+  }
+
+  // ============================================
   // CUSTOMIZATION VARIABLES
   // ============================================
 
-  // Radial Gradient Configuration (Offset Center)
-  const GRADIENT_CENTER_COLOR = { r: 249, g: 115, b: 22 };     // Orange
-  const GRADIENT_EDGE_COLOR = { r: 99, g: 102, b: 241 };       // Indigo
+  // Radial Gradient Configuration (Random Center Color - inspired by implementation sketch)
+  const randomHue = Math.floor(Math.random() * 360);
+  const GRADIENT_CENTER_COLOR = hslToRgb(randomHue, 80, 60);   // Random vibrant color
+  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };      // White (matching implementation)
   const GRADIENT_CENTER_X = 0.35;                               // X position (0-1)
   const GRADIENT_CENTER_Y = 0.4;                                // Y position (0-1)
   const GRADIENT_RADIUS_SCALE_X = 0.5;                          // X radius scale
@@ -1547,27 +1586,43 @@ const enablementSketch = (p) => {
   const GRADIENT_EDGE_EASE = 0.35;                              // Edge ease amount (0-1)
   const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
 
-  // Wave Animation Configuration
-  const WAVE_COUNT = 8;                                         // Number of concentric waves
-  const WAVE_SPACING = 60;                                      // Spacing between waves
-  const WAVE_EXPANSION_SPEED = 0.8;                             // How fast waves expand
-  const WAVE_MAX_RADIUS = 600;                                  // Maximum wave radius before reset
-  const WAVE_SEGMENTS = 120;                                    // Number of segments per wave
-  const WAVE_WOBBLE_AMPLITUDE = 8;                              // Wave distortion amplitude
-  const WAVE_WOBBLE_FREQUENCY = 6;                              // Wave distortion frequency
-  const WAVE_WOBBLE_SPEED = 0.02;                               // Wave distortion animation speed
+  // ============================================
+  // FLOWFIELD GRID CONFIGURATION
+  // ============================================
+  const GRID_RESOLUTION = 25;                                   // Spacing between grid points (pixels) - lower = denser
+  const MARGIN_X = 40;                                          // Horizontal margin from canvas edge (pixels)
+  const MARGIN_Y = 40;                                          // Vertical margin from canvas edge (pixels)
 
-  // Stroke Configuration
-  const STROKE_WEIGHT = 2;                                      // Wave stroke thickness
-  const STROKE_COLOR = { r: 200, g: 200, b: 200 };             // Base stroke color (grey)
-  const STROKE_ALPHA_MIN = 40;                                  // Minimum stroke opacity
-  const STROKE_ALPHA_MAX = 180;                                 // Maximum stroke opacity
-  const FADE_BACKGROUND_ALPHA = 100;                            // Background fade effect opacity
+  // ============================================
+  // NOISE CONFIGURATION (Low Octaves = Smoother)
+  // ============================================
+  const NOISE_SCALE = 0.008;                                    // Scale of noise sampling - lower = larger patterns
+  const NOISE_OCTAVES = 2;                                      // Number of noise octaves (low = smooth)
+  const NOISE_FALLOFF = 0.5;                                    // Amplitude falloff per octave (0-1)
+  const NOISE_Z_SPEED = 0.003;                                  // Animation speed in Z-axis (time)
+
+  // ============================================
+  // FLOWFIELD LINE CONFIGURATION
+  // ============================================
+  const LINE_VISUAL_LENGTH = 20;                                // Length of each rendered line segment (pixels)
+  const LINE_WEIGHT = 1.5;                                      // Stroke thickness (matching hero sketch)
+  const LINE_COLOR = { r: 0, g: 0, b: 0 };                     // Stroke color (black, matching hero)
+  const LINE_ALPHA = 100;                                       // Opacity (constant)
+
+  // ============================================
+  // MOUSE INTERACTION CONFIGURATION
+  // ============================================
+  const MOUSE_INFLUENCE_RADIUS = 200;                           // Distance mouse affects flowfield (pixels)
+  const MOUSE_FORCE_STRENGTH = 1.5;                             // Strength of mouse influence on angles
+  const MOUSE_MOMENTUM = 0.15;                                  // Smoothing factor (0-1, lower = more lag)
 
   // Animation
   let animationTime = 0;
+  let noiseZOffset = 0;
   let gradientBuffer;
-  let waves = [];
+  let flowfield;
+  let virtualMouseX = 0;                                        // Smoothed mouse X position
+  let virtualMouseY = 0;                                        // Smoothed mouse Y position
 
   // ============================================
   // SHADER CODE (Standardized - matches hero sketch)
@@ -1654,46 +1709,111 @@ const enablementSketch = (p) => {
   `;
 
   // ============================================
-  // WAVE CLASS
+  // FLOWFIELD CLASS
   // ============================================
 
-  class Wave {
-    constructor(startRadius) {
-      this.radius = startRadius;
-      this.wobbleOffset = p.random(1000);
+  class Flowfield {
+    constructor(width, height) {
+      // Calculate available space within margins
+      this.canvasWidth = width;
+      this.canvasHeight = height;
+      this.availableWidth = width - (MARGIN_X * 2);
+      this.availableHeight = height - (MARGIN_Y * 2);
+
+      // Calculate grid dimensions
+      this.cols = Math.floor(this.availableWidth / GRID_RESOLUTION);
+      this.rows = Math.floor(this.availableHeight / GRID_RESOLUTION);
+      this.field = new Array(this.cols * this.rows);
+
+      // Calculate offsets to center grid within margins
+      this.offsetX = MARGIN_X + (this.availableWidth - (this.cols - 1) * GRID_RESOLUTION) / 2;
+      this.offsetY = MARGIN_Y + (this.availableHeight - (this.rows - 1) * GRID_RESOLUTION) / 2;
+
+      // Configure noise
+      p.noiseDetail(NOISE_OCTAVES, NOISE_FALLOFF);
     }
 
     update() {
-      this.radius += WAVE_EXPANSION_SPEED;
-    }
+      // Update noise Z offset for animation
+      noiseZOffset += NOISE_Z_SPEED;
 
-    display(centerX, centerY) {
-      // Calculate alpha based on radius (fade as it expands)
-      let alpha = p.map(this.radius, 0, WAVE_MAX_RADIUS, STROKE_ALPHA_MAX, STROKE_ALPHA_MIN);
-      alpha = p.constrain(alpha, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
+      // Calculate angle for each grid cell using Perlin noise
+      for (let y = 0; y < this.rows; y++) {
+        for (let x = 0; x < this.cols; x++) {
+          let index = x + y * this.cols;
 
-      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
-      p.strokeWeight(STROKE_WEIGHT);
-      p.noFill();
+          // Sample noise at this position
+          let noiseValue = p.noise(
+            x * NOISE_SCALE,
+            y * NOISE_SCALE,
+            noiseZOffset
+          );
 
-      p.beginShape();
-      for (let i = 0; i <= WAVE_SEGMENTS; i++) {
-        let angle = p.map(i, 0, WAVE_SEGMENTS, 0, p.TWO_PI);
+          // Convert noise (0-1) to angle (0-TWO_PI)
+          let angle = noiseValue * p.TWO_PI * 2;
 
-        // Add wobble distortion
-        let wobble = p.sin(angle * WAVE_WOBBLE_FREQUENCY + animationTime * WAVE_WOBBLE_SPEED + this.wobbleOffset) * WAVE_WOBBLE_AMPLITUDE;
-        let currentRadius = this.radius + wobble;
-
-        let x = centerX + p.cos(angle) * currentRadius;
-        let y = centerY + p.sin(angle) * currentRadius;
-
-        p.vertex(x, y);
+          this.field[index] = angle;
+        }
       }
-      p.endShape();
     }
 
-    isDead() {
-      return this.radius > WAVE_MAX_RADIUS;
+    applyMouseInfluence() {
+      // Apply mouse influence with momentum
+      for (let y = 0; y < this.rows; y++) {
+        for (let x = 0; x < this.cols; x++) {
+          let index = x + y * this.cols;
+
+          // Get actual grid position
+          let gridX = x * GRID_RESOLUTION + this.offsetX;
+          let gridY = y * GRID_RESOLUTION + this.offsetY;
+
+          // Calculate distance to virtual mouse
+          let dx = virtualMouseX - gridX;
+          let dy = virtualMouseY - gridY;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+
+          // Apply influence if within radius
+          if (dist < MOUSE_INFLUENCE_RADIUS && dist > 0) {
+            // Calculate angle towards mouse
+            let mouseAngle = Math.atan2(dy, dx);
+
+            // Calculate influence strength (stronger when closer)
+            let influence = 1 - (dist / MOUSE_INFLUENCE_RADIUS);
+            influence = Math.pow(influence, 2); // Ease the falloff
+
+            // Blend current angle with mouse angle
+            let currentAngle = this.field[index];
+            this.field[index] = p.lerp(currentAngle, mouseAngle, influence * MOUSE_FORCE_STRENGTH);
+          }
+        }
+      }
+    }
+
+    display() {
+      // Draw a line segment at each grid point
+      p.stroke(LINE_COLOR.r, LINE_COLOR.g, LINE_COLOR.b, LINE_ALPHA);
+      p.strokeWeight(LINE_WEIGHT);
+
+      for (let y = 0; y < this.rows; y++) {
+        for (let x = 0; x < this.cols; x++) {
+          let index = x + y * this.cols;
+          let angle = this.field[index];
+
+          // Calculate grid point position
+          let gridX = x * GRID_RESOLUTION + this.offsetX;
+          let gridY = y * GRID_RESOLUTION + this.offsetY;
+
+          // Calculate line endpoints (centered on grid point)
+          let halfLength = LINE_VISUAL_LENGTH / 2;
+          let x1 = gridX - Math.cos(angle) * halfLength;
+          let y1 = gridY - Math.sin(angle) * halfLength;
+          let x2 = gridX + Math.cos(angle) * halfLength;
+          let y2 = gridY + Math.sin(angle) * halfLength;
+
+          // Draw line segment
+          p.line(x1, y1, x2, y2);
+        }
+      }
     }
   }
 
@@ -1747,10 +1867,12 @@ const enablementSketch = (p) => {
 
     createGradient();
 
-    // Initialize waves with staggered starting positions
-    for (let i = 0; i < WAVE_COUNT; i++) {
-      waves.push(new Wave(i * WAVE_SPACING));
-    }
+    // Initialize flowfield
+    flowfield = new Flowfield(p.width, p.height);
+
+    // Initialize virtual mouse position to center
+    virtualMouseX = p.width / 2;
+    virtualMouseY = p.height / 2;
 
     observer.observe(container);
   };
@@ -1759,34 +1881,35 @@ const enablementSketch = (p) => {
     // Draw gradient background
     drawGradient();
 
-    // Apply fade effect
-    p.fill(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b, FADE_BACKGROUND_ALPHA);
-    p.noStroke();
-    p.rect(0, 0, p.width, p.height);
-
     animationTime += 1;
 
-    // Calculate center point
-    let centerX = p.width * GRADIENT_CENTER_X;
-    let centerY = p.height * GRADIENT_CENTER_Y;
+    // Update virtual mouse position with momentum (smooth following)
+    virtualMouseX = p.lerp(virtualMouseX, p.mouseX, MOUSE_MOMENTUM);
+    virtualMouseY = p.lerp(virtualMouseY, p.mouseY, MOUSE_MOMENTUM);
 
-    // Update and draw waves
-    for (let i = waves.length - 1; i >= 0; i--) {
-      waves[i].update();
-      waves[i].display(centerX, centerY);
+    // Update flowfield with noise animation
+    flowfield.update();
 
-      // Remove dead waves and spawn new ones
-      if (waves[i].isDead()) {
-        waves.splice(i, 1);
-        waves.push(new Wave(0));
-      }
-    }
+    // Apply mouse influence to flowfield
+    flowfield.applyMouseInfluence();
+
+    // Draw flowfield grid
+    flowfield.display();
+  };
+
+  p.mouseMoved = () => {
+    // This event fires when mouse moves, helping track mouse position
+    // The actual smoothing happens in p.draw() with lerp
+    return false; // Prevent default behavior
   };
 
   p.windowResized = () => {
     const container = document.getElementById('enablement-canvas');
     p.resizeCanvas(container.offsetWidth, container.offsetHeight);
     createGradient();
+
+    // Reinitialize flowfield with new dimensions
+    flowfield = new Flowfield(p.width, p.height);
   };
 };
 
