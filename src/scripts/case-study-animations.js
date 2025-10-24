@@ -2129,37 +2129,71 @@ const impactSketch = (p) => {
   // Radial Gradient Configuration (Offset Center)
   const GRADIENT_CENTER_COLOR = { r: 217, g: 119, b: 6 };     // Amber
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White
-  const GRADIENT_CENTER_X = 0.65;                              // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.6;                               // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.55;                        // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.55;                        // Y radius scale
-  const GRADIENT_POWER = 2.2;                                  // Falloff power
-  const GRADIENT_EDGE_EASE = 0.3;                              // Edge ease amount (0-1)
+  const GRADIENT_CENTER_X = 0.5;                              // X position (0-1)
+  const GRADIENT_CENTER_Y = 0.85;                               // Y position (0-1)
+  const GRADIENT_RADIUS_SCALE_X = 0.3;                        // X radius scale
+  const GRADIENT_RADIUS_SCALE_Y = 0.5;                        // Y radius scale
+  const GRADIENT_POWER = 1;                                  // Falloff power
+  const GRADIENT_EDGE_EASE = 1;                              // Edge ease amount (0-1)
   const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
 
-  // Ripple Origin Configuration (Upper Right)
-  const RIPPLE_ORIGIN_X = 0.75;                                // X position of ripple center (0-1)
-  const RIPPLE_ORIGIN_Y = 0.25;                                // Y position of ripple center (0-1)
+  // ============================================
+  // RIPPLE GROUP 1 CONFIGURATION
+  // ============================================
+  const GROUP1_CONFIG = {
+    // Origin Position
+    originX: 0.5,                                             // X position of ripple center (0-1)
+    originY: 0.15,                                             // Y position of ripple center (0-1)
 
-  // Ripple Animation Configuration
-  const RIPPLE_SPAWN_INTERVAL = 800;                           // Milliseconds between new ripples
-  const RIPPLE_EXPANSION_SPEED = 1.5;                          // Pixels per frame expansion rate
-  const RIPPLE_SPACING = 50;                                   // Spacing between ripples (pixels)
-  const RIPPLE_MAX_RADIUS = 500;                               // Maximum radius before removal (pixels)
-  const RIPPLE_START_RADIUS = 0;                              // Starting radius for new ripples (pixels)
+    // Animation Settings
+    spawnInterval: 2000,                                        // Milliseconds between new ripples
+    expansionSpeed: 0.5,                                       // Pixels per frame expansion rate
+    maxRadius: 300,                                            // Maximum radius before removal (pixels)
+    startRadius: 8,                                            // Starting radius for new ripples (pixels)
 
-  // Ripple Appearance Configuration
-  const RIPPLE_STROKE_WEIGHT = 1.5;                            // Line thickness (matching hero sketch)
-  const RIPPLE_STROKE_COLOR = { r: 0, g: 0, b: 0 };           // Black stroke (matching hero sketch)
-  const RIPPLE_BASE_ALPHA = 100;                               // Starting opacity (matching hero sketch)
-  const RIPPLE_FADE_START = 200;                               // Radius at which fading begins (pixels)
-  const RIPPLE_FADE_POWER = 1.5;                               // Controls fade rate (higher = faster fade)
+    // Appearance Settings
+    strokeWeight: 1.5,                                         // Line thickness
+    strokeColor: { r: 0, g: 0, b: 0 },                        // Stroke color
+    baseAlpha: 200,                                            // Starting opacity
+    fadeStart: 0,                                            // Radius at which fading begins (pixels)
+    fadePower: 1.5,                                            // Controls fade rate (higher = faster fade)
+
+    // Secondary Ring Settings
+    secondaryEnabled: true,                                    // Enable/disable secondary ring
+    secondaryOffset: -8,                                      // Offset from primary ring (pixels, negative = smaller)
+  };
+
+  // ============================================
+  // RIPPLE GROUP 2 CONFIGURATION
+  // ============================================
+  const GROUP2_CONFIG = {
+    // Origin Position
+    originX: 0.8,                                             // X position of ripple center (0-1)
+    originY: 0.2,                                             // Y position of ripple center (0-1)
+
+    // Animation Settings
+    spawnInterval: 2000,                                       // Milliseconds between new ripples
+    expansionSpeed: 1,                                       // Pixels per frame expansion rate
+    maxRadius: 250,                                            // Maximum radius before removal (pixels)
+    startRadius: 10,                                            // Starting radius for new ripples (pixels)
+
+    // Appearance Settings
+    strokeWeight: 1.5,                                         // Line thickness
+    strokeColor: { r: 0, g: 0, b: 0 },                        // Stroke color
+    baseAlpha: 200,                                             // Starting opacity
+    fadeStart: 0,                                            // Radius at which fading begins (pixels)
+    fadePower: 1,                                            // Controls fade rate (higher = faster fade)
+
+    // Secondary Ring Settings
+    secondaryEnabled: true,                                    // Enable/disable secondary ring
+    secondaryOffset: -5,                                      // Offset from primary ring (pixels, negative = smaller)
+  };
 
   // Animation
   let animationTime = 0;
-  let lastRippleTime = 0;
   let gradientBuffer;
-  let ripples = [];
+  let rippleGroup1;
+  let rippleGroup2;
 
   // ============================================
   // SHADER CODE
@@ -2251,44 +2285,103 @@ const impactSketch = (p) => {
   // ============================================
 
   class Ripple {
-    constructor(originX, originY) {
+    constructor(originX, originY, config, secondaryOffset = 0) {
       this.originX = originX;
       this.originY = originY;
-      this.radius = RIPPLE_START_RADIUS;
+      this.config = config;
+      this.secondaryOffset = secondaryOffset;
+      this.radius = config.startRadius + secondaryOffset;
       this.isAlive = true;
     }
 
     update() {
       // Expand the ripple
-      this.radius += RIPPLE_EXPANSION_SPEED;
+      this.radius += this.config.expansionSpeed;
 
       // Remove ripple if it exceeds max radius
-      if (this.radius > RIPPLE_MAX_RADIUS) {
+      if (this.radius > this.config.maxRadius) {
         this.isAlive = false;
       }
     }
 
     display() {
-      // Calculate opacity based on distance from origin
-      let alpha = RIPPLE_BASE_ALPHA;
-
-      // Apply fade effect as ripple expands beyond fade threshold
-      if (this.radius > RIPPLE_FADE_START) {
-        let fadeProgress = (this.radius - RIPPLE_FADE_START) / (RIPPLE_MAX_RADIUS - RIPPLE_FADE_START);
-        fadeProgress = p.constrain(fadeProgress, 0, 1);
-
-        // Apply power curve for fade
-        fadeProgress = p.pow(fadeProgress, RIPPLE_FADE_POWER);
-
-        alpha = RIPPLE_BASE_ALPHA * (1 - fadeProgress);
+      // Don't draw if radius is negative
+      if (this.radius < 0) {
+        return;
       }
+
+      // Calculate opacity based on distance from origin
+      let alpha = this.config.baseAlpha;
+      
+      // Apply fade effect as ripple expands beyond fade threshold
+      if (this.radius > this.config.fadeStart) {
+        let fadeProgress = (this.radius - this.config.fadeStart) / (this.config.maxRadius - this.config.fadeStart);
+        fadeProgress = p.constrain(fadeProgress, 0, 1);
+        
+        // Apply power curve for fade
+        fadeProgress = p.pow(fadeProgress, this.config.fadePower);
+        
+        alpha = this.config.baseAlpha * (1 - fadeProgress);
+      }
+      let weight = p.map(alpha, 0, this.config.baseAlpha, 0, this.config.strokeWeight);
 
       // Only draw if opacity is visible
       if (alpha > 0) {
-        p.stroke(RIPPLE_STROKE_COLOR.r, RIPPLE_STROKE_COLOR.g, RIPPLE_STROKE_COLOR.b, alpha);
-        p.strokeWeight(RIPPLE_STROKE_WEIGHT);
+        p.stroke(this.config.strokeColor.r, this.config.strokeColor.g, this.config.strokeColor.b, alpha);
+        p.strokeWeight(weight);
         p.noFill();
         p.circle(this.originX, this.originY, this.radius * 2);
+      }
+    }
+  }
+
+  // ============================================
+  // RIPPLE GROUP CLASS
+  // ============================================
+
+  class RippleGroup {
+    constructor(config) {
+      this.config = config;
+      this.ripples = [];
+      this.lastSpawnTime = 0;
+    }
+
+    update(currentTime, p) {
+      // Calculate origin point based on canvas size
+      let originX = p.width * this.config.originX;
+      let originY = p.height * this.config.originY;
+
+      // Spawn new ripples at regular intervals
+      if (currentTime - this.lastSpawnTime >= this.config.spawnInterval) {
+        // Create primary ripple
+        this.ripples.push(new Ripple(originX, originY, this.config, 0));
+
+        // Create secondary ripple if enabled
+        if (this.config.secondaryEnabled) {
+          // Only spawn if the resulting radius would be >= 0
+          if (this.config.startRadius + this.config.secondaryOffset >= 0) {
+            this.ripples.push(new Ripple(originX, originY, this.config, this.config.secondaryOffset));
+          }
+        }
+
+        this.lastSpawnTime = currentTime;
+      }
+
+      // Update all ripples and remove dead ones
+      for (let i = this.ripples.length - 1; i >= 0; i--) {
+        this.ripples[i].update();
+
+        // Remove dead ripples
+        if (!this.ripples[i].isAlive) {
+          this.ripples.splice(i, 1);
+        }
+      }
+    }
+
+    display() {
+      // Draw all ripples
+      for (let ripple of this.ripples) {
+        ripple.display();
       }
     }
   }
@@ -2343,8 +2436,9 @@ const impactSketch = (p) => {
 
     createGradient();
 
-    // Initialize with first ripple
-    lastRippleTime = p.millis();
+    // Initialize ripple groups
+    rippleGroup1 = new RippleGroup(GROUP1_CONFIG);
+    rippleGroup2 = new RippleGroup(GROUP2_CONFIG);
 
     observer.observe(container);
   };
@@ -2355,26 +2449,12 @@ const impactSketch = (p) => {
 
     let currentTime = p.millis();
 
-    // Calculate ripple origin point (upper right)
-    let originX = p.width * RIPPLE_ORIGIN_X;
-    let originY = p.height * RIPPLE_ORIGIN_Y;
+    // Update and draw both ripple groups
+    rippleGroup1.update(currentTime, p);
+    rippleGroup1.display();
 
-    // Spawn new ripples at regular intervals
-    if (currentTime - lastRippleTime >= RIPPLE_SPAWN_INTERVAL) {
-      ripples.push(new Ripple(originX, originY));
-      lastRippleTime = currentTime;
-    }
-
-    // Update and draw all ripples
-    for (let i = ripples.length - 1; i >= 0; i--) {
-      ripples[i].update();
-      ripples[i].display();
-
-      // Remove dead ripples
-      if (!ripples[i].isAlive) {
-        ripples.splice(i, 1);
-      }
-    }
+    // rippleGroup2.update(currentTime, p);
+    // rippleGroup2.display();
 
     animationTime += 1;
   };
