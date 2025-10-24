@@ -127,7 +127,7 @@ h6 {
 	font-size: 1.2rem;
 	line-height: 1.4em;
 }
-p, ul, ol {
+p {
 	@extend %fontFamily-primary;
 	font-size: 1rem;
 	margin-bottom: 1em;
@@ -136,4 +136,21 @@ small {
 	@extend %fontFamily-primary;
 	font-size: 0.833rem;
 	line-height: 1.4em;
+}
+
+ul, ol {
+	@extend p;
+	padding-left: 0;
+}
+
+ul li {
+    list-style: none; /* Remove default marker */
+    position: relative;
+    padding-left: 1rem; /* Make space for custom marker */
+}
+
+ul li::before {
+    content: "•"; /* Custom character or emoji */
+    position: absolute;
+    left: 0;
 }
