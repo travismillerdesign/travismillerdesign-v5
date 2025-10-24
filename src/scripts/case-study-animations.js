@@ -1533,50 +1533,10 @@ const implementationSketch = (p) => {
 
 const enablementSketch = (p) => {
   // ============================================
-  // HELPER FUNCTIONS
-  // ============================================
-
-  // Convert HSL to RGB
-  function hslToRgb(h, s, l) {
-    h = h / 360;
-    s = s / 100;
-    l = l / 100;
-
-    let r, g, b;
-
-    if (s === 0) {
-      r = g = b = l;
-    } else {
-      const hue2rgb = (p, q, t) => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1/6) return p + (q - p) * 6 * t;
-        if (t < 1/2) return q;
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-        return p;
-      };
-
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1/3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1/3);
-    }
-
-    return {
-      r: Math.round(r * 255),
-      g: Math.round(g * 255),
-      b: Math.round(b * 255)
-    };
-  }
-
-  // ============================================
   // CUSTOMIZATION VARIABLES
   // ============================================
 
-  // Radial Gradient Configuration (Random Center Color - inspired by implementation sketch)
-  const randomHue = Math.floor(Math.random() * 360);
-  const GRADIENT_CENTER_COLOR = hslToRgb(randomHue, 80, 60);   // Random vibrant color
+  const GRADIENT_CENTER_COLOR = { r: 200, g: 100, b: 225 };   // Random vibrant color
   const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };      // White (matching implementation)
   const GRADIENT_CENTER_X = 0.35;                               // X position (0-1)
   const GRADIENT_CENTER_Y = 0.4;                                // Y position (0-1)
@@ -1590,31 +1550,31 @@ const enablementSketch = (p) => {
   // FLOWFIELD GRID CONFIGURATION
   // ============================================
   const GRID_RESOLUTION = 25;                                   // Spacing between grid points (pixels) - lower = denser
-  const MARGIN_X = 40;                                          // Horizontal margin from canvas edge (pixels)
-  const MARGIN_Y = 40;                                          // Vertical margin from canvas edge (pixels)
+  const MARGIN_X = 620;                                          // Horizontal margin from canvas edge (pixels)
+  const MARGIN_Y = 120;                                          // Vertical margin from canvas edge (pixels)
 
   // ============================================
   // NOISE CONFIGURATION (Low Octaves = Smoother)
   // ============================================
-  const NOISE_SCALE = 0.008;                                    // Scale of noise sampling - lower = larger patterns
+  const NOISE_SCALE = 0.05;                                    // Scale of noise sampling - lower = larger patterns
   const NOISE_OCTAVES = 2;                                      // Number of noise octaves (low = smooth)
-  const NOISE_FALLOFF = 0.5;                                    // Amplitude falloff per octave (0-1)
-  const NOISE_Z_SPEED = 0.003;                                  // Animation speed in Z-axis (time)
+  const NOISE_FALLOFF = 0.2;                                    // Amplitude falloff per octave (0-1)
+  const NOISE_Z_SPEED = 0.015;                                  // Animation speed in Z-axis (time)
 
   // ============================================
   // FLOWFIELD LINE CONFIGURATION
   // ============================================
-  const LINE_VISUAL_LENGTH = 20;                                // Length of each rendered line segment (pixels)
+  const LINE_VISUAL_LENGTH = 24;                                // Length of each rendered line segment (pixels)
   const LINE_WEIGHT = 1.5;                                      // Stroke thickness (matching hero sketch)
   const LINE_COLOR = { r: 0, g: 0, b: 0 };                     // Stroke color (black, matching hero)
-  const LINE_ALPHA = 100;                                       // Opacity (constant)
+  const LINE_ALPHA = 160;                                       // Opacity (constant)
 
   // ============================================
   // MOUSE INTERACTION CONFIGURATION
   // ============================================
-  const MOUSE_INFLUENCE_RADIUS = 200;                           // Distance mouse affects flowfield (pixels)
+  const MOUSE_INFLUENCE_RADIUS = 800;                           // Distance mouse affects flowfield (pixels)
   const MOUSE_FORCE_STRENGTH = 1.5;                             // Strength of mouse influence on angles
-  const MOUSE_MOMENTUM = 0.15;                                  // Smoothing factor (0-1, lower = more lag)
+  const MOUSE_MOMENTUM = 0.2;                                  // Smoothing factor (0-1, lower = more lag)
 
   // Animation
   let animationTime = 0;
