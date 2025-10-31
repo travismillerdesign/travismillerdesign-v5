@@ -1,12 +1,17 @@
 // Shared navigation elements used across multiple pages
 // ============================================================================
 
-.siteheader {
-  height: 0;
-  .sitename {
-    position: absolute;
-    z-index: 100;
-    left: 4rem;
-    top: 4rem;
-  }
+.siteNav {
+
+}
+
+.siteName {
+  @extend %fontSize-bodyLarge;
+  text-transform: uppercase;
+}
+
+.button {
+  @extend %fontSize-bodyLarge;
+  text-transform: uppercase;
+  border: black;
 }

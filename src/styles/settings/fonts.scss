@@ -15,51 +15,45 @@
 //*******************************************
 
 
-
 //*******************************************
-//
 //	SETTINGS
-//
 //*******************************************
-$fontSize-root:     22px;		// (px)			Root HTML font size - 10px default
-$fontSize-base:     1rem; 	// (rem) 		Body paragraph size
+$fontSize-root:     10px;	// (px)			Root HTML font size - 10px default
 
-
-
-//*******************************************
-//
-//	BASE
-//	- Generic styles applied to all type
-//
-//*******************************************
-%font-base { margin: 0; }
-
+// VARIABLES
+// p
+$fontSize-18: 1.8rem;
+$fontSize-22: 2.2rem;
+// p-large
+$fontSize-26: 2.6rem;
+$fontSize-28: 2.8rem;
 
 
 //*******************************************
-//
 //	FAMILIES
 //	- Font families, weights, and styles
-//
-//	SHIFT RATIO
-//	- (unitless)
-//	- Different for each fon
-//	- This value describes the location of the font's baseline as a percentage
-//	- Using an accurate value for each font is essential to proper alignment
-//
 //*******************************************
-$fontFamily-primary: 'PP Mori', sans-serif;
+$fontFamily-primary: 'PP Mori', Helvetica, sans-serif;
 %fontFamily-primary {
-	@extend %font-base;
 	font-family: $fontFamily-primary;
 	font-style:  normal;
-	font-weight: normal;
-	line-height: 1.36em;
-}
-.bold, %fontFamily-bold {
-	@extend %fontFamily-primary;
 	font-weight: 600;
-	letter-spacing: 0.01em;
+	line-height: 1.4em;
+	margin: 0;
+}
+
+%fontSize-body {
+	font-size: $fontSize-18;
+	@include breakpoint-up($bp-sm) {
+		font-size: $fontSize-22; // Style for medium and larger screens
+	}
+}
+
+%fontSize-bodyLarge {
+	font-size: $fontSize-26;
+	@include breakpoint-up($bp-sm) {
+		font-size: $fontSize-28; // Style for medium and larger screens
+	}
 }
 
 
@@ -94,6 +88,26 @@ $fontFamily-primary: 'PP Mori', sans-serif;
 //	- Custom styles can be added
 //
 //*******************************************
+p {
+	@extend %fontFamily-primary;
+	margin-bottom: 1em;
+	font-size: 1.8rem;
+	@include breakpoint-up($bp-sm) {
+		font-size: 2.2rem;
+	}
+}
+
+.p-large {
+	@extend p;
+	font-size: 2.6rem;
+	@include breakpoint-up($bp-sm) {
+		font-size: 2.8rem;
+	}
+}
+
+// Old stuff
+
+
 h1 {
 	@extend %fontFamily-primary;
 	font-size: 4.3rem;
@@ -117,7 +131,7 @@ h4 {
 	line-height: 1.4em;
 }
 h5 {
-	@extend %fontFamily-bold;
+	@extend %fontFamily-primary;
 	font-size: 1rem;
 	text-transform: uppercase;
 	margin: 1em 0;
@@ -126,11 +140,6 @@ h6 {
 	@extend %fontFamily-primary;
 	font-size: 1.2rem;
 	line-height: 1.4em;
-}
-p {
-	@extend %fontFamily-primary;
-	font-size: 1rem;
-	margin-bottom: 1em;
 }
 small {
 	@extend %fontFamily-primary;
