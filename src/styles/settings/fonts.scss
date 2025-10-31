@@ -45,39 +45,29 @@ $fontFamily-primary: 'PP Mori', Helvetica, sans-serif;
 
 %fontSize-body {
 	font-size: $fontSize-18;
+	line-height: 1.27em;
 	@include breakpoint-up($bp-sm) {
 		font-size: $fontSize-22; // Style for medium and larger screens
 	}
 }
+%fontSize-body-title {
+	@extend %fontSize-body;
+	text-transform: uppercase;
+	letter-spacing: -0.01em;
+}
 
 %fontSize-bodyLarge {
 	font-size: $fontSize-26;
+	line-height:  1.2em;
 	@include breakpoint-up($bp-sm) {
 		font-size: $fontSize-28; // Style for medium and larger screens
 	}
 }
 
-
-//*******************************************
-//	LAYOUT
-//*******************************************
-// $sitemargin: 4%;
-
-// $gridUnit-base: 		8px;
-// $gridUnit-smallest:		$gridUnit-base * 1;
-// $gridUnit-smaller:		$gridUnit-base * 2;
-// $gridUnit-small:		$gridUnit-base * 3;
-// $gridUnit-default: 		$gridUnit-base * 4;
-// $gridUnit-large: 		$gridUnit-base * 5;
-// $gridUnit-larger:		$gridUnit-base * 6;
-// $gridUnit-largest: 		$gridUnit-base * 7;
-
-@mixin clearfix() {
-  &::after {
-    content: "";
-    display: block;
-    clear: both;
-  }
+%fontSize-bodyLarge-title {
+	@extend %fontSize-bodyLarge;
+	text-transform: uppercase;
+	letter-spacing: -0.01em;
 }
 
 

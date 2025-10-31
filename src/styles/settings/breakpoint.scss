@@ -1,7 +1,14 @@
 //*******************************************
+//	SPACING VARIABLES
+//*******************************************
+$margin-md: 20px;
+$margin-sm: 20px;
+$margin-lg: 20px;
+
+
+//*******************************************
 //	BREAKPOINT SETTINGS
 //*******************************************
-
 
 //	Small Devices i.e. "Phones"
 $bp_min: 320px;
@@ -45,4 +52,16 @@ $bp_xl: 1300px;
 	@media (max-width: $breakpoint - 1px) { // Adjust for inclusive/exclusive range
 	@content;
 	}
+}
+
+
+//*******************************************
+//	CLEARFIX
+//*******************************************
+@mixin clearfix() {
+  &::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
 }

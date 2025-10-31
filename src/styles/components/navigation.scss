@@ -4,16 +4,23 @@
 @use "../settings" as *;
 
 .siteNav {
-
+  @include clearfix();
+  margin: $margin-sm;
+  .leftNav {
+    float: left;
+  }
+  .rightNav {
+    float: right;
+  }
 }
 
 .siteName {
-  @extend %fontSize-bodyLarge;
-  text-transform: uppercase;
+  @extend %fontSize-bodyLarge-title;
 }
 
 .button {
-  @extend %fontSize-bodyLarge;
-  text-transform: uppercase;
-  border: black;
+  @extend %fontSize-body-title;
+  padding: 9.5px 20px 6px; // These numbers are a bit random, but feel balanced for now.
+  border-radius: 1em;
+  border: 2px solid currentColor;
 }

@@ -41,6 +41,7 @@ html {
 	font-size: $fontSize-root;
 }
 body {
+	@extend %fontFamily-primary;
 	@extend %fontSize-body;
 	min-width: $bp_min;
 }
@@ -49,9 +50,13 @@ body {
 //*******************************************
 //	LINKS
 //*******************************************
-// a:focus {}
-// a:hover {}
-// a:active {}
+a {
+	all: unset;
+	cursor: pointer; /* Re-add the pointer cursor */
+	&:focus {}
+	&:hover {}
+	&:active {}
+}
 
 
 //*******************************************
