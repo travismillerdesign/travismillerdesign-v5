@@ -1,12 +1,4 @@
 //*******************************************
-//	SPACING VARIABLES
-//*******************************************
-$margin-md: 20px;
-$margin-sm: 20px;
-$margin-lg: 20px;
-
-
-//*******************************************
 //	BREAKPOINT SETTINGS
 //*******************************************
 
@@ -32,11 +24,11 @@ $bp_xl: 1300px;
 	.my-element {
 	font-size: 16px; // Default style
 
-	@include breakpoint-up($breakpoint-md) {
+	@include breakpoint-up($bp-md) {
 		font-size: 18px; // Style for medium and larger screens
 	}
 
-	@include breakpoint-down($breakpoint-sm) {
+	@include breakpoint-down($bp-sm) {
 		padding: 10px; // Style for small and smaller screens
 	}
 	}
@@ -52,6 +44,28 @@ $bp_xl: 1300px;
 	@media (max-width: $breakpoint - 1px) { // Adjust for inclusive/exclusive range
 	@content;
 	}
+}
+
+
+//*******************************************
+//	MARGINS
+//*******************************************
+$margin-sm: 8px;
+$margin-md: 16px;
+$margin-lg: 32px;
+$margin-xl: 48px;
+
+%margins-standard {
+  padding: $margin-sm;
+  @include breakpoint-up($bp-sm) {padding: $margin-md}
+  @include breakpoint-up($bp-md) {padding: $margin-lg}
+  @include breakpoint-up($bp-lg) {padding: $margin-xl}
+}
+%margins-inset {
+	padding: $margin-sm;
+  @include breakpoint-up($bp-sm) {padding: $margin-md}
+  @include breakpoint-up($bp-md) {padding: $margin-lg}
+  @include breakpoint-up($bp-lg) {padding: $margin-xl}
 }
 
 

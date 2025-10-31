@@ -5,13 +5,9 @@
 
 .siteNav {
   @include clearfix();
-  margin: $margin-sm;
-  .leftNav {
-    float: left;
-  }
-  .rightNav {
-    float: right;
-  }
+  @extend %margins-standard;
+  .leftNav {float: left;}
+  .rightNav {float: right;}
 }
 
 .siteName {
