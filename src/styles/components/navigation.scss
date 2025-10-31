@@ -6,6 +6,11 @@
 .siteNav {
   @include clearfix();
   @extend %margins-standard;
+  position: absolute;
+  left: 0;
+  right:0;
+  top: 0;
+  z-index: $z-max;
   .leftNav {float: left;}
   .rightNav {float: right;}
 }

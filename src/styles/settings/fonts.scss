@@ -25,7 +25,7 @@ $fontSize-root:     10px;	// (px)			Root HTML font size - 10px default
 // p
 $fontSize-18: 1.8rem;
 $fontSize-22: 2.2rem;
-// p-large
+// p-lg
 $fontSize-26: 2.6rem;
 $fontSize-28: 2.8rem;
 
@@ -88,24 +88,24 @@ p {
 	}
 }
 
-.p-large {
+.p-lg {
 	@extend p;
 	font-size: 2.6rem;
 	@include breakpoint-up($bp-sm) {
 		font-size: 2.8rem;
 	}
 }
-
-// Old stuff
-
-
 h1 {
 	@extend %fontFamily-primary;
-	font-size: 4.3rem;
+	font-size: 5.6rem;
 	letter-spacing: -0.03em;
-	line-height: 1.03em;
-	margin-bottom: 0.08em;
+	line-height: 1em;
+	@include breakpoint-up($bp-sm) {
+		font-size: 9.5rem;
+	}
 }
+
+// Old stuff
 h2 {
 	@extend %fontFamily-primary;
 	font-size: 2.7rem;

@@ -43,6 +43,7 @@ html {
 body {
 	@extend %fontFamily-primary;
 	@extend %fontSize-body;
+	position: relative;
 	min-width: $bp_min;
 }
 

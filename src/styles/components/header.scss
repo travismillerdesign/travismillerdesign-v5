@@ -1,0 +1,29 @@
+//  HEADER SECTION
+// ============================================================================
+
+@use "../settings" as *;
+
+header.hero {
+  position: relative;
+  height: 90vh;
+  background: cyan;
+  .heroLeft, .heroRight {
+    @extend %margins-standard;
+    position: absolute;
+    bottom: 0;
+    @include breakpoint-up($bp-md) {
+      width: 33%;
+    }
+  }
+  .heroLeft {
+    @include breakpoint-up($bp-md) {
+      width: 50%;
+    }
+  }
+  .heroRight {
+    right: 0;
+    @include breakpoint-down($bp-sm) {
+      display: none;
+    }
+  }
+}
