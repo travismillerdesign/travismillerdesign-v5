@@ -41,7 +41,7 @@ html {
 	font-size: $fontSize-root;
 }
 body {
-	@include %fontSize-body;
+	@extend %fontSize-body;
 	min-width: $bp_min;
 }
 
