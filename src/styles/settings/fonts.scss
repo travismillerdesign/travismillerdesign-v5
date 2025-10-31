@@ -50,11 +50,6 @@ $fontFamily-primary: 'PP Mori', Helvetica, sans-serif;
 		font-size: $fontSize-22; // Style for medium and larger screens
 	}
 }
-%fontSize-body-title {
-	@extend %fontSize-body;
-	text-transform: uppercase;
-	letter-spacing: -0.01em;
-}
 
 %fontSize-bodyLarge {
 	font-size: $fontSize-26;
@@ -64,8 +59,7 @@ $fontFamily-primary: 'PP Mori', Helvetica, sans-serif;
 	}
 }
 
-%fontSize-bodyLarge-title {
-	@extend %fontSize-bodyLarge;
+.uppercase {
 	text-transform: uppercase;
 	letter-spacing: -0.01em;
 }
@@ -95,6 +89,7 @@ p {
 		font-size: 2.8rem;
 	}
 }
+
 h1 {
 	@extend %fontFamily-primary;
 	font-size: 5.6rem;

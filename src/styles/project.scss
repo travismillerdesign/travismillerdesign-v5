@@ -1,20 +1,14 @@
-// Settings Variables
-//*******************************************
-@use "settings";
-
 // Core Settings and Resets
 //*******************************************
 @use "modern-normalize/modern-normalize.css";
-
 
 //	Utilities
 //*******************************************
 @use "utilities";
 
-
-//	Placeholders
+// Settings Variables
 //*******************************************
-
+@use "settings";
 
 // Elements
 //*******************************************

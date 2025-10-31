@@ -16,11 +16,13 @@
 }
 
 .siteName {
-  @extend %fontSize-bodyLarge-title;
+  @extend %fontSize-bodyLarge;
+  @extend .uppercase;
 }
 
 .button {
-  @extend %fontSize-body-title;
+  @extend %fontSize-body;
+  @extend .uppercase;
   padding: 9.5px 20px 6px; // These numbers are a bit random, but feel balanced for now.
   border-radius: 1em;
   border: 2px solid currentColor;

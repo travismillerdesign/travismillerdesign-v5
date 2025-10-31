@@ -39,6 +39,8 @@
 
 html {
 	font-size: $fontSize-root;
+	color: $glyph-black;
+	background: $fill-white;
 }
 body {
 	@extend %fontFamily-primary;
