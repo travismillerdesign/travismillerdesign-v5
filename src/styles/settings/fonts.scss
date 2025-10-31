@@ -99,17 +99,18 @@ h1 {
 		font-size: 9.5rem;
 	}
 }
+h3 {
+	@extend %fontFamily-primary;
+	font-size: 4.5rem;
+	line-height: 1.04em;
+	padding-bottom: 0.4em;
+}
 
 // Old stuff
 h2 {
 	@extend %fontFamily-primary;
 	font-size: 2.7rem;
 	line-height: 1.05em;
-}
-h3 {
-	@extend %fontFamily-primary;
-	font-size: 2.074rem;
-	line-height: 1.4em;
 }
 h4 {
 	@extend %fontFamily-primary;

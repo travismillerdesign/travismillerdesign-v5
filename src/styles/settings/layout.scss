@@ -45,11 +45,19 @@ $bp_lg: 1240px;
 
 
 //*******************************************
+//	GRID UNIT
+//*******************************************
+$unit-sm: 8px;
+$unit-md: 16px;
+$unit-lg: 32px;
+
+
+//*******************************************
 //	MARGINS
 //*******************************************
 $margin-sm: 16px;
 $margin-md: 24px;
-$margin-lg: 32px;
+$margin-lg: 40px;
 
 .margins-standard {
   padding: $margin-sm;
@@ -57,8 +65,8 @@ $margin-lg: 32px;
   @include breakpoint-up($bp-md) {padding: $margin-lg}
 }
 .margins-minimal {
-  padding: 8px;
-  @include breakpoint-up($bp-sm) {padding: 16px;}
+  padding: $unit-sm;
+  @include breakpoint-up($bp-sm) {padding: $unit-md;}
 //   @include breakpoint-up($bp-md) {padding: $margin-lg}
 }
 
@@ -73,6 +81,7 @@ $margin-lg: 32px;
 //	BORDER
 //*******************************************
 $border-width: 2px;
+$border-radius: 24px;
 
 //*******************************************
 //	CLEARFIX
