@@ -6,3 +6,21 @@ $glyph-black: #000000;
 
 $fill-white: #ffffff;
 $glyph-white: #ffffff;
+
+
+//*******************************************
+//	THEME CLASSES
+//*******************************************
+.theme-dark {
+    background: $fill-black;
+    color: $glyph-white;
+}
+
+
+//*******************************************
+//	PROJECT COLORS
+//*******************************************
+.theme-leia {
+    color: $glyph-white;
+    background-color: #0B09AA;
+}

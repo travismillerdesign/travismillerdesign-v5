@@ -5,7 +5,7 @@
 
 .siteNav {
   @include clearfix();
-  @extend %margins-standard;
+  @extend .margins-standard;
   position: absolute;
   left: 0;
   right:0;
@@ -25,5 +25,5 @@
   @extend .uppercase;
   padding: 9.5px 20px 6px; // These numbers are a bit random, but feel balanced for now.
   border-radius: 1em;
-  border: 2px solid currentColor;
+  border: $border-width solid currentColor;
 }

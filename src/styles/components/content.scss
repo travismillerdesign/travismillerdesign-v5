@@ -1,12 +1,5 @@
 // Shared content elements used across multiple pages
 // ============================================================================
-@use "../settings/color";
-
-.dark-theme {
-  background: color.$fill-black;
-  color: color.$glyph-white;
-}
-
 .hide {
   display: none;
 }

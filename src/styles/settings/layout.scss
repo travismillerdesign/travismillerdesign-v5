@@ -51,17 +51,28 @@ $margin-sm: 16px;
 $margin-md: 24px;
 $margin-lg: 32px;
 
-%margins-standard {
+.margins-standard {
   padding: $margin-sm;
   @include breakpoint-up($bp-sm) {padding: $margin-md}
   @include breakpoint-up($bp-md) {padding: $margin-lg}
 }
-%margins-inset {
+.margins-minimal {
+  padding: 8px;
+  @include breakpoint-up($bp-sm) {padding: 16px;}
+//   @include breakpoint-up($bp-md) {padding: $margin-lg}
+}
+
+.margins-inset {
 	padding: $margin-sm;
   @include breakpoint-up($bp-sm) {padding: $margin-md}
   @include breakpoint-up($bp-md) {padding: $margin-lg}
 }
 
+
+//*******************************************
+//	BORDER
+//*******************************************
+$border-width: 2px;
 
 //*******************************************
 //	CLEARFIX

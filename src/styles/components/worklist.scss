@@ -3,3 +3,38 @@
 
 @use "../settings" as *;
 
+
+.worklist {
+    @extend .margins-minimal;
+    .sectionLabel {
+        @extend .margins-inset;
+        padding-bottom: 0;
+    }
+}
+
+.featured-image {
+    background: gray;
+    width: 50%;
+    padding-top: 33%;
+}
+
+.featured-card {
+    @extend .margins-inset;
+}
+
+
+ul.statList {
+    list-style-type: none;
+    li {
+        &::before {content: ''}; // removes bullet from basic bullet list
+        @extend .uppercase;
+        padding: 0.7em 0 0.5em;
+        border-top: $border-width solid currentColor;
+        &:last-child {
+            border-bottom: $border-width solid currentColor;
+        }
+        span {
+
+        }
+    }
+}
