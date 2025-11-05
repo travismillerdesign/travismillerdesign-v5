@@ -1,0 +1,9 @@
+//*******************************************
+//	MOTION
+//*******************************************
+
+
+// @include transition(opacity);
+@mixin transition($property, $duration: 100ms, $timing-function: ease-out, $delay: 0s) {
+  transition: $property $duration $timing-function $delay;
+}

@@ -82,7 +82,7 @@ p {
 	}
 }
 
-.p-lg {
+p.large {
 	@extend p;
 	font-size: 2.6rem;
 	@include breakpoint-up($bp-sm) {

@@ -11,6 +11,9 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addPassthroughCopy("src/styles/project.css");
     eleventyConfig.addPassthroughCopy("src/scripts");
 
+    // Copy and optimize assets folder
+    eleventyConfig.addPassthroughCopy("src/assets");
+
     // Watch the compiled CSS file and trigger browser reload when it changes
     eleventyConfig.addWatchTarget("src/styles/project.css");
 

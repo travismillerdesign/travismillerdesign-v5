@@ -55,10 +55,21 @@ body {
 //*******************************************
 a {
 	all: unset;
+	color: inherit;
+	text-decoration: none;
 	cursor: pointer; /* Re-add the pointer cursor */
-	&:focus {}
-	&:hover {}
-	&:active {}
+	&:visited {
+		color: inherit;
+	}
+	&:hover {
+		text-decoration: none;
+	}
+	&:active {
+		color: inherit;
+	}
+	&:focus {
+		color: inherit;
+	}
 }
 
 

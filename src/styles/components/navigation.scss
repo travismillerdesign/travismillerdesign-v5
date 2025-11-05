@@ -23,7 +23,11 @@
 .button {
   @extend %fontSize-body;
   @extend .uppercase;
-  padding: 9.5px 20px 6px; // These numbers are a bit random, but feel balanced for now.
+  padding: 8px 24px 4px;
   border-radius: 1em;
   border: $border-width solid currentColor;
+}
+a:hover .button,
+a.button:hover {
+  background-color: blue;
 }
