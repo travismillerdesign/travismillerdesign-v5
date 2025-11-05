@@ -48,6 +48,9 @@ body {
 	position: relative;
 	min-width: $bp_min;
 }
+section {
+	@extend .margins-outer;
+}
 
 
 //*******************************************

@@ -5,9 +5,9 @@
 
 
 .worklist {
-    @extend .margins-minimal;
+    @extend .margins-outer;
     .sectionLabel {
-        @extend .margins-inset;
+        @extend .margins-inner;
         padding-bottom: 0;
     }
 }
@@ -66,7 +66,7 @@ a:hover .featured-image .fillImage { transform: scale(1.03) }
 
 // Text Card content
 .featured-card {
-    @extend .margins-inset;
+    @extend .margins-inner;
     flex-basis: 33%;
     h3 {
         padding-bottom: 3em;

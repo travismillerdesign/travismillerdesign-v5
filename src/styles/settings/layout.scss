@@ -57,23 +57,18 @@ $unit-lg: 32px;
 //*******************************************
 $margin-sm: 16px;
 $margin-md: 24px;
-$margin-lg: 40px;
+$margin-lg: 32px;
 
-.margins-standard {
+.margins-outer {
   padding: $margin-sm;
   @include breakpoint-up($bp-sm) {padding: $margin-md}
-  @include breakpoint-up($bp-md) {padding: $margin-lg}
-}
-.margins-minimal {
-  padding: $unit-sm;
-  @include breakpoint-up($bp-sm) {padding: $unit-md;}
-//   @include breakpoint-up($bp-md) {padding: $margin-lg}
+  @include breakpoint-up($bp-md) {padding: $margin-md}
 }
 
-.margins-inset {
+.margins-inner {
 	padding: $margin-sm;
   @include breakpoint-up($bp-sm) {padding: $margin-md}
-  @include breakpoint-up($bp-md) {padding: $margin-lg}
+  @include breakpoint-up($bp-md) {padding: $margin-md}
 }
 
 

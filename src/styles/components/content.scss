@@ -1,15 +1,12 @@
 // Shared content elements used across multiple pages
 // ============================================================================
-.hide {
-  display: none;
-}
+@use "../settings" as *;
 
-.text-section {
-  padding: 7rem 1.5rem;
-  .section-content {
-    max-width: 33%;
-    margin: 0 auto;
-  }
+
+.textBlock {
+  @extend .margins-inner;
+  max-width: 40%;
+  margin: $margin-lg 0;
 }
 
 

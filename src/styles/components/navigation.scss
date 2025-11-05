@@ -5,7 +5,7 @@
 
 .siteNav {
   @include clearfix();
-  @extend .margins-standard;
+  @extend .margins-outer;
   position: absolute;
   left: 0;
   right:0;

@@ -27,11 +27,19 @@ $glyph-white: #ffffff;
 .theme-leia {
     color: $glyph-white;
     background-color: #0B09AA;
-    .backgroundImage { background-color: #1c1ac5; }
 }
 
 .theme-ds {
     color: #1E1E1E;
     background-color: #C2DCE6;
-    .backgroundImage { background-color: #a9c5d1; }
+}
+
+.theme-motion {
+    color:#FFDDDC;
+    background-color: #EF1831;
+}
+
+.theme-brand {
+    color: #BFDDED;
+    background-color: #005376;
 }
