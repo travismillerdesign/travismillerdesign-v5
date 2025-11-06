@@ -8,40 +8,73 @@ $fill-white: #ffffff;
 $glyph-white: #ffffff;
 
 //*******************************************
+//	MIXINS
+//*******************************************
+@mixin button-hover-swap($text-color, $bg-color) {
+    color: $text-color;
+    background-color: $bg-color;
+
+    a.button:hover,
+    a:hover .button,
+    &a:hover {
+        background-color: $text-color;
+        color: $bg-color;
+    }
+}
+
+//*******************************************
 //	THEME CLASSES
 //*******************************************
 // Sub class default theme
-.backgroundImage {
-    background-color: #e2e2e2;
+.theme-light {
+    @include button-hover-swap($glyph-black, $fill-white);
+    .backgroundImage { background-color: #e2e2e2; }
 }
-
 .theme-dark {
-    color: $glyph-white;
-    background-color: $fill-black;
-    .backgroundImage {
-        background-color: #181818;
-    }
+    @include button-hover-swap($glyph-white, $fill-black);
+    .backgroundImage { background-color: #181818; }
 }
 
 //*******************************************
 //	PROJECT COLORS
 //*******************************************
 .theme-leia {
-    color: $glyph-white;
-    background-color: #0b09aa;
+    @include button-hover-swap($glyph-white, #0b09aa);
 }
 
 .theme-ds {
-    color: #1e1e1e;
-    background-color: #c2dce6;
+    @include button-hover-swap(#1e1e1e, #c2dce6);
 }
 
 .theme-motion {
-    color: #ffdddc;
-    background-color: #ef1831;
+    @include button-hover-swap(#ffdddc, #ef1831);
 }
 
 .theme-brand {
-    color: #bfdded;
-    background-color: #005376;
+    @include button-hover-swap(#bfdded, #005376);
 }
+
+// Workaround for worklist button hover
+a:hover {
+    .theme-leia .button {
+        background-color: $glyph-white;
+        color: #0b09aa;
+    }
+
+    .theme-ds .button {
+        background-color: #1e1e1e;
+        color: #c2dce6;
+    }
+
+    .theme-motion .button {
+        background-color: #ffdddc;
+        color: #ef1831;
+    }
+
+    .theme-brand .button {
+        background-color: #bfdded;
+        color: #005376;
+    }
+}
+
+

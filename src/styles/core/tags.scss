@@ -40,6 +40,7 @@ html {
 body {
     @extend %fontFamily-primary;
     @extend %fontSize-body;
+	@extend .theme-light;
     position: relative;
     min-width: $bp_min;
 }

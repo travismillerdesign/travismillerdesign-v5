@@ -23,14 +23,47 @@
     @extend .uppercase;
 }
 
+// Button
 .button {
     @extend %fontSize-body;
     @extend .uppercase;
-    padding: 8px 24px 4px;
+    display: block;
+    padding: 8px 24px 3px;
     border-radius: 1em;
+    background-color: transparent;
+    color: inherit;
     border: $border-width solid currentColor;
+    // Transition
+    // @include transition(transform, 20ms);
+    // transform: scale(1);
 }
-a:hover .button,
-a.button:hover {
-    background-color: blue;
+
+// Button hover state
+a.button:hover,
+a:hover .button {
+    border-color: transparent;
+    // transform: scale(1);
+}
+
+// textLink
+a.textLink {
+    position: relative;
+    display: block;
+    max-width: 100%;
+    width: fit-content;
+    &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0.2em;
+        height: $border-width;
+        background-color: currentColor;
+        opacity: 0;
+        @include transition(opacity transform, 500ms);
+    }
+    &:hover::after {
+        opacity: 1;
+    }
 }
