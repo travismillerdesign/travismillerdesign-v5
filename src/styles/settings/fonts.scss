@@ -33,8 +33,15 @@ $fontSize-28: 2.8rem;
 //	FAMILIES
 //	- Font families, weights, and styles
 //*******************************************
+%fontSmoothing {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
 $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 %fontFamily-primary {
+	@extend %fontSmoothing;
     font-family: $fontFamily-primary;
     font-style:  normal;
     font-weight: 400;

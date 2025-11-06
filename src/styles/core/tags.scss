@@ -29,17 +29,13 @@
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-
-    // Font smoothing
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
 }
 
 html {
     font-size: $fontSize-root;
     color: $glyph-black;
     background: $fill-white;
+    scroll-behavior: smooth;
 }
 body {
     @extend %fontFamily-primary;
