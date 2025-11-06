@@ -57,7 +57,10 @@ $margin-sm: 16px;
 $margin-md: 24px;
 $margin-lg: 32px;
 
-%margin-outer {
+// Vertical container around buttons
+$marign-button: 11.5rem;
+
+%padding-outer {
     padding: $margin-sm;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md;
@@ -67,18 +70,27 @@ $margin-lg: 32px;
     }
 }
 
-%margin-inner {
+%padding-inner {
     padding: $margin-sm;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md;
     }
     @include breakpoint-up($bp-md) {
         padding: $margin-md;
+    }
+}
+%margin-inner {
+    margin: $margin-sm;
+    @include breakpoint-up($bp-sm) {
+        margin: $margin-md;
+    }
+    @include breakpoint-up($bp-md) {
+        margin: $margin-md;
     }
 }
 
 // Outer and inner margins combined
-%margin-full {
+%padding-full {
     padding: $margin-sm + $margin-sm;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md + $margin-md;
@@ -112,6 +124,7 @@ $border-radius: 24px;
 .flex-container {
     display: flex;
     gap: $unit-md;
+    flex: 1;
     align-items: stretch;
 }
 

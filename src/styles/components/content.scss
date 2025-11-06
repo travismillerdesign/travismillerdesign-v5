@@ -3,7 +3,7 @@
 @use '../settings' as *;
 
 .textBlock {
-    @extend %margin-inner;
+    @extend %padding-inner;
     max-width: 40%;
     margin: $margin-lg 0;
 }

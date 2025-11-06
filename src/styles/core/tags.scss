@@ -48,14 +48,14 @@ body {
     min-width: $bp_min;
 }
 section {
-    @extend %margin-outer;
+    @extend %padding-outer;
 }
 header {
-    @extend %margin-full;
-    height: 11.5rem;
+    @extend %padding-full;
+    height: $marign-button;
 }
 nav {
-    @extend %margin-full;
+    @extend %padding-full;
 }
 footer {
     padding-bottom: 25vh;

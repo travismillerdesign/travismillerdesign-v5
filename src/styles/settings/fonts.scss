@@ -36,9 +36,10 @@ $fontSize-28: 2.8rem;
 $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 %fontFamily-primary {
     font-family: $fontFamily-primary;
-    // font-style:  normal;
-    // font-weight: 400;
+    font-style:  normal;
+    font-weight: 400;
     line-height: 1.4em;
+	font-display: swap;
     margin: 0;
 }
 

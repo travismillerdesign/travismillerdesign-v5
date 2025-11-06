@@ -4,9 +4,9 @@
 @use '../settings' as *;
 
 .worklist {
-    @extend %margin-outer;
+    @extend %padding-outer;
     .sectionLabel {
-        @extend %margin-inner;
+        @extend %padding-inner;
         padding-bottom: 0;
     }
 }
@@ -25,11 +25,12 @@
 }
 
 .workitem {
-    display: block;
+    display: flex;
+    flex-direction: column;
     margin: $unit-md 0;
+    flex: 1;
     .flex-container {
         flex-direction: row-reverse;
-        justify-content: center;
     }
 }
 .workitem-link {
@@ -37,12 +38,9 @@
     text-decoration: none;
 }
 
-.featured-image,
-.featured-card {
-    border-radius: $border-radius;
-    overflow: hidden;
-}
 .featured-image {
+    overflow: hidden;
+    border-radius: $border-radius;
     .fillImage {
         transform: scale(1);
     }
@@ -53,14 +51,19 @@ a:hover .featured-image .fillImage {
 
 // Text Card content
 .featured-card {
-    @extend %margin-inner;
-    flex-basis: 33%;
-    h3 {
-        padding-bottom: 3em;
+    @extend %padding-inner;
+    padding-bottom: $marign-button;
+    position: relative;
+    border-radius: $border-radius;
+    flex: 1;
+    .title {
+        height: 10em;
     }
     .button {
-        margin-top: $unit-sm;
-        float: right;
+        @extend %margin-inner;
+        position: absolute;
+        bottom: 0;
+        right: 0;
     }
 }
 

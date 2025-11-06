@@ -9,7 +9,7 @@ header.hero {
     background: lavender;
     .heroLeft,
     .heroRight {
-        @extend %margin-inner;
+        @extend %padding-inner;
         position: absolute;
         bottom: 0;
         @include breakpoint-up($bp-md) {
