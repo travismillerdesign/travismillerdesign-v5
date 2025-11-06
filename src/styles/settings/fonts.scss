@@ -101,6 +101,7 @@ h1 {
     font-size: 5.6rem;
     letter-spacing: -0.03em;
     line-height: 1em;
+    margin-top: 0.15em;
     @include breakpoint-up($bp-sm) {
         font-size: 9.5rem;
     }

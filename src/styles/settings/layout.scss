@@ -105,6 +105,22 @@ $margin-lg: 32px;
         margin: $margin-md + $margin-md;
     }
 }
+%absolute-bottom {
+    position: absolute;
+    left: $margin-sm + $margin-sm;
+    right: $margin-sm + $margin-sm;
+    bottom: $margin-sm + $margin-sm;
+    @include breakpoint-up($bp-sm) {
+        left: $margin-md + $margin-md;
+        right: $margin-md + $margin-md;
+        bottom: $margin-md + $margin-md;
+    }
+    @include breakpoint-up($bp-md) {
+        left: $margin-md + $margin-md;
+        right: $margin-md + $margin-md;
+        bottom: $margin-md + $margin-md;
+    }
+}
 
 //*******************************************
 //	BORDER

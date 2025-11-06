@@ -4,27 +4,21 @@
 @use '../settings' as *;
 
 header.hero {
-    position: relative;
     height: 90vh;
     background: lavender;
+    .flex-container {
+        @extend %absolute-bottom;
+        align-items: bottom;
+        justify-content: space-between;
+    }
     .heroLeft,
     .heroRight {
-        @extend %padding-inner;
-        position: absolute;
-        bottom: 0;
-        @include breakpoint-up($bp-md) {
-            width: 33%;
-        }
-    }
-    .heroLeft {
-        @include breakpoint-up($bp-md) {
-            width: 50%;
-        }
-    }
-    .heroRight {
-        right: 0;
-        @include breakpoint-down($bp-sm) {
-            display: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        flex-basis: 45%;
+        p {
+            margin-bottom: 0;
         }
     }
 }
