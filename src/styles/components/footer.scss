@@ -1,30 +1,14 @@
-//  FOOTER
- SECTION
+//  FOOTER SECTION
 // ============================================================================
 
 @use "../settings" as *;
 
-header.hero {
-  position: relative;
-  height: 90vh;
-  background: lavender;
-  .heroLeft, .heroRight {
-    @extend %margin-outer;
-    position: absolute;
-    bottom: 0;
-    @include breakpoint-up($bp-md) {
-      width: 33%;
-    }
-  }
-  .heroLeft {
-    @include breakpoint-up($bp-md) {
-      width: 50%;
-    }
-  }
-  .heroRight {
-    right: 0;
-    @include breakpoint-down($bp-sm) {
-      display: none;
-    }
-  }
+.footerLink {
+  @extend h3;
+  display: block;
+  padding-bottom: 0.2em;
+}
+
+footer hr {
+  margin-bottom: $unit-md;
 }
