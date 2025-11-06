@@ -57,9 +57,6 @@ $margin-sm: 16px;
 $margin-md: 24px;
 $margin-lg: 32px;
 
-// Vertical container around buttons
-$marign-button: 11.5rem;
-
 %padding-outer {
     padding: $margin-sm;
     @include breakpoint-up($bp-sm) {
@@ -97,6 +94,15 @@ $marign-button: 11.5rem;
     }
     @include breakpoint-up($bp-md) {
         padding: $margin-md + $margin-md;
+    }
+}
+%margin-full {
+    margin: $margin-sm + $margin-sm;
+    @include breakpoint-up($bp-sm) {
+        margin: $margin-md + $margin-md;
+    }
+    @include breakpoint-up($bp-md) {
+        margin: $margin-md + $margin-md;
     }
 }
 

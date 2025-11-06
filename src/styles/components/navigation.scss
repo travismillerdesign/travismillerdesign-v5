@@ -26,7 +26,6 @@
 .button {
     @extend %fontSize-body;
     @extend .uppercase;
-    height: 4.4rem;
     padding: 8px 24px 4px;
     border-radius: 1em;
     border: $border-width solid currentColor;

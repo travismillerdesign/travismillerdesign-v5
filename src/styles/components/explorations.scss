@@ -1,0 +1,13 @@
+//  FOOTER SECTION
+// ============================================================================
+
+@use '../settings' as *;
+
+#explorations {
+    .button {
+        @extend %margin-full;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+    }
+}

@@ -1,0 +1,32 @@
+/**
+ * Page Transitions
+ *
+ * Smooth fade transition for main content only
+ * Nav and footer remain static (no transitions)
+ */
+
+main.page-transition-content {
+    transition: opacity 300ms ease-in-out, transform 300ms ease-out;
+}
+
+// Fade out: content becomes transparent
+main.page-transitioning-out {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+// Fade in: content fades in with subtle upward movement
+main.page-transitioning-in {
+    animation: fadeInContent 300ms ease-out;
+}
+
+@keyframes fadeInContent {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

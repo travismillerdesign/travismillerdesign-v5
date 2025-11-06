@@ -21,6 +21,9 @@
             flex-direction: column;
             align-items: stretch;
         }
+        .title {
+            height: 8em;
+        }
     }
 }
 
@@ -52,12 +55,13 @@ a:hover .featured-image .fillImage {
 // Text Card content
 .featured-card {
     @extend %padding-inner;
-    padding-bottom: $marign-button;
+    padding-bottom: 5.5rem;
     position: relative;
     border-radius: $border-radius;
     flex: 1;
+    flex-basis: 33%;
     .title {
-        height: 10em;
+        height: 11.5em;
     }
     .button {
         @extend %margin-inner;
@@ -80,6 +84,8 @@ ul.statList {
             border-bottom: $border-width solid currentColor;
         }
         span {
+            display: inline-block;
+            width: 2.6em;
         }
     }
 }

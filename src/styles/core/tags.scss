@@ -49,10 +49,11 @@ body {
 }
 section {
     @extend %padding-outer;
+	position: relative;
 }
 header {
     @extend %padding-full;
-    height: $marign-button;
+    height: 11.5rem;
 }
 nav {
     @extend %padding-full;
