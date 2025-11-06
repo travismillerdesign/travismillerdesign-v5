@@ -11,14 +11,12 @@ header.hero {
         align-items: bottom;
         justify-content: space-between;
     }
-    .heroLeft,
-    .heroRight {
+    .flexItem {
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        flex-basis: 45%;
-        p {
-            margin-bottom: 0;
-        }
+        &:first-child { flex-basis: 40%; }
+        &:last-child { flex-basis: 30%; }
+        p { margin-bottom: 0; }
     }
 }

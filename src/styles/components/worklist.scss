@@ -13,7 +13,7 @@
 .worklist-small {
     display: flex;
     flex-direction: row;
-    gap: $unit-sm;
+    gap: $unit-md;
     justify-content: center;
     align-items: stretch;
     .workitem {
@@ -22,7 +22,10 @@
             align-items: stretch;
         }
         .title {
-            height: 8em;
+            height: auto;
+        }
+        p.large {
+            max-width: 15em;
         }
     }
 }

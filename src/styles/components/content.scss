@@ -5,7 +5,7 @@
 .textBlock {
     @extend %padding-inner;
     max-width: 40%;
-    margin: $margin-lg 0;
+    margin: $margin-lg 0 $margin-sm;
 }
 
 .columnContainer {
