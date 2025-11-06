@@ -49,7 +49,16 @@ body {
 	min-width: $bp_min;
 }
 section {
-	@extend .margins-outer;
+	@extend %margin-outer;
+}
+header {
+	@extend %margin-full;
+}
+nav {
+	@extend %margin-full;
+}
+footer {
+	// @extend %margin-full;
 }
 
 

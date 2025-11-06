@@ -7,11 +7,14 @@
     <link rel="stylesheet" href="/styles/project.css">
 </head>
 <body>
-    <nav>{% include 'nav.html' %}</nav>
-
+    
+    {% include 'nav.html' %}
+    
     <main>
         {{ content | safe }}
     </main>
+
+    {% include 'footer.html' %}
 
 </body>
 </html>

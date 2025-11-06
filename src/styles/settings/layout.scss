@@ -59,16 +59,23 @@ $margin-sm: 16px;
 $margin-md: 24px;
 $margin-lg: 32px;
 
-.margins-outer {
+%margin-outer {
   padding: $margin-sm;
   @include breakpoint-up($bp-sm) {padding: $margin-md}
   @include breakpoint-up($bp-md) {padding: $margin-md}
 }
 
-.margins-inner {
+%margin-inner {
 	padding: $margin-sm;
-  @include breakpoint-up($bp-sm) {padding: $margin-md}
-  @include breakpoint-up($bp-md) {padding: $margin-md}
+	@include breakpoint-up($bp-sm) {padding: $margin-md}
+	@include breakpoint-up($bp-md) {padding: $margin-md}
+}
+
+// Outer and inner margins combined
+%margin-full {
+  padding: $margin-sm + $margin-sm;
+  @include breakpoint-up($bp-sm) {padding: $margin-md + $margin-md}
+  @include breakpoint-up($bp-md) {padding: $margin-md + $margin-md}
 }
 
 

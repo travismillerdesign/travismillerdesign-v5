@@ -4,7 +4,7 @@
 
 
 .textBlock {
-  @extend .margins-inner;
+  @extend %margin-inner;
   max-width: 40%;
   margin: $margin-lg 0;
 }
