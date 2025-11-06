@@ -7,39 +7,41 @@ $glyph-black: #000000;
 $fill-white: #ffffff;
 $glyph-white: #ffffff;
 
-
 //*******************************************
 //	THEME CLASSES
 //*******************************************
 // Sub class default theme
-.backgroundImage { background-color: #e2e2e2; }
+.backgroundImage {
+    background-color: #e2e2e2;
+}
 
 .theme-dark {
     color: $glyph-white;
     background-color: $fill-black;
-    .backgroundImage { background-color: #181818; }
+    .backgroundImage {
+        background-color: #181818;
+    }
 }
-
 
 //*******************************************
 //	PROJECT COLORS
 //*******************************************
 .theme-leia {
     color: $glyph-white;
-    background-color: #0B09AA;
+    background-color: #0b09aa;
 }
 
 .theme-ds {
-    color: #1E1E1E;
-    background-color: #C2DCE6;
+    color: #1e1e1e;
+    background-color: #c2dce6;
 }
 
 .theme-motion {
-    color:#FFDDDC;
-    background-color: #EF1831;
+    color: #ffdddc;
+    background-color: #ef1831;
 }
 
 .theme-brand {
-    color: #BFDDED;
+    color: #bfdded;
     background-color: #005376;
 }

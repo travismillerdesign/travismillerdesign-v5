@@ -3,53 +3,52 @@
 $pagemargin: 4rem;
 $p5-margin: 1rem * 0.5;
 
-
 // Full-bleed sections with P5.js canvas backgrounds
 .case-study-section {
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;
-  padding: 6rem $pagemargin;
-  width: 100%;
-  background: black;
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    padding: 6rem $pagemargin;
+    width: 100%;
+    background: black;
 }
 
 // P5.js Canvas Container - Full bleed background
 .p5-canvas-container {
-  position: absolute;
-  top: $p5-margin;
-  bottom: $p5-margin;
-  left: $p5-margin;
-  right: $p5-margin;
-  overflow: hidden;
-  border-radius: $p5-margin * 2;
-  z-index: 1;
+    position: absolute;
+    top: $p5-margin;
+    bottom: $p5-margin;
+    left: $p5-margin;
+    right: $p5-margin;
+    overflow: hidden;
+    border-radius: $p5-margin * 2;
+    z-index: 1;
 
-  canvas {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-  }
+    canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
 }
 
 // Content overlay - sits on top of P5.js canvas
 .section-content {
-  position: relative;
-  z-index: 10;
+    position: relative;
+    z-index: 10;
 }
 
 // Page header styling
 .page-header {
-  position: relative;
-  height: 100vh;
-  padding: $pagemargin;
-  overflow: hidden;
-  width: 100%;
-  margin: 0 auto;
-  background: black;
-  .section-content {
-    position: absolute;
-    bottom: $pagemargin;
-    width: 66%;
-  }
+    position: relative;
+    height: 100vh;
+    padding: $pagemargin;
+    overflow: hidden;
+    width: 100%;
+    margin: 0 auto;
+    background: black;
+    .section-content {
+        position: absolute;
+        bottom: $pagemargin;
+        width: 66%;
+    }
 }

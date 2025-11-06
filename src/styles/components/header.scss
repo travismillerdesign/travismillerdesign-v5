@@ -1,29 +1,30 @@
 //  HEADER SECTION
 // ============================================================================
 
-@use "../settings" as *;
+@use '../settings' as *;
 
 header.hero {
-  position: relative;
-  height: 90vh;
-  background: lavender;
-  .heroLeft, .heroRight {
-    @extend %margin-inner;
-    position: absolute;
-    bottom: 0;
-    @include breakpoint-up($bp-md) {
-      width: 33%;
+    position: relative;
+    height: 90vh;
+    background: lavender;
+    .heroLeft,
+    .heroRight {
+        @extend %margin-inner;
+        position: absolute;
+        bottom: 0;
+        @include breakpoint-up($bp-md) {
+            width: 33%;
+        }
     }
-  }
-  .heroLeft {
-    @include breakpoint-up($bp-md) {
-      width: 50%;
+    .heroLeft {
+        @include breakpoint-up($bp-md) {
+            width: 50%;
+        }
     }
-  }
-  .heroRight {
-    right: 0;
-    @include breakpoint-down($bp-sm) {
-      display: none;
+    .heroRight {
+        right: 0;
+        @include breakpoint-down($bp-sm) {
+            display: none;
+        }
     }
-  }
 }

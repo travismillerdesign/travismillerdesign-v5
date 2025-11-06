@@ -13,23 +13,19 @@
 //
 //*******************************************
 
-
-
 //*******************************************
 //
 //	ABSOLUTE CENTERING
 //
 //*******************************************
 %center-absolute {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	margin: auto;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
 }
-
-
 
 //*******************************************
 //
@@ -41,25 +37,23 @@
 //*******************************************
 // center on the y axis
 %center-vertical-transform {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 }
 // center on the x axis
 %center-horizontal-transform {
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 // center on the x and y axis
 %center-transform {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translateX(-50%) translateY(-50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
 }
-
-
 
 //*******************************************
 //
@@ -72,17 +66,15 @@
 //	@include center-negative-margins(500px, 200px, {position});
 //
 //*******************************************
-@mixin center-fixed-size ($width: 500px, $height: 200px, $position: absolute) {
-	position: $position;
-	top: 50%;
-	left: 50%;
-	width: $width;
-	height: $height;
-	margin-top: -0.5*$height;
-	margin-left: -0.5*$width;
+@mixin center-fixed-size($width: 500px, $height: 200px, $position: absolute) {
+    position: $position;
+    top: 50%;
+    left: 50%;
+    width: $width;
+    height: $height;
+    margin-top: -0.5 * $height;
+    margin-left: -0.5 * $width;
 }
-
-
 
 //*******************************************
 //
@@ -91,21 +83,21 @@
 //*******************************************
 // center on the y axis
 %center-vertical-ghost {
-	&::before {
-		display: inline-block;
-		height: 100%;
-		margin-right: -0.25em; /* Adjusts for spacing */
-		content: '';
-		vertical-align: middle;
-	}
-	// Note: This Assumes a div element will be used to wrap content
-	> div {
-		display: inline-block;
-		vertical-align: middle;
-	}
+    &::before {
+        display: inline-block;
+        height: 100%;
+        margin-right: -0.25em; /* Adjusts for spacing */
+        content: '';
+        vertical-align: middle;
+    }
+    // Note: This Assumes a div element will be used to wrap content
+    > div {
+        display: inline-block;
+        vertical-align: middle;
+    }
 }
 // center on the xy axis
 %center-ghost {
-	@extend %center-vertical-ghost;
-	text-align: center;
+    @extend %center-vertical-ghost;
+    text-align: center;
 }

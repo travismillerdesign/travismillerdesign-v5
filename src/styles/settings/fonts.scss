@@ -14,12 +14,12 @@
 //
 //*******************************************
 
-@use "layout" as *;
+@use 'layout' as *;
 
 //*******************************************
 //	SETTINGS
 //*******************************************
-$fontSize-root:     10px;	// (px)			Root HTML font size - 10px default
+$fontSize-root: 10px; // (px)			Root HTML font size - 10px default
 
 // VARIABLES
 // p
@@ -29,41 +29,39 @@ $fontSize-22: 2.2rem;
 $fontSize-26: 2.6rem;
 $fontSize-28: 2.8rem;
 
-
 //*******************************************
 //	FAMILIES
 //	- Font families, weights, and styles
 //*******************************************
 $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 %fontFamily-primary {
-	font-family: $fontFamily-primary;
-	// font-style:  normal;
-	// font-weight: 400;
-	line-height: 1.4em;
-	margin: 0;
+    font-family: $fontFamily-primary;
+    // font-style:  normal;
+    // font-weight: 400;
+    line-height: 1.4em;
+    margin: 0;
 }
 
 %fontSize-body {
-	font-size: $fontSize-18;
-	line-height: 1.27em;
-	@include breakpoint-up($bp-sm) {
-		font-size: $fontSize-22; // Style for medium and larger screens
-	}
+    font-size: $fontSize-18;
+    line-height: 1.27em;
+    @include breakpoint-up($bp-sm) {
+        font-size: $fontSize-22; // Style for medium and larger screens
+    }
 }
 
 %fontSize-bodyLarge {
-	font-size: $fontSize-26;
-	line-height:  1.2em;
-	@include breakpoint-up($bp-sm) {
-		font-size: $fontSize-28; // Style for medium and larger screens
-	}
+    font-size: $fontSize-26;
+    line-height: 1.2em;
+    @include breakpoint-up($bp-sm) {
+        font-size: $fontSize-28; // Style for medium and larger screens
+    }
 }
 
 .uppercase {
-	text-transform: uppercase;
-	letter-spacing: -0.01em;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
 }
-
 
 //*******************************************
 //
@@ -74,70 +72,71 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 //
 //*******************************************
 p {
-	@extend %fontFamily-primary;
-	margin-bottom: 1em;
-	font-size: 1.8rem;
-	@include breakpoint-up($bp-sm) {
-		font-size: 2.2rem;
-	}
+    @extend %fontFamily-primary;
+    margin-bottom: 1em;
+    font-size: 1.8rem;
+    @include breakpoint-up($bp-sm) {
+        font-size: 2.2rem;
+    }
 }
 
 p.large {
-	@extend p;
-	font-size: 2.6rem;
-	@include breakpoint-up($bp-sm) {
-		font-size: 2.8rem;
-	}
+    @extend p;
+    font-size: 2.6rem;
+    @include breakpoint-up($bp-sm) {
+        font-size: 2.8rem;
+    }
 }
 
 h1 {
-	@extend %fontFamily-primary;
-	font-size: 5.6rem;
-	letter-spacing: -0.03em;
-	line-height: 1em;
-	@include breakpoint-up($bp-sm) {
-		font-size: 9.5rem;
-	}
+    @extend %fontFamily-primary;
+    font-size: 5.6rem;
+    letter-spacing: -0.03em;
+    line-height: 1em;
+    @include breakpoint-up($bp-sm) {
+        font-size: 9.5rem;
+    }
 }
 h3 {
-	@extend %fontFamily-primary;
-	font-size: 4.5rem;
-	line-height: 1.04em;
-	padding-bottom: 0.4em;
-	letter-spacing: -0.02em;
+    @extend %fontFamily-primary;
+    font-size: 4.5rem;
+    line-height: 1.04em;
+    padding-bottom: 0.4em;
+    letter-spacing: -0.02em;
 }
 
 // Old stuff
 h2 {
-	@extend %fontFamily-primary;
-	font-size: 2.7rem;
-	line-height: 1.05em;
+    @extend %fontFamily-primary;
+    font-size: 2.7rem;
+    line-height: 1.05em;
 }
 h4 {
-	@extend %fontFamily-primary;
-	font-size: 1.728rem;
-	line-height: 1.4em;
+    @extend %fontFamily-primary;
+    font-size: 1.728rem;
+    line-height: 1.4em;
 }
 h5 {
-	@extend %fontFamily-primary;
-	font-size: 1rem;
-	text-transform: uppercase;
-	margin: 1em 0;
+    @extend %fontFamily-primary;
+    font-size: 1rem;
+    text-transform: uppercase;
+    margin: 1em 0;
 }
 h6 {
-	@extend %fontFamily-primary;
-	font-size: 1.2rem;
-	line-height: 1.4em;
+    @extend %fontFamily-primary;
+    font-size: 1.2rem;
+    line-height: 1.4em;
 }
 small {
-	@extend %fontFamily-primary;
-	font-size: 0.833rem;
-	line-height: 1.4em;
+    @extend %fontFamily-primary;
+    font-size: 0.833rem;
+    line-height: 1.4em;
 }
 
-ul, ol {
-	@extend p;
-	padding-left: 0;
+ul,
+ol {
+    @extend p;
+    padding-left: 0;
 }
 
 ul li {
@@ -147,7 +146,7 @@ ul li {
 }
 
 ul li::before {
-    content: "•"; /* Custom character or emoji */
+    content: '•'; /* Custom character or emoji */
     position: absolute;
     left: 0;
 }

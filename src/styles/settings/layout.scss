@@ -12,7 +12,6 @@ $bp_md: 1080px;
 //	Standard Devices i.e. "Laptops or Desktops"
 $bp_lg: 1240px;
 
-
 //*******************************************
 //	BREAKPOINT UTILITY
 //*******************************************
@@ -32,17 +31,17 @@ $bp_lg: 1240px;
 */
 
 @mixin breakpoint-up($breakpoint) {
-	@media (min-width: $breakpoint) {
-	@content;
-	}
+    @media (min-width: $breakpoint) {
+        @content;
+    }
 }
 
 @mixin breakpoint-down($breakpoint) {
-	@media (max-width: $breakpoint - 1px) { // Adjust for inclusive/exclusive range
-	@content;
-	}
+    @media (max-width: $breakpoint - 1px) {
+        // Adjust for inclusive/exclusive range
+        @content;
+    }
 }
-
 
 //*******************************************
 //	GRID UNIT
@@ -50,7 +49,6 @@ $bp_lg: 1240px;
 $unit-sm: 8px;
 $unit-md: 16px;
 $unit-lg: 32px;
-
 
 //*******************************************
 //	MARGINS
@@ -60,24 +58,35 @@ $margin-md: 24px;
 $margin-lg: 32px;
 
 %margin-outer {
-  padding: $margin-sm;
-  @include breakpoint-up($bp-sm) {padding: $margin-md}
-  @include breakpoint-up($bp-md) {padding: $margin-md}
+    padding: $margin-sm;
+    @include breakpoint-up($bp-sm) {
+        padding: $margin-md;
+    }
+    @include breakpoint-up($bp-md) {
+        padding: $margin-md;
+    }
 }
 
 %margin-inner {
-	padding: $margin-sm;
-	@include breakpoint-up($bp-sm) {padding: $margin-md}
-	@include breakpoint-up($bp-md) {padding: $margin-md}
+    padding: $margin-sm;
+    @include breakpoint-up($bp-sm) {
+        padding: $margin-md;
+    }
+    @include breakpoint-up($bp-md) {
+        padding: $margin-md;
+    }
 }
 
 // Outer and inner margins combined
 %margin-full {
-  padding: $margin-sm + $margin-sm;
-  @include breakpoint-up($bp-sm) {padding: $margin-md + $margin-md}
-  @include breakpoint-up($bp-md) {padding: $margin-md + $margin-md}
+    padding: $margin-sm + $margin-sm;
+    @include breakpoint-up($bp-sm) {
+        padding: $margin-md + $margin-md;
+    }
+    @include breakpoint-up($bp-md) {
+        padding: $margin-md + $margin-md;
+    }
 }
-
 
 //*******************************************
 //	BORDER
@@ -85,40 +94,37 @@ $margin-lg: 32px;
 $border-width: 2px;
 $border-radius: 24px;
 
-
 //*******************************************
 //	CLEARFIX
 //*******************************************
 @mixin clearfix() {
-  &::after {
-    content: "";
-    display: block;
-    clear: both;
-  }
+    &::after {
+        content: '';
+        display: block;
+        clear: both;
+    }
 }
-
 
 //*******************************************
 //	FLEXBOX
 //*******************************************
 
 .flex-container {
-  display: flex;
-  gap: $unit-md;
-  align-items: stretch;
+    display: flex;
+    gap: $unit-md;
+    align-items: stretch;
 }
 
 // The proportion of the flex box the item should take up
 .column-1 {
-  flex: 1;
-  flex-basis: 33%;
-  max-width: 33%;
+    flex: 1;
+    flex-basis: 33%;
+    max-width: 33%;
 }
 .column-2 {
-  flex: 2; 
-  flex-basis: 66%;
+    flex: 2;
+    flex-basis: 66%;
 }
-
 
 /*
 .column-fixed-width {

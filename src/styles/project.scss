@@ -1,24 +1,22 @@
 // Core Settings and Resets
 //*******************************************
-@use "modern-normalize/modern-normalize.css";
+@use 'modern-normalize/modern-normalize.css';
 
 //	Utilities
 //*******************************************
-@use "utilities";
+@use 'utilities';
 
 // Settings Variables
 //*******************************************
-@use "settings";
+@use 'settings';
 
 // Elements
 //*******************************************
-@use "core/tags";
-
+@use 'core/tags';
 
 // Components
 //*******************************************
-@use "components";
-
+@use 'components';
 
 // Views
 //*******************************************

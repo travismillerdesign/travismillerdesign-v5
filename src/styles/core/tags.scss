@@ -19,71 +19,69 @@
 //
 //*******************************************
 
-@use "../settings" as *;
-
+@use '../settings' as *;
 
 //*******************************************
 //	BASE
 //*******************************************
 * {
-	// Box sizing
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	box-sizing: border-box;
-	
-	// Font smoothing
-	-webkit-font-smoothing: antialiased;
+    // Box sizing
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+
+    // Font smoothing
+    -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
 }
 
 html {
-	font-size: $fontSize-root;
-	color: $glyph-black;
-	background: $fill-white;
+    font-size: $fontSize-root;
+    color: $glyph-black;
+    background: $fill-white;
 }
 body {
-	@extend %fontFamily-primary;
-	@extend %fontSize-body;
-	position: relative;
-	min-width: $bp_min;
+    @extend %fontFamily-primary;
+    @extend %fontSize-body;
+    position: relative;
+    min-width: $bp_min;
 }
 section {
-	@extend %margin-outer;
+    @extend %margin-outer;
 }
 header {
-	@extend %margin-full;
+    @extend %margin-full;
+    height: 11.5rem;
 }
 nav {
-	@extend %margin-full;
+    @extend %margin-full;
 }
 footer {
-	padding-bottom: 25vh;
+    padding-bottom: 25vh;
 }
-
 
 //*******************************************
 //	LINKS
 //*******************************************
 a {
-	all: unset;
-	color: inherit;
-	text-decoration: none;
-	cursor: pointer; /* Re-add the pointer cursor */
-	&:visited {
-		color: inherit;
-	}
-	&:hover {
-		text-decoration: none;
-	}
-	&:active {
-		color: inherit;
-	}
-	&:focus {
-		color: inherit;
-	}
+    all: unset;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer; /* Re-add the pointer cursor */
+    &:visited {
+        color: inherit;
+    }
+    &:hover {
+        text-decoration: none;
+    }
+    &:active {
+        color: inherit;
+    }
+    &:focus {
+        color: inherit;
+    }
 }
-
 
 //*******************************************
 //	TYPE
@@ -95,11 +93,11 @@ a {
 // strong {}
 // dfn {}
 hr {
-	border: none; /* Remove default border */
-	height: 1.5px; /* Set the height (thickness) of the line */
-	color: inherit;
-	background-color: currentColor; /* Set the color of the line */
-	margin: 1rem 0; /* Add top and bottom margin for spacing */
+    border: none; /* Remove default border */
+    height: 1.5px; /* Set the height (thickness) of the line */
+    color: inherit;
+    background-color: currentColor; /* Set the color of the line */
+    margin: 1rem 0; /* Add top and bottom margin for spacing */
 }
 // mark {}
 // code {}
@@ -111,18 +109,15 @@ hr {
 // sup {}
 // sub {}
 
-
 //*******************************************
 //	EMBEDDED CONTENT
 //*******************************************
 // img {}
 
-
 //*******************************************
 //	FIGURES
 //*******************************************
 // figure {}
-
 
 //*******************************************
 //	FORMS
@@ -139,7 +134,6 @@ hr {
 // input[type="checkbox"] {}
 // input[type="radio"] {}
 // input[type="search"] {}
-
 
 //*******************************************
 //	TABLES

@@ -6,20 +6,23 @@
 
 // Utility function to create visibility observers for performance
 const createVisibilityObserver = (sketch, threshold = 0.1) => {
-  let isVisible = false;
+    let isVisible = false;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      isVisible = entry.isIntersecting;
-      if (isVisible && sketch.isLooping() === false) {
-        sketch.loop();
-      } else if (!isVisible && sketch.isLooping() === true) {
-        sketch.noLoop();
-      }
-    });
-  }, { threshold, rootMargin: '50px' });
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                isVisible = entry.isIntersecting;
+                if (isVisible && sketch.isLooping() === false) {
+                    sketch.loop();
+                } else if (!isVisible && sketch.isLooping() === true) {
+                    sketch.noLoop();
+                }
+            });
+        },
+        { threshold, rootMargin: '50px' }
+    );
 
-  return { observer, isVisible: () => isVisible };
+    return { observer, isVisible: () => isVisible };
 };
 
 // ============================================
@@ -29,41 +32,41 @@ const createVisibilityObserver = (sketch, threshold = 0.1) => {
 // Frequency ratios auto-change at regular intervals
 
 const heroSketch = (p) => {
-  let currentFreqX = 3;  // Current X frequency ratio
-  let currentFreqY = 2;  // Current Y frequency ratio
-  let lastChangeTime = 0; // Track when frequency last changed
-  let animationOffset = 0; // For animating the gaps
-  let gradientBuffer; // Graphics buffer for shader-based gradient
-  let gradientShader; // Shader for radial gradient
+    let currentFreqX = 3; // Current X frequency ratio
+    let currentFreqY = 2; // Current Y frequency ratio
+    let lastChangeTime = 0; // Track when frequency last changed
+    let animationOffset = 0; // For animating the gaps
+    let gradientBuffer; // Graphics buffer for shader-based gradient
+    let gradientShader; // Shader for radial gradient
 
-  const CHANGE_INTERVAL = 3000; // Change frequency every x seconds when idle
-  const CURVE_RESOLUTION = 2000; // Number of points in the curve
-  const GAP_SIZE = 0.03; // Size of gaps as fraction of curve (15%)
-  const NUM_GAPS = 4; // Number of gaps in the curve
-  const GAP_ANIMATION_SPEED = 0.001; // Speed at which gaps move around the curve
+    const CHANGE_INTERVAL = 3000; // Change frequency every x seconds when idle
+    const CURVE_RESOLUTION = 2000; // Number of points in the curve
+    const GAP_SIZE = 0.03; // Size of gaps as fraction of curve (15%)
+    const NUM_GAPS = 4; // Number of gaps in the curve
+    const GAP_ANIMATION_SPEED = 0.001; // Speed at which gaps move around the curve
 
-  // Radial Gradient configuration (RGB values 0-255)
-  const GRADIENT_CENTER_COLOR = { r: 100  , g: 200, b: 255 }; // Color at center
-  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // Color at edges
-  const GRADIENT_CENTER_X = 0.5; // X position of gradient center (0-1, where 0.5 = canvas center)
-  const GRADIENT_CENTER_Y = 0.5; // Y position of gradient center (0-1, where 0.5 = canvas center)
-  const GRADIENT_RADIUS_SCALE_X = 0.5; // Controls horizontal gradient spread (1.0 = edge, <1.0 = tighter, >1.0 = softer)
-  const GRADIENT_RADIUS_SCALE_Y = 0.5; // Controls vertical gradient spread (1.0 = edge, <1.0 = tighter, >1.0 = softer)
-  const GRADIENT_POWER = 1; // Controls falloff curve (1.0 = linear, >1.0 = concentrated center, <1.0 = softer)
-  const GRADIENT_EDGE_EASE = 1; // Controls edge easing (0 = sharp edge, higher = more gradual ease-out at edges)
-  const GRADIENT_SCATTER_INTENSITY = 0.1; // Scattering effect intensity (0 = no scatter, higher = more scatter)
+    // Radial Gradient configuration (RGB values 0-255)
+    const GRADIENT_CENTER_COLOR = { r: 100, g: 200, b: 255 }; // Color at center
+    const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // Color at edges
+    const GRADIENT_CENTER_X = 0.5; // X position of gradient center (0-1, where 0.5 = canvas center)
+    const GRADIENT_CENTER_Y = 0.5; // Y position of gradient center (0-1, where 0.5 = canvas center)
+    const GRADIENT_RADIUS_SCALE_X = 0.5; // Controls horizontal gradient spread (1.0 = edge, <1.0 = tighter, >1.0 = softer)
+    const GRADIENT_RADIUS_SCALE_Y = 0.5; // Controls vertical gradient spread (1.0 = edge, <1.0 = tighter, >1.0 = softer)
+    const GRADIENT_POWER = 1; // Controls falloff curve (1.0 = linear, >1.0 = concentrated center, <1.0 = softer)
+    const GRADIENT_EDGE_EASE = 1; // Controls edge easing (0 = sharp edge, higher = more gradual ease-out at edges)
+    const GRADIENT_SCATTER_INTENSITY = 0.1; // Scattering effect intensity (0 = no scatter, higher = more scatter)
 
-  // Grey color palette for strokes
-  const GREYS = [
-    { r: 0, g: 0, b: 0, alpha: 100 }
-    // { r: 120, g: 120, b: 120, alpha: 150 },
-    // { r: 140, g: 140, b: 140, alpha: 120 },
-  ];
+    // Grey color palette for strokes
+    const GREYS = [
+        { r: 0, g: 0, b: 0, alpha: 100 },
+        // { r: 120, g: 120, b: 120, alpha: 150 },
+        // { r: 140, g: 140, b: 140, alpha: 120 },
+    ];
 
-  const { observer } = createVisibilityObserver(p);
+    const { observer } = createVisibilityObserver(p);
 
-  // Vertex shader (standard pass-through for p5.js)
-  const vertShader = `
+    // Vertex shader (standard pass-through for p5.js)
+    const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -76,8 +79,8 @@ const heroSketch = (p) => {
     }
   `;
 
-  // Fragment shader (radial gradient with scattering)
-  const fragShader = `
+    // Fragment shader (radial gradient with scattering)
+    const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
@@ -165,167 +168,170 @@ const heroSketch = (p) => {
     }
   `;
 
-  // Get interesting frequency ratios
-  const getRandomFrequency = () => {
-    const ratios = [3, 4, 5, 6, 8, 16, 32];
-    return ratios[Math.floor(p.random(ratios.length))];
-  };
+    // Get interesting frequency ratios
+    const getRandomFrequency = () => {
+        const ratios = [3, 4, 5, 6, 8, 16, 32];
+        return ratios[Math.floor(p.random(ratios.length))];
+    };
 
-  // Create gradient buffer and render gradient
-  const createGradient = () => {
-    // Create WEBGL graphics buffer
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+    // Create gradient buffer and render gradient
+    const createGradient = () => {
+        // Create WEBGL graphics buffer
+        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
 
-    // Create shader
-    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+        // Create shader
+        gradientShader = gradientBuffer.createShader(vertShader, fragShader);
 
-    // Render gradient to buffer
-    gradientBuffer.shader(gradientShader);
+        // Render gradient to buffer
+        gradientBuffer.shader(gradientShader);
 
-    // Set shader uniforms
-    gradientShader.setUniform('uResolution', [p.width, p.height]);
-    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    gradientShader.setUniform('uCenterColor', [
-      GRADIENT_CENTER_COLOR.r / 255.0,
-      GRADIENT_CENTER_COLOR.g / 255.0,
-      GRADIENT_CENTER_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uEdgeColor', [
-      GRADIENT_EDGE_COLOR.r / 255.0,
-      GRADIENT_EDGE_COLOR.g / 255.0,
-      GRADIENT_EDGE_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    gradientShader.setUniform('uPower', GRADIENT_POWER);
-    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+        // Set shader uniforms
+        gradientShader.setUniform('uResolution', [p.width, p.height]);
+        gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+        gradientShader.setUniform('uCenterColor', [
+            GRADIENT_CENTER_COLOR.r / 255.0,
+            GRADIENT_CENTER_COLOR.g / 255.0,
+            GRADIENT_CENTER_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uEdgeColor', [
+            GRADIENT_EDGE_COLOR.r / 255.0,
+            GRADIENT_EDGE_COLOR.g / 255.0,
+            GRADIENT_EDGE_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uRadiusScale', [
+            GRADIENT_RADIUS_SCALE_X,
+            GRADIENT_RADIUS_SCALE_Y,
+        ]);
+        gradientShader.setUniform('uPower', GRADIENT_POWER);
+        gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+        gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
-    // Draw full-screen quad
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
-    gradientBuffer.rect(0, 0, p.width, p.height);
-  };
+        // Draw full-screen quad
+        gradientBuffer.rectMode(p.CENTER);
+        gradientBuffer.noStroke();
+        gradientBuffer.rect(0, 0, p.width, p.height);
+    };
 
-  // Draw gradient background from buffer
-  const drawGradient = () => {
-    p.image(gradientBuffer, 0, 0);
-  };
+    // Draw gradient background from buffer
+    const drawGradient = () => {
+        p.image(gradientBuffer, 0, 0);
+    };
 
-  p.setup = () => {
-    const container = document.getElementById('hero-canvas');
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent('hero-canvas');
+    p.setup = () => {
+        const container = document.getElementById('hero-canvas');
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent('hero-canvas');
 
-    // Create gradient buffer with shader
-    createGradient();
+        // Create gradient buffer with shader
+        createGradient();
 
-    lastChangeTime = p.millis();
-    observer.observe(container);
-  };
+        lastChangeTime = p.millis();
+        observer.observe(container);
+    };
 
-  p.draw = () => {
-    let currentTime = p.millis();
+    p.draw = () => {
+        let currentTime = p.millis();
 
-    // Draw gradient background
-    drawGradient();
+        // Draw gradient background
+        drawGradient();
 
-    // Auto-change frequency at regular intervals
-    if (currentTime - lastChangeTime > CHANGE_INTERVAL) {
-      // Keep selecting until we get different frequencies (avoid straight lines)
-      let newFreqX, newFreqY;
-      do {
-        newFreqX = getRandomFrequency();
-        newFreqY = getRandomFrequency();
-      } while (newFreqX === newFreqY);
+        // Auto-change frequency at regular intervals
+        if (currentTime - lastChangeTime > CHANGE_INTERVAL) {
+            // Keep selecting until we get different frequencies (avoid straight lines)
+            let newFreqX, newFreqY;
+            do {
+                newFreqX = getRandomFrequency();
+                newFreqY = getRandomFrequency();
+            } while (newFreqX === newFreqY);
 
-      currentFreqX = newFreqX;
-      currentFreqY = newFreqY;
-      lastChangeTime = currentTime;
-    }
+            currentFreqX = newFreqX;
+            currentFreqY = newFreqY;
+            lastChangeTime = currentTime;
+        }
 
-    // Animate the gaps moving around the curve
-    animationOffset += GAP_ANIMATION_SPEED;
+        // Animate the gaps moving around the curve
+        animationOffset += GAP_ANIMATION_SPEED;
 
-    // Calculate uniform margins based on smallest dimension
-    let minDimension = Math.min(p.width, p.height);
-    let margin = minDimension * 0.2; // margin %
+        // Calculate uniform margins based on smallest dimension
+        let minDimension = Math.min(p.width, p.height);
+        let margin = minDimension * 0.2; // margin %
 
-    // Calculate available space with uniform margins
-    let availableWidth = p.width - (margin * 2);
-    let availableHeight = p.height - (margin * 2);
-    let sizeX = availableWidth / 2;
-    let sizeY = availableHeight / 2;
+        // Calculate available space with uniform margins
+        let availableWidth = p.width - margin * 2;
+        let availableHeight = p.height - margin * 2;
+        let sizeX = availableWidth / 2;
+        let sizeY = availableHeight / 2;
 
-    // Center the pattern
-    p.push();
-    p.translate(p.width / 2, p.height / 2);
-    p.scale(-1,1);
+        // Center the pattern
+        p.push();
+        p.translate(p.width / 2, p.height / 2);
+        p.scale(-1, 1);
 
-    // Draw multiple layers of the curve with different grey shades
-    GREYS.forEach((grey, layerIndex) => {
-      p.noFill();
-      p.stroke(grey.r, grey.g, grey.b, grey.alpha);
-      p.strokeWeight(1.5 - layerIndex * 0.3);
+        // Draw multiple layers of the curve with different grey shades
+        GREYS.forEach((grey, layerIndex) => {
+            p.noFill();
+            p.stroke(grey.r, grey.g, grey.b, grey.alpha);
+            p.strokeWeight(1.5 - layerIndex * 0.3);
 
-      let offset = layerIndex * 0.1;
+            let offset = layerIndex * 0.1;
 
-      // Draw the Lissajous curve in segments with gaps
-      let isDrawing = false;
+            // Draw the Lissajous curve in segments with gaps
+            let isDrawing = false;
 
-      for (let i = 0; i <= CURVE_RESOLUTION; i++) {
-          let t = i / CURVE_RESOLUTION;
+            for (let i = 0; i <= CURVE_RESOLUTION; i++) {
+                let t = i / CURVE_RESOLUTION;
 
-          // Check if this point should be drawn (not in a gap)
-          let normalizedT = (t + animationOffset + offset) % 1;
-          let shouldDraw = false;
+                // Check if this point should be drawn (not in a gap)
+                let normalizedT = (t + animationOffset + offset) % 1;
+                let shouldDraw = false;
 
-          for (let s = 0; s < NUM_GAPS; s++) {
-            let gapStart = s / NUM_GAPS;
-            let gapEnd = (s + 1 - GAP_SIZE) / NUM_GAPS;
+                for (let s = 0; s < NUM_GAPS; s++) {
+                    let gapStart = s / NUM_GAPS;
+                    let gapEnd = (s + 1 - GAP_SIZE) / NUM_GAPS;
 
-            if (normalizedT >= gapStart && normalizedT <= gapEnd) {
-              shouldDraw = true;
-              break;
+                    if (normalizedT >= gapStart && normalizedT <= gapEnd) {
+                        shouldDraw = true;
+                        break;
+                    }
+                }
+
+                // Lissajous curve parametric equations
+                let angle = t * p.TWO_PI;
+                let x = sizeX * p.sin(currentFreqX * angle + offset);
+                let y = sizeY * p.sin(currentFreqY * angle);
+
+                if (shouldDraw) {
+                    if (!isDrawing) {
+                        // Start a new segment
+                        p.beginShape();
+                        isDrawing = true;
+                    }
+                    p.vertex(x, y);
+                } else {
+                    if (isDrawing) {
+                        // End the current segment
+                        p.endShape();
+                        isDrawing = false;
+                    }
+                }
             }
-          }
 
-          // Lissajous curve parametric equations
-          let angle = t * p.TWO_PI;
-          let x = sizeX * p.sin(currentFreqX * angle + offset);
-          let y = sizeY * p.sin(currentFreqY * angle);
-
-          if (shouldDraw) {
-            if (!isDrawing) {
-              // Start a new segment
-              p.beginShape();
-              isDrawing = true;
-            }
-            p.vertex(x, y);
-          } else {
+            // Close any open shape
             if (isDrawing) {
-              // End the current segment
-              p.endShape();
-              isDrawing = false;
+                p.endShape();
             }
-          }
-        }
+        });
 
-        // Close any open shape
-        if (isDrawing) {
-          p.endShape();
-        }
-    });
+        p.pop();
+    };
 
-    p.pop();
-  };
+    p.windowResized = () => {
+        const container = document.getElementById('hero-canvas');
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
 
-  p.windowResized = () => {
-    const container = document.getElementById('hero-canvas');
-    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-
-    // Recreate gradient buffer at new size
-    createGradient();
-  };
+        // Recreate gradient buffer at new size
+        createGradient();
+    };
 };
 
 // ============================================
@@ -335,116 +341,119 @@ const heroSketch = (p) => {
 // Colors: Green gradient on white background
 
 const approachSketch = (p) => {
-  // ============================================
-  // CUSTOMIZATION VARIABLES
-  // ============================================
+    // ============================================
+    // CUSTOMIZATION VARIABLES
+    // ============================================
 
-  // Radial Gradient Configuration (Standardized - matches hero sketch)
-  const GRADIENT_CENTER_COLOR = { r: 70, g: 210, b: 100 };     // Green (center)
-  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White (edge)
-  const GRADIENT_CENTER_X = 0.5;                               // X position (0-1)
-  const GRADIENT_CENTER_Y = 0;                               // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.5;                         // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 1;                         // Y radius scale
-  const GRADIENT_POWER = 1.5;                                    // Falloff power
-  const GRADIENT_EDGE_EASE = 1;                                // Edge ease amount
-  const GRADIENT_SCATTER_INTENSITY = 0.1;                     // Scatter intensity
+    // Radial Gradient Configuration (Standardized - matches hero sketch)
+    const GRADIENT_CENTER_COLOR = { r: 70, g: 210, b: 100 }; // Green (center)
+    const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // White (edge)
+    const GRADIENT_CENTER_X = 0.5; // X position (0-1)
+    const GRADIENT_CENTER_Y = 0; // Y position (0-1)
+    const GRADIENT_RADIUS_SCALE_X = 0.5; // X radius scale
+    const GRADIENT_RADIUS_SCALE_Y = 1; // Y radius scale
+    const GRADIENT_POWER = 1.5; // Falloff power
+    const GRADIENT_EDGE_EASE = 1; // Edge ease amount
+    const GRADIENT_SCATTER_INTENSITY = 0.1; // Scatter intensity
 
-  // Fractal Tree Configuration
-  const TREE_MAX_DEPTH = 10;                                   // Maximum recursion depth
+    // Fractal Tree Configuration
+    const TREE_MAX_DEPTH = 10; // Maximum recursion depth
 
-  // Mouse-Controlled Tree Angle Configuration
-  const TREE_ANGLE_MIN = 10;                                    // Minimum angle (top of canvas)
-  const TREE_ANGLE_MAX = 60;                                   // Maximum angle (bottom of canvas)
-  const TREE_ANGLE_DEFAULT = 30;                               // Default angle (no mouse interaction)
-  const TREE_ANGLE_MOMENTUM = 0.02;                            // How quickly angle approaches target (0-1, lower = more momentum)
-  const TREE_ANGLE_REDUCTION_ENABLED = true;                   // Enable/disable angle reduction by depth
-  const TREE_ANGLE_REDUCTION_MULTIPLIER = 0.8;                 // Multiplier per depth level (e.g., 0.5 = half angle each level)
-  let currentTreeAngle = TREE_ANGLE_DEFAULT;                   // Current tree angle (changes with mouse)
-  let targetTreeAngle = TREE_ANGLE_DEFAULT;                    // Target angle based on mouse position
+    // Mouse-Controlled Tree Angle Configuration
+    const TREE_ANGLE_MIN = 10; // Minimum angle (top of canvas)
+    const TREE_ANGLE_MAX = 60; // Maximum angle (bottom of canvas)
+    const TREE_ANGLE_DEFAULT = 30; // Default angle (no mouse interaction)
+    const TREE_ANGLE_MOMENTUM = 0.02; // How quickly angle approaches target (0-1, lower = more momentum)
+    const TREE_ANGLE_REDUCTION_ENABLED = true; // Enable/disable angle reduction by depth
+    const TREE_ANGLE_REDUCTION_MULTIPLIER = 0.8; // Multiplier per depth level (e.g., 0.5 = half angle each level)
+    let currentTreeAngle = TREE_ANGLE_DEFAULT; // Current tree angle (changes with mouse)
+    let targetTreeAngle = TREE_ANGLE_DEFAULT; // Target angle based on mouse position
 
-  // Growth Animation Configuration
-  const GROWTH_DURATION = 80;                                  // Frames for each segment to grow
-  const GROWTH_DELAY_PER_LEVEL = 80;                           // Delay .between depth levels (frames)
-  let growthProgress = 0;                                      // Current growth progress (0-1)
-  let isGrowing = true;                                        // Whether tree is still growing
+    // Growth Animation Configuration
+    const GROWTH_DURATION = 80; // Frames for each segment to grow
+    const GROWTH_DELAY_PER_LEVEL = 80; // Delay .between depth levels (frames)
+    let growthProgress = 0; // Current growth progress (0-1)
+    let isGrowing = true; // Whether tree is still growing
 
-  // Margins (match hero sketch)
-  const MARGIN_PERCENTAGE = -0.2;                               // 10% margin on all sides
+    // Margins (match hero sketch)
+    const MARGIN_PERCENTAGE = -0.2; // 10% margin on all sides
 
-  // Dynamic sizing (calculated in setup)
-  let segmentLength = 20;                                      // Will be calculated based on canvas height
+    // Dynamic sizing (calculated in setup)
+    let segmentLength = 20; // Will be calculated based on canvas height
 
-  // Stroke Configuration
-  const STROKE_COLOR = { r: 0, g: 0, b: 0 };                  // Black
-  const STROKE_WEIGHT = 1.75;                                   // Consistent stroke weight
-  const STROKE_ALPHA_BASE = 200;                               // Base opacity for initial stem (0-255)
-  const STROKE_ALPHA_FADE_ENABLED = true;                      // Enable/disable opacity fade with depth
-  const STROKE_ALPHA_FADE_RATE = 0.75;                         // Multiplier per depth level (0-1, lower = faster fade)
-  const STROKE_ALPHA_MIN = 1;                                 // Minimum opacity (prevents fully transparent branches)
-  const FADE_BACKGROUND_ALPHA = 40;                            // Background fade effect
+    // Stroke Configuration
+    const STROKE_COLOR = { r: 0, g: 0, b: 0 }; // Black
+    const STROKE_WEIGHT = 1.75; // Consistent stroke weight
+    const STROKE_ALPHA_BASE = 200; // Base opacity for initial stem (0-255)
+    const STROKE_ALPHA_FADE_ENABLED = true; // Enable/disable opacity fade with depth
+    const STROKE_ALPHA_FADE_RATE = 0.75; // Multiplier per depth level (0-1, lower = faster fade)
+    const STROKE_ALPHA_MIN = 1; // Minimum opacity (prevents fully transparent branches)
+    const FADE_BACKGROUND_ALPHA = 40; // Background fade effect
 
-  // Animation
-  let animationTime = 0;
-  let gradientBuffer;
+    // Animation
+    let animationTime = 0;
+    let gradientBuffer;
 
-  // Line tracking for collision detection
-  let allLines = []; // Store all completed line segments {x1, y1, x2, y2}
+    // Line tracking for collision detection
+    let allLines = []; // Store all completed line segments {x1, y1, x2, y2}
 
-  // ============================================
-  // COLLISION DETECTION
-  // ============================================
+    // ============================================
+    // COLLISION DETECTION
+    // ============================================
 
-  function lineSegmentsIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
-    // Check if line segment (x1,y1)-(x2,y2) intersects with (x3,y3)-(x4,y4)
-    // Using parametric line equation
-    let denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+    function lineSegmentsIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+        // Check if line segment (x1,y1)-(x2,y2) intersects with (x3,y3)-(x4,y4)
+        // Using parametric line equation
+        let denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
 
-    if (denom === 0) {
-      return false; // Lines are parallel
-    }
-
-    let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
-    let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
-
-    // Check if intersection point is within both line segments
-    return (ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99); // Small buffer to avoid endpoint touches
-  }
-
-  function findIntersectionPoint(x1, y1, x2, y2) {
-    // Find the closest intersection point along the line from (x1,y1) to (x2,y2)
-    let closestDist = Infinity;
-    let closestT = null;
-
-    for (let line of allLines) {
-      // Calculate intersection point
-      let denom = (line.y2 - line.y1) * (x2 - x1) - (line.x2 - line.x1) * (y2 - y1);
-      if (denom === 0) continue; // Parallel lines
-
-      let ua = ((line.x2 - line.x1) * (y1 - line.y1) - (line.y2 - line.y1) * (x1 - line.x1)) / denom;
-      let ub = ((x2 - x1) * (y1 - line.y1) - (y2 - y1) * (x1 - line.x1)) / denom;
-
-      if (ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99) {
-        // Intersection found
-        let ix = x1 + ua * (x2 - x1);
-        let iy = y1 + ua * (y2 - y1);
-        let dist = p.dist(x1, y1, ix, iy);
-
-        if (dist < closestDist && ua > 0.01) { // Only consider forward intersections
-          closestDist = dist;
-          closestT = ua;
+        if (denom === 0) {
+            return false; // Lines are parallel
         }
-      }
+
+        let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+        let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+
+        // Check if intersection point is within both line segments
+        return ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99; // Small buffer to avoid endpoint touches
     }
 
-    return closestT;
-  }
+    function findIntersectionPoint(x1, y1, x2, y2) {
+        // Find the closest intersection point along the line from (x1,y1) to (x2,y2)
+        let closestDist = Infinity;
+        let closestT = null;
 
-  // ============================================
-  // SHADER CODE (Standardized - matches hero sketch)
-  // ============================================
+        for (let line of allLines) {
+            // Calculate intersection point
+            let denom = (line.y2 - line.y1) * (x2 - x1) - (line.x2 - line.x1) * (y2 - y1);
+            if (denom === 0) continue; // Parallel lines
 
-  const vertShader = `
+            let ua =
+                ((line.x2 - line.x1) * (y1 - line.y1) - (line.y2 - line.y1) * (x1 - line.x1)) /
+                denom;
+            let ub = ((x2 - x1) * (y1 - line.y1) - (y2 - y1) * (x1 - line.x1)) / denom;
+
+            if (ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99) {
+                // Intersection found
+                let ix = x1 + ua * (x2 - x1);
+                let iy = y1 + ua * (y2 - y1);
+                let dist = p.dist(x1, y1, ix, iy);
+
+                if (dist < closestDist && ua > 0.01) {
+                    // Only consider forward intersections
+                    closestDist = dist;
+                    closestT = ua;
+                }
+            }
+        }
+
+        return closestT;
+    }
+
+    // ============================================
+    // SHADER CODE (Standardized - matches hero sketch)
+    // ============================================
+
+    const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -457,7 +466,7 @@ const approachSketch = (p) => {
     }
   `;
 
-  const fragShader = `
+    const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
@@ -524,201 +533,207 @@ const approachSketch = (p) => {
     }
   `;
 
-  // ============================================
-  // FRACTAL TREE FUNCTIONS
-  // ============================================
+    // ============================================
+    // FRACTAL TREE FUNCTIONS
+    // ============================================
 
-  function drawBranch(x, y, angle, depth, segmentLength) {
-    // Check if this depth level should be visible based on growth progress
-    let depthStartTime = depth * GROWTH_DELAY_PER_LEVEL;
+    function drawBranch(x, y, angle, depth, segmentLength) {
+        // Check if this depth level should be visible based on growth progress
+        let depthStartTime = depth * GROWTH_DELAY_PER_LEVEL;
 
-    if (animationTime < depthStartTime || depth > TREE_MAX_DEPTH) {
-      return;
+        if (animationTime < depthStartTime || depth > TREE_MAX_DEPTH) {
+            return;
+        }
+
+        // Calculate growth progress for this depth level (0 to 1)
+        let depthProgress = p.constrain((animationTime - depthStartTime) / GROWTH_DURATION, 0, 1);
+
+        // Use easing for smoother growth
+        depthProgress = p.pow(depthProgress, 0.8); // Gentle easing
+
+        // Calculate the FULL end point (where this segment will end when complete)
+        let fullX2 = x + p.cos(angle) * segmentLength;
+        let fullY2 = y + p.sin(angle) * segmentLength;
+
+        // Calculate CURRENT end point based on growth progress
+        // The line grows FROM the origin (x, y) TO the final position
+        let currentX2 = x + p.cos(angle) * segmentLength * depthProgress;
+        let currentY2 = y + p.sin(angle) * segmentLength * depthProgress;
+
+        // Draw the growing line from origin to current position
+        if (depthProgress > 0) {
+            // Calculate opacity based on depth
+            let alpha;
+            if (STROKE_ALPHA_FADE_ENABLED) {
+                // Apply exponential fade: each level multiplies by STROKE_ALPHA_FADE_RATE
+                alpha = STROKE_ALPHA_BASE * Math.pow(STROKE_ALPHA_FADE_RATE, depth);
+                // Clamp to minimum to prevent fully transparent branches
+                alpha = Math.max(alpha, STROKE_ALPHA_MIN);
+            } else {
+                // No fade, use base alpha for all branches
+                alpha = STROKE_ALPHA_BASE;
+            }
+
+            p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
+            p.strokeWeight(STROKE_WEIGHT);
+            p.line(x, y, currentX2, currentY2);
+            // p.fill(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5)
+            // p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5);
+            // p.ellipse(x,y,1,1);
+        }
+
+        // Only recurse if this branch is fully grown
+        // Use the FULL end point as the origin for child branches
+        if (depthProgress >= 1.0) {
+            // Calculate angle for this depth level
+            let branchAngle;
+            if (TREE_ANGLE_REDUCTION_ENABLED) {
+                // Apply reduction multiplier based on depth
+                branchAngle =
+                    currentTreeAngle * Math.pow(TREE_ANGLE_REDUCTION_MULTIPLIER, depth + 1);
+            } else {
+                // Use constant angle for all levels
+                branchAngle = currentTreeAngle;
+            }
+
+            // Draw right branch
+            let rightAngle = angle + p.radians(branchAngle);
+            drawBranch(fullX2, fullY2, rightAngle, depth + 1, segmentLength);
+
+            // Draw left branch
+            let leftAngle = angle - p.radians(branchAngle);
+            drawBranch(fullX2, fullY2, leftAngle, depth + 1, segmentLength);
+        }
     }
 
-    // Calculate growth progress for this depth level (0 to 1)
-    let depthProgress = p.constrain((animationTime - depthStartTime) / GROWTH_DURATION, 0, 1);
+    // ============================================
+    // GRADIENT FUNCTIONS
+    // ============================================
 
-    // Use easing for smoother growth
-    depthProgress = p.pow(depthProgress, 0.8); // Gentle easing
+    function createGradient() {
+        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+        gradientBuffer.pixelDensity(1);
 
-    // Calculate the FULL end point (where this segment will end when complete)
-    let fullX2 = x + p.cos(angle) * segmentLength;
-    let fullY2 = y + p.sin(angle) * segmentLength;
+        const shader = gradientBuffer.createShader(vertShader, fragShader);
+        gradientBuffer.shader(shader);
 
-    // Calculate CURRENT end point based on growth progress
-    // The line grows FROM the origin (x, y) TO the final position
-    let currentX2 = x + p.cos(angle) * segmentLength * depthProgress;
-    let currentY2 = y + p.sin(angle) * segmentLength * depthProgress;
+        shader.setUniform('uResolution', [p.width, p.height]);
+        shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+        shader.setUniform('uCenterColor', [
+            GRADIENT_CENTER_COLOR.r / 255.0,
+            GRADIENT_CENTER_COLOR.g / 255.0,
+            GRADIENT_CENTER_COLOR.b / 255.0,
+        ]);
+        shader.setUniform('uEdgeColor', [
+            GRADIENT_EDGE_COLOR.r / 255.0,
+            GRADIENT_EDGE_COLOR.g / 255.0,
+            GRADIENT_EDGE_COLOR.b / 255.0,
+        ]);
+        shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+        shader.setUniform('uPower', GRADIENT_POWER);
+        shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+        shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
-    // Draw the growing line from origin to current position
-    if (depthProgress > 0) {
-      // Calculate opacity based on depth
-      let alpha;
-      if (STROKE_ALPHA_FADE_ENABLED) {
-        // Apply exponential fade: each level multiplies by STROKE_ALPHA_FADE_RATE
-        alpha = STROKE_ALPHA_BASE * Math.pow(STROKE_ALPHA_FADE_RATE, depth);
-        // Clamp to minimum to prevent fully transparent branches
-        alpha = Math.max(alpha, STROKE_ALPHA_MIN);
-      } else {
-        // No fade, use base alpha for all branches
-        alpha = STROKE_ALPHA_BASE;
-      }
-
-      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
-      p.strokeWeight(STROKE_WEIGHT);
-      p.line(x, y, currentX2, currentY2);
-      // p.fill(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5)
-      // p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha * 0.5);
-      // p.ellipse(x,y,1,1);
+        gradientBuffer.rectMode(p.CENTER);
+        gradientBuffer.noStroke();
+        gradientBuffer.rect(0, 0, p.width, p.height);
     }
 
-    // Only recurse if this branch is fully grown
-    // Use the FULL end point as the origin for child branches
-    if (depthProgress >= 1.0) {
-      // Calculate angle for this depth level
-      let branchAngle;
-      if (TREE_ANGLE_REDUCTION_ENABLED) {
-        // Apply reduction multiplier based on depth
-        branchAngle = currentTreeAngle * Math.pow(TREE_ANGLE_REDUCTION_MULTIPLIER, depth + 1);
-      } else {
-        // Use constant angle for all levels
-        branchAngle = currentTreeAngle;
-      }
-
-      // Draw right branch
-      let rightAngle = angle + p.radians(branchAngle);
-      drawBranch(fullX2, fullY2, rightAngle, depth + 1, segmentLength);
-
-      // Draw left branch
-      let leftAngle = angle - p.radians(branchAngle);
-      drawBranch(fullX2, fullY2, leftAngle, depth + 1, segmentLength);
-    }
-  }
-
-  // ============================================
-  // GRADIENT FUNCTIONS
-  // ============================================
-
-  function createGradient() {
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientBuffer.pixelDensity(1);
-
-    const shader = gradientBuffer.createShader(vertShader, fragShader);
-    gradientBuffer.shader(shader);
-
-    shader.setUniform('uResolution', [p.width, p.height]);
-    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    shader.setUniform('uCenterColor', [
-      GRADIENT_CENTER_COLOR.r / 255.0,
-      GRADIENT_CENTER_COLOR.g / 255.0,
-      GRADIENT_CENTER_COLOR.b / 255.0
-    ]);
-    shader.setUniform('uEdgeColor', [
-      GRADIENT_EDGE_COLOR.r / 255.0,
-      GRADIENT_EDGE_COLOR.g / 255.0,
-      GRADIENT_EDGE_COLOR.b / 255.0
-    ]);
-    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    shader.setUniform('uPower', GRADIENT_POWER);
-    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
-
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
-    gradientBuffer.rect(0, 0, p.width, p.height);
-  }
-
-  function drawGradient() {
-    p.image(gradientBuffer, 0, 0);
-  }
-
-  // ============================================
-  // P5.JS LIFECYCLE
-  // ============================================
-
-  const { observer } = createVisibilityObserver(p);
-
-  function calculateSegmentLength() {
-    // Calculate margins
-    let minDimension = Math.min(p.width, p.height);
-    let margin = minDimension * MARGIN_PERCENTAGE;
-    let drawableHeight = p.height - (margin * 2);
-
-    // Calculate segment length to fill the canvas height
-    // The tree grows upward through TREE_MAX_DEPTH levels
-    // With angle branching, the effective vertical distance per segment is cos(0) = 1 for the trunk
-    // We want the total height to fill the drawable area
-    segmentLength = drawableHeight / (TREE_MAX_DEPTH * 0.95); // 0.95 to leave small buffer
-  }
-
-  p.setup = () => {
-    const container = document.getElementById('approach-canvas');
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent('approach-canvas');
-
-    createGradient();
-    calculateSegmentLength();
-
-    observer.observe(container);
-  };
-
-  p.draw = () => {
-    // Draw gradient background
-    drawGradient();
-
-    // Apply subtle fade effect (only if needed)
-    if (FADE_BACKGROUND_ALPHA > 0) {
-      p.fill(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b, FADE_BACKGROUND_ALPHA);
-      p.noStroke();
-      p.rect(0, 0, p.width, p.height);
+    function drawGradient() {
+        p.image(gradientBuffer, 0, 0);
     }
 
-    // Update target tree angle based on mouse position within canvas
-    if (p.mouseY >= 0 && p.mouseY <= p.height && p.mouseX >= 0 && p.mouseX <= p.width) {
-      // Map mouseY from 0 (top) to canvas height (bottom) to TREE_ANGLE_MIN to TREE_ANGLE_MAX
-      targetTreeAngle = p.map(p.mouseY, 0, p.height, TREE_ANGLE_MIN, TREE_ANGLE_MAX);
-    } else {
-      // Mouse is outside canvas, return to default
-      targetTreeAngle = TREE_ANGLE_DEFAULT;
+    // ============================================
+    // P5.JS LIFECYCLE
+    // ============================================
+
+    const { observer } = createVisibilityObserver(p);
+
+    function calculateSegmentLength() {
+        // Calculate margins
+        let minDimension = Math.min(p.width, p.height);
+        let margin = minDimension * MARGIN_PERCENTAGE;
+        let drawableHeight = p.height - margin * 2;
+
+        // Calculate segment length to fill the canvas height
+        // The tree grows upward through TREE_MAX_DEPTH levels
+        // With angle branching, the effective vertical distance per segment is cos(0) = 1 for the trunk
+        // We want the total height to fill the drawable area
+        segmentLength = drawableHeight / (TREE_MAX_DEPTH * 0.95); // 0.95 to leave small buffer
     }
 
-    // Apply momentum - gradually approach target angle
-    currentTreeAngle += (targetTreeAngle - currentTreeAngle) * TREE_ANGLE_MOMENTUM;
+    p.setup = () => {
+        const container = document.getElementById('approach-canvas');
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent('approach-canvas');
 
-    // Increment animation time (grows the tree)
-    if (isGrowing) {
-      animationTime += 1;
+        createGradient();
+        calculateSegmentLength();
 
-      // Check if tree is fully grown
-      let maxGrowthTime = (TREE_MAX_DEPTH + 1) * GROWTH_DELAY_PER_LEVEL + GROWTH_DURATION;
-      if (animationTime >= maxGrowthTime) {
-        isGrowing = false;
-        growthProgress = 1;
-      } else {
-        growthProgress = animationTime / maxGrowthTime;
-      }
-    }
+        observer.observe(container);
+    };
 
-    // Calculate margins (matching hero sketch)
-    let minDimension = Math.min(p.width, p.height);
-    let margin = minDimension * MARGIN_PERCENTAGE;
+    p.draw = () => {
+        // Draw gradient background
+        drawGradient();
 
-    // Calculate tree starting position (bottom center of drawable area)
-    let startX = p.width / 2;
-    let startY = p.height - margin;
+        // Apply subtle fade effect (only if needed)
+        if (FADE_BACKGROUND_ALPHA > 0) {
+            p.fill(
+                GRADIENT_CENTER_COLOR.r,
+                GRADIENT_CENTER_COLOR.g,
+                GRADIENT_CENTER_COLOR.b,
+                FADE_BACKGROUND_ALPHA
+            );
+            p.noStroke();
+            p.rect(0, 0, p.width, p.height);
+        }
 
-    // Draw fractal tree with dynamically calculated segment length
-    p.noFill();
-    drawBranch(startX, startY, -p.HALF_PI, 0, segmentLength);
-  };
+        // Update target tree angle based on mouse position within canvas
+        if (p.mouseY >= 0 && p.mouseY <= p.height && p.mouseX >= 0 && p.mouseX <= p.width) {
+            // Map mouseY from 0 (top) to canvas height (bottom) to TREE_ANGLE_MIN to TREE_ANGLE_MAX
+            targetTreeAngle = p.map(p.mouseY, 0, p.height, TREE_ANGLE_MIN, TREE_ANGLE_MAX);
+        } else {
+            // Mouse is outside canvas, return to default
+            targetTreeAngle = TREE_ANGLE_DEFAULT;
+        }
 
-  p.windowResized = () => {
-    const container = document.getElementById('approach-canvas');
-    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createGradient();
-    calculateSegmentLength();
-  };
+        // Apply momentum - gradually approach target angle
+        currentTreeAngle += (targetTreeAngle - currentTreeAngle) * TREE_ANGLE_MOMENTUM;
+
+        // Increment animation time (grows the tree)
+        if (isGrowing) {
+            animationTime += 1;
+
+            // Check if tree is fully grown
+            let maxGrowthTime = (TREE_MAX_DEPTH + 1) * GROWTH_DELAY_PER_LEVEL + GROWTH_DURATION;
+            if (animationTime >= maxGrowthTime) {
+                isGrowing = false;
+                growthProgress = 1;
+            } else {
+                growthProgress = animationTime / maxGrowthTime;
+            }
+        }
+
+        // Calculate margins (matching hero sketch)
+        let minDimension = Math.min(p.width, p.height);
+        let margin = minDimension * MARGIN_PERCENTAGE;
+
+        // Calculate tree starting position (bottom center of drawable area)
+        let startX = p.width / 2;
+        let startY = p.height - margin;
+
+        // Draw fractal tree with dynamically calculated segment length
+        p.noFill();
+        drawBranch(startX, startY, -p.HALF_PI, 0, segmentLength);
+    };
+
+    p.windowResized = () => {
+        const container = document.getElementById('approach-canvas');
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+        createGradient();
+        calculateSegmentLength();
+    };
 };
 
 // ============================================
@@ -728,44 +743,44 @@ const approachSketch = (p) => {
 // Gradient: Radial gradient (green center to light edge)
 
 const foundationPrinciplesSketch = (p) => {
-  let gradientBuffer;
-  let gradientShader;
-  let tiles = [];
-  let cols, rows;
+    let gradientBuffer;
+    let gradientShader;
+    let tiles = [];
+    let cols, rows;
 
-  // Radial Gradient Configuration (Standardized - matches hero sketch)
-  const GRADIENT_CENTER_COLOR = { r: 16, g: 185, b: 129 }; // Forest Green (center)
-  const GRADIENT_EDGE_COLOR = { r: 240, g: 240, b: 235 }; // Light background (edge)
-  const GRADIENT_CENTER_X = 0.5;                           // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.5;                           // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.4;                     // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.3;                     // Y radius scale
-  const GRADIENT_POWER = 0.5;                              // Falloff power
-  const GRADIENT_EDGE_EASE = 0.5;                          // Edge ease amount
-  const GRADIENT_SCATTER_INTENSITY = 0.1;                 // Scatter intensity
+    // Radial Gradient Configuration (Standardized - matches hero sketch)
+    const GRADIENT_CENTER_COLOR = { r: 16, g: 185, b: 129 }; // Forest Green (center)
+    const GRADIENT_EDGE_COLOR = { r: 240, g: 240, b: 235 }; // Light background (edge)
+    const GRADIENT_CENTER_X = 0.5; // X position (0-1)
+    const GRADIENT_CENTER_Y = 0.5; // Y position (0-1)
+    const GRADIENT_RADIUS_SCALE_X = 0.4; // X radius scale
+    const GRADIENT_RADIUS_SCALE_Y = 0.3; // Y radius scale
+    const GRADIENT_POWER = 0.5; // Falloff power
+    const GRADIENT_EDGE_EASE = 0.5; // Edge ease amount
+    const GRADIENT_SCATTER_INTENSITY = 0.1; // Scatter intensity
 
-  // Tile Grid Configuration
-  const TILE_SIZE = 100;                                    // Size of each tile in pixels
-  const TILE_MARGIN = 0.2;                                // Margin around grid (percentage of canvas)
+    // Tile Grid Configuration
+    const TILE_SIZE = 100; // Size of each tile in pixels
+    const TILE_MARGIN = 0.2; // Margin around grid (percentage of canvas)
 
-  // Line Style Configuration (matching hero sketch)
-  const STROKE_COLOR = { r: 0, g: 0, b: 0 };              // Black
-  const STROKE_WEIGHT = 1.5;                               // Line thickness
-  const STROKE_ALPHA = 80;                                // Line opacity
+    // Line Style Configuration (matching hero sketch)
+    const STROKE_COLOR = { r: 0, g: 0, b: 0 }; // Black
+    const STROKE_WEIGHT = 1.5; // Line thickness
+    const STROKE_ALPHA = 80; // Line opacity
 
-  // Tile Corner Radius
-  const TILE_CORNER_RADIUS = 0.5;                          // Radius for rounded arcs (fraction of tile size)
+    // Tile Corner Radius
+    const TILE_CORNER_RADIUS = 0.5; // Radius for rounded arcs (fraction of tile size)
 
-  // Animation Timing Configuration
-  const ROTATION_INTERVAL_MIN = 3000;                      // Min time between rotations (ms)
-  const ROTATION_INTERVAL_MAX = 3000;                      // Max time between rotations (ms)
-  const ROTATION_DURATION = 1500;                           // Duration of rotation animation (ms)
-  const SIMULTANEOUS_ROTATIONS = 100;                        // Max tiles rotating at once
+    // Animation Timing Configuration
+    const ROTATION_INTERVAL_MIN = 3000; // Min time between rotations (ms)
+    const ROTATION_INTERVAL_MAX = 3000; // Max time between rotations (ms)
+    const ROTATION_DURATION = 1500; // Duration of rotation animation (ms)
+    const SIMULTANEOUS_ROTATIONS = 100; // Max tiles rotating at once
 
-  const { observer } = createVisibilityObserver(p);
+    const { observer } = createVisibilityObserver(p);
 
-  // Shader Code (Standardized - matches hero sketch)
-  const vertShader = `
+    // Shader Code (Standardized - matches hero sketch)
+    const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -777,7 +792,7 @@ const foundationPrinciplesSketch = (p) => {
     }
   `;
 
-  const fragShader = `
+    const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
@@ -844,198 +859,201 @@ const foundationPrinciplesSketch = (p) => {
     }
   `;
 
-  const createGradient = () => {
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
-    gradientBuffer.shader(gradientShader);
+    const createGradient = () => {
+        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+        gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+        gradientBuffer.shader(gradientShader);
 
-    gradientShader.setUniform('uResolution', [p.width, p.height]);
-    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    gradientShader.setUniform('uCenterColor', [
-      GRADIENT_CENTER_COLOR.r / 255.0,
-      GRADIENT_CENTER_COLOR.g / 255.0,
-      GRADIENT_CENTER_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uEdgeColor', [
-      GRADIENT_EDGE_COLOR.r / 255.0,
-      GRADIENT_EDGE_COLOR.g / 255.0,
-      GRADIENT_EDGE_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    gradientShader.setUniform('uPower', GRADIENT_POWER);
-    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+        gradientShader.setUniform('uResolution', [p.width, p.height]);
+        gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+        gradientShader.setUniform('uCenterColor', [
+            GRADIENT_CENTER_COLOR.r / 255.0,
+            GRADIENT_CENTER_COLOR.g / 255.0,
+            GRADIENT_CENTER_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uEdgeColor', [
+            GRADIENT_EDGE_COLOR.r / 255.0,
+            GRADIENT_EDGE_COLOR.g / 255.0,
+            GRADIENT_EDGE_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uRadiusScale', [
+            GRADIENT_RADIUS_SCALE_X,
+            GRADIENT_RADIUS_SCALE_Y,
+        ]);
+        gradientShader.setUniform('uPower', GRADIENT_POWER);
+        gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+        gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
-    gradientBuffer.rect(0, 0, p.width, p.height);
-  };
+        gradientBuffer.rectMode(p.CENTER);
+        gradientBuffer.noStroke();
+        gradientBuffer.rect(0, 0, p.width, p.height);
+    };
 
-  const drawGradient = () => {
-    p.image(gradientBuffer, 0, 0);
-  };
+    const drawGradient = () => {
+        p.image(gradientBuffer, 0, 0);
+    };
 
-  // ============================================
-  // TILE CLASS
-  // ============================================
+    // ============================================
+    // TILE CLASS
+    // ============================================
 
-  class Tile {
-    constructor(row, col) {
-      this.row = row;
-      this.col = col;
-      // Random initial rotation (0, 90, 180, or 270 degrees)
-      this.currentRotation = p.floor(p.random(4)) * 90;
-      this.targetRotation = this.currentRotation;
-      this.animationProgress = 1; // 0 to 1 (1 = not animating)
-      this.nextRotationTime = p.millis() + p.random(ROTATION_INTERVAL_MIN, ROTATION_INTERVAL_MAX);
-      this.isAnimating = false;
-    }
-
-    update(currentTime) {
-      // Check if it's time to start a new rotation
-      if (!this.isAnimating && currentTime >= this.nextRotationTime) {
-        // Check if we've hit the simultaneous rotation limit
-        let animatingCount = getAnimatingTilesCount();
-        if (animatingCount >= SIMULTANEOUS_ROTATIONS) {
-          // Defer this rotation
-          this.nextRotationTime = currentTime + 100; // Try again in 100ms
-          return;
+    class Tile {
+        constructor(row, col) {
+            this.row = row;
+            this.col = col;
+            // Random initial rotation (0, 90, 180, or 270 degrees)
+            this.currentRotation = p.floor(p.random(4)) * 90;
+            this.targetRotation = this.currentRotation;
+            this.animationProgress = 1; // 0 to 1 (1 = not animating)
+            this.nextRotationTime =
+                p.millis() + p.random(ROTATION_INTERVAL_MIN, ROTATION_INTERVAL_MAX);
+            this.isAnimating = false;
         }
 
-        // Randomly rotate 90 degrees clockwise or counterclockwise
-        let direction = p.random() < 0.5 ? 90 : -90;
-        this.targetRotation = this.currentRotation + direction;
-        this.animationProgress = 0;
-        this.isAnimating = true;
-      }
+        update(currentTime) {
+            // Check if it's time to start a new rotation
+            if (!this.isAnimating && currentTime >= this.nextRotationTime) {
+                // Check if we've hit the simultaneous rotation limit
+                let animatingCount = getAnimatingTilesCount();
+                if (animatingCount >= SIMULTANEOUS_ROTATIONS) {
+                    // Defer this rotation
+                    this.nextRotationTime = currentTime + 100; // Try again in 100ms
+                    return;
+                }
 
-      // Update animation
-      if (this.isAnimating) {
-        this.animationProgress += p.deltaTime / ROTATION_DURATION;
+                // Randomly rotate 90 degrees clockwise or counterclockwise
+                let direction = p.random() < 0.5 ? 90 : -90;
+                this.targetRotation = this.currentRotation + direction;
+                this.animationProgress = 0;
+                this.isAnimating = true;
+            }
 
-        if (this.animationProgress >= 1) {
-          // Animation complete
-          this.animationProgress = 1;
-          this.currentRotation = this.targetRotation;
-          this.isAnimating = false;
-          // Schedule next rotation
-          this.nextRotationTime = currentTime + p.random(ROTATION_INTERVAL_MIN, ROTATION_INTERVAL_MAX);
+            // Update animation
+            if (this.isAnimating) {
+                this.animationProgress += p.deltaTime / ROTATION_DURATION;
+
+                if (this.animationProgress >= 1) {
+                    // Animation complete
+                    this.animationProgress = 1;
+                    this.currentRotation = this.targetRotation;
+                    this.isAnimating = false;
+                    // Schedule next rotation
+                    this.nextRotationTime =
+                        currentTime + p.random(ROTATION_INTERVAL_MIN, ROTATION_INTERVAL_MAX);
+                }
+            }
         }
-      }
+
+        getCurrentRotation() {
+            if (!this.isAnimating) {
+                return this.currentRotation;
+            }
+            // Apply easing to animation progress (ease-in-out cubic)
+            let t = this.animationProgress;
+            let eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+            return p.lerp(this.currentRotation, this.targetRotation, eased);
+        }
+
+        draw(startX, startY) {
+            let x = startX + this.col * TILE_SIZE;
+            let y = startY + this.row * TILE_SIZE;
+
+            p.push();
+            p.translate(x + TILE_SIZE / 2, y + TILE_SIZE / 2);
+            p.rotate(p.radians(this.getCurrentRotation()));
+
+            // Draw truchet tile (two quarter-circle arcs)
+            p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
+            p.strokeWeight(STROKE_WEIGHT);
+            p.strokeCap(p.ROUND);
+            p.noFill();
+
+            let radius = TILE_SIZE * TILE_CORNER_RADIUS;
+            let offset = TILE_SIZE / 2;
+
+            // Arc from top-left corner
+            p.arc(-offset, -offset, radius * 2, radius * 2, 0, p.HALF_PI);
+
+            // Arc from bottom-right corner
+            p.arc(offset, offset, radius * 2, radius * 2, p.PI, p.PI + p.HALF_PI);
+
+            p.pop();
+        }
     }
 
-    getCurrentRotation() {
-      if (!this.isAnimating) {
-        return this.currentRotation;
-      }
-      // Apply easing to animation progress (ease-in-out cubic)
-      let t = this.animationProgress;
-      let eased = t < 0.5
-        ? 4 * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
 
-      return p.lerp(this.currentRotation, this.targetRotation, eased);
+    function initializeTiles() {
+        tiles = [];
+
+        // Calculate grid dimensions with margins
+        let minDimension = Math.min(p.width, p.height);
+        let margin = minDimension * TILE_MARGIN;
+
+        let gridWidth = p.width - margin * 2;
+        let gridHeight = p.height - margin * 2;
+
+        cols = Math.floor(gridWidth / TILE_SIZE);
+        rows = Math.floor(gridHeight / TILE_SIZE);
+
+        // Calculate centered starting position
+        let startX = (p.width - cols * TILE_SIZE) / 2;
+        let startY = (p.height - rows * TILE_SIZE) / 2;
+
+        // Create tiles
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                tiles.push(new Tile(row, col));
+            }
+        }
+
+        return { startX, startY };
     }
 
-    draw(startX, startY) {
-      let x = startX + this.col * TILE_SIZE;
-      let y = startY + this.row * TILE_SIZE;
-
-      p.push();
-      p.translate(x + TILE_SIZE / 2, y + TILE_SIZE / 2);
-      p.rotate(p.radians(this.getCurrentRotation()));
-
-      // Draw truchet tile (two quarter-circle arcs)
-      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, STROKE_ALPHA);
-      p.strokeWeight(STROKE_WEIGHT);
-      p.strokeCap(p.ROUND);
-      p.noFill();
-
-      let radius = TILE_SIZE * TILE_CORNER_RADIUS;
-      let offset = TILE_SIZE / 2;
-
-      // Arc from top-left corner
-      p.arc(-offset, -offset, radius * 2, radius * 2, 0, p.HALF_PI);
-
-      // Arc from bottom-right corner
-      p.arc(offset, offset, radius * 2, radius * 2, p.PI, p.PI + p.HALF_PI);
-
-      p.pop();
-    }
-  }
-
-  // ============================================
-  // HELPER FUNCTIONS
-  // ============================================
-
-  function initializeTiles() {
-    tiles = [];
-
-    // Calculate grid dimensions with margins
-    let minDimension = Math.min(p.width, p.height);
-    let margin = minDimension * TILE_MARGIN;
-
-    let gridWidth = p.width - (margin * 2);
-    let gridHeight = p.height - (margin * 2);
-
-    cols = Math.floor(gridWidth / TILE_SIZE);
-    rows = Math.floor(gridHeight / TILE_SIZE);
-
-    // Calculate centered starting position
-    let startX = (p.width - cols * TILE_SIZE) / 2;
-    let startY = (p.height - rows * TILE_SIZE) / 2;
-
-    // Create tiles
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        tiles.push(new Tile(row, col));
-      }
+    function getAnimatingTilesCount() {
+        return tiles.filter((tile) => tile.isAnimating).length;
     }
 
-    return { startX, startY };
-  }
+    // Store grid offset for centered positioning
+    let gridOffset = { startX: 0, startY: 0 };
 
-  function getAnimatingTilesCount() {
-    return tiles.filter(tile => tile.isAnimating).length;
-  }
+    // ============================================
+    // P5.JS LIFECYCLE
+    // ============================================
 
-  // Store grid offset for centered positioning
-  let gridOffset = { startX: 0, startY: 0 };
+    p.setup = () => {
+        const container = document.getElementById('foundation-principles-canvas');
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent('foundation-principles-canvas');
 
-  // ============================================
-  // P5.JS LIFECYCLE
-  // ============================================
+        createGradient();
+        gridOffset = initializeTiles();
 
-  p.setup = () => {
-    const container = document.getElementById('foundation-principles-canvas');
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent('foundation-principles-canvas');
+        observer.observe(container);
+    };
 
-    createGradient();
-    gridOffset = initializeTiles();
+    p.draw = () => {
+        let currentTime = p.millis();
 
-    observer.observe(container);
-  };
+        // Draw gradient background
+        drawGradient();
 
-  p.draw = () => {
-    let currentTime = p.millis();
+        // Update and draw tiles
+        tiles.forEach((tile) => {
+            tile.update(currentTime);
+            tile.draw(gridOffset.startX, gridOffset.startY);
+        });
+    };
 
-    // Draw gradient background
-    drawGradient();
-
-    // Update and draw tiles
-    tiles.forEach(tile => {
-      tile.update(currentTime);
-      tile.draw(gridOffset.startX, gridOffset.startY);
-    });
-  };
-
-  p.windowResized = () => {
-    const container = document.getElementById('foundation-principles-canvas');
-    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createGradient();
-    gridOffset = initializeTiles();
-  };
+    p.windowResized = () => {
+        const container = document.getElementById('foundation-principles-canvas');
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+        createGradient();
+        gridOffset = initializeTiles();
+    };
 };
 
 // ============================================
@@ -1045,82 +1063,82 @@ const foundationPrinciplesSketch = (p) => {
 // Gradient: Rotated radial gradient (magenta center to white edge)
 
 const implementationSketch = (p) => {
-  let gradientBuffer;
-  let gradientShader;
-  let wavePhase = 0;
+    let gradientBuffer;
+    let gradientShader;
+    let wavePhase = 0;
 
-  // Dynamic arc control
-  let currentArcAmount = 0;
-  let currentArcDirection = 1;
-  let targetArcAmount = 0;
-  let targetArcDirection = 1;
+    // Dynamic arc control
+    let currentArcAmount = 0;
+    let currentArcDirection = 1;
+    let targetArcAmount = 0;
+    let targetArcDirection = 1;
 
-  // ============================================
-  // CUSTOMIZATION VARIABLES
-  // ============================================
+    // ============================================
+    // CUSTOMIZATION VARIABLES
+    // ============================================
 
-  // Control Ellipse 1 Configuration (Bottom-Left)
-  const ELLIPSE_1_X = .5;                              // X position (0-1)
-  const ELLIPSE_1_Y = 1;                                // Y position (0-1)
-  const ELLIPSE_1_WIDTH = 500;                           // Width in pixels
-  const ELLIPSE_1_HEIGHT = 0;                           // Height in pixels
+    // Control Ellipse 1 Configuration (Bottom-Left)
+    const ELLIPSE_1_X = 0.5; // X position (0-1)
+    const ELLIPSE_1_Y = 1; // Y position (0-1)
+    const ELLIPSE_1_WIDTH = 500; // Width in pixels
+    const ELLIPSE_1_HEIGHT = 0; // Height in pixels
 
-  // Control Ellipse 2 Configuration (Top-Right)
-  const ELLIPSE_2_X = 0.5;                              // X position (0-1)
-  const ELLIPSE_2_Y = 0;                              // Y position (0-1)
-  const ELLIPSE_2_WIDTH = 500;                            // Width in pixels
-  const ELLIPSE_2_HEIGHT = 0;                          // Height in pixels
+    // Control Ellipse 2 Configuration (Top-Right)
+    const ELLIPSE_2_X = 0.5; // X position (0-1)
+    const ELLIPSE_2_Y = 0; // Y position (0-1)
+    const ELLIPSE_2_WIDTH = 500; // Width in pixels
+    const ELLIPSE_2_HEIGHT = 0; // Height in pixels
 
-  // Intermediate Ellipses Configuration
-  const INTERMEDIATE_STEPS = 60;                          // Number of ellipses between control ellipses
-  const INTERMEDIATE_SCALE_MULTIPLIER = 1.0;             // Scale at center (1.0 = no scaling, 0.5 = half size)
-  const INTERMEDIATE_SCALE_CURVE = "parabolic";          // "linear", "parabolic", "sine"
-  const INTERMEDIATE_MAX_SIZE = 400;                     // Max size at center when edge ellipses are flat (width/height = 0)
+    // Intermediate Ellipses Configuration
+    const INTERMEDIATE_STEPS = 60; // Number of ellipses between control ellipses
+    const INTERMEDIATE_SCALE_MULTIPLIER = 1.0; // Scale at center (1.0 = no scaling, 0.5 = half size)
+    const INTERMEDIATE_SCALE_CURVE = 'parabolic'; // "linear", "parabolic", "sine"
+    const INTERMEDIATE_MAX_SIZE = 400; // Max size at center when edge ellipses are flat (width/height = 0)
 
-  // Path Configuration
-  const PATH_ARC_MAX_AMOUNT = 0.15;                      // Maximum arc curvature when mouse at edge
-  const PATH_ARC_MOUSE_CONTROL = true;                   // Enable/disable mouse control for arc
-  const PATH_ARC_MOUSE_INTENSITY = 0.3;                  // How much mouse affects arc (0 = no effect, 1 = full effect)
-  const PATH_ARC_MOUSE_MOMENTUM = 0.05;                  // Arc change smoothness (0.01 = very smooth, 1 = instant)
-  const PATH_ARC_STRENGTH_MULTIPLIER = 1.0;              // Global multiplier for arc strength (0 = no arc, 2 = double arc)
-  const PATH_ARC_DEFAULT_AMOUNT = 0.03;                  // Default arc when mouse not in canvas
-  const PATH_ARC_DEFAULT_DIRECTION = -1;                 // Default direction when mouse not in canvas (1 = up/right, -1 = down/left)
-  const PATH_SPACING_TAPER_INTENSITY = 1;                // Spacing variation (0 = even spacing, 1 = max variation)
-  const PATH_SPACING_TAPER_CURVE = "parabolic";          // "linear", "parabolic", "sine", "exponential"
+    // Path Configuration
+    const PATH_ARC_MAX_AMOUNT = 0.15; // Maximum arc curvature when mouse at edge
+    const PATH_ARC_MOUSE_CONTROL = true; // Enable/disable mouse control for arc
+    const PATH_ARC_MOUSE_INTENSITY = 0.3; // How much mouse affects arc (0 = no effect, 1 = full effect)
+    const PATH_ARC_MOUSE_MOMENTUM = 0.05; // Arc change smoothness (0.01 = very smooth, 1 = instant)
+    const PATH_ARC_STRENGTH_MULTIPLIER = 1.0; // Global multiplier for arc strength (0 = no arc, 2 = double arc)
+    const PATH_ARC_DEFAULT_AMOUNT = 0.03; // Default arc when mouse not in canvas
+    const PATH_ARC_DEFAULT_DIRECTION = -1; // Default direction when mouse not in canvas (1 = up/right, -1 = down/left)
+    const PATH_SPACING_TAPER_INTENSITY = 1; // Spacing variation (0 = even spacing, 1 = max variation)
+    const PATH_SPACING_TAPER_CURVE = 'parabolic'; // "linear", "parabolic", "sine", "exponential"
 
-  // Wave Animation Configuration
-  const WAVE_FREQUENCY = 1.5;                              // Number of complete waves
-  const WAVE_AMPLITUDE = 0.9;                            // Size variation (0.3 = ±30%)
-  const WAVE_SPEED = 0.005;                               // Speed of wave movement
-  const WAVE_CIRCULARITY_INTENSITY = 0.8;                // How circular ellipses become when scaled (0 = no change, 1 = perfect circle when smallest)
+    // Wave Animation Configuration
+    const WAVE_FREQUENCY = 1.5; // Number of complete waves
+    const WAVE_AMPLITUDE = 0.9; // Size variation (0.3 = ±30%)
+    const WAVE_SPEED = 0.005; // Speed of wave movement
+    const WAVE_CIRCULARITY_INTENSITY = 0.8; // How circular ellipses become when scaled (0 = no change, 1 = perfect circle when smallest)
 
-  // Stroke Style (matching hero sketch)
-  const STROKE_COLOR = { r: 0, g: 0, b: 0 };            // Black
-  const STROKE_WEIGHT = 1.5;                             // Line thickness
-  const STROKE_ALPHA = 100;                              // Base opacity (used when taper disabled)
+    // Stroke Style (matching hero sketch)
+    const STROKE_COLOR = { r: 0, g: 0, b: 0 }; // Black
+    const STROKE_WEIGHT = 1.5; // Line thickness
+    const STROKE_ALPHA = 100; // Base opacity (used when taper disabled)
 
-  // Stroke Opacity Taper Configuration
-  const STROKE_ALPHA_TAPER_ENABLED = true;               // Enable/disable opacity taper
-  const STROKE_ALPHA_TAPER_CURVE = "sine";               // "linear", "parabolic", "sine", "exponential"
-  const STROKE_ALPHA_MIN = 20;                           // Minimum opacity at edges (0-255)
-  const STROKE_ALPHA_MAX = 100;                          // Maximum opacity at center (0-255)
+    // Stroke Opacity Taper Configuration
+    const STROKE_ALPHA_TAPER_ENABLED = true; // Enable/disable opacity taper
+    const STROKE_ALPHA_TAPER_CURVE = 'sine'; // "linear", "parabolic", "sine", "exponential"
+    const STROKE_ALPHA_MIN = 20; // Minimum opacity at edges (0-255)
+    const STROKE_ALPHA_MAX = 100; // Maximum opacity at center (0-255)
 
-  // Radial Gradient Configuration
-  const GRADIENT_CENTER_COLOR = { r: 255, g: 120, b: 200 }; // Magenta (center)
-  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // White (edge)
-  const GRADIENT_CENTER_X = 0.5;                         // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.5;                         // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.3;                   // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 10;                   // Y radius scale
-  const GRADIENT_ROTATION_ANGLE = 0;                   // Rotation angle in degrees (0 = no rotation)
-  const GRADIENT_POWER = 0.75;                            // Falloff power
-  const GRADIENT_EDGE_EASE = 1;                       // Edge ease amount
-  const GRADIENT_SCATTER_INTENSITY = 0.1;              // Scatter intensity
+    // Radial Gradient Configuration
+    const GRADIENT_CENTER_COLOR = { r: 255, g: 120, b: 200 }; // Magenta (center)
+    const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // White (edge)
+    const GRADIENT_CENTER_X = 0.5; // X position (0-1)
+    const GRADIENT_CENTER_Y = 0.5; // Y position (0-1)
+    const GRADIENT_RADIUS_SCALE_X = 0.3; // X radius scale
+    const GRADIENT_RADIUS_SCALE_Y = 10; // Y radius scale
+    const GRADIENT_ROTATION_ANGLE = 0; // Rotation angle in degrees (0 = no rotation)
+    const GRADIENT_POWER = 0.75; // Falloff power
+    const GRADIENT_EDGE_EASE = 1; // Edge ease amount
+    const GRADIENT_SCATTER_INTENSITY = 0.1; // Scatter intensity
 
-  const { observer } = createVisibilityObserver(p);
+    const { observer } = createVisibilityObserver(p);
 
-  // Shader Code (Standardized with rotation support)
-  const vertShader = `
+    // Shader Code (Standardized with rotation support)
+    const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -1132,7 +1150,7 @@ const implementationSketch = (p) => {
     }
   `;
 
-  const fragShader = `
+    const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
@@ -1211,318 +1229,330 @@ const implementationSketch = (p) => {
     }
   `;
 
-  // ============================================
-  // CALCULATION FUNCTIONS
-  // ============================================
+    // ============================================
+    // CALCULATION FUNCTIONS
+    // ============================================
 
-  // Calculate redistributed position along path for spacing taper
-  function calculatePathPosition(index, totalEllipses) {
-    // Edge ellipses must remain at exact positions
-    if (index === 0) return 0;
-    if (index === totalEllipses - 1) return 1;
+    // Calculate redistributed position along path for spacing taper
+    function calculatePathPosition(index, totalEllipses) {
+        // Edge ellipses must remain at exact positions
+        if (index === 0) return 0;
+        if (index === totalEllipses - 1) return 1;
 
-    // Linear progress (0 to 1)
-    let tLinear = index / (totalEllipses - 1);
+        // Linear progress (0 to 1)
+        let tLinear = index / (totalEllipses - 1);
 
-    // If no spacing taper, return linear
-    if (PATH_SPACING_TAPER_INTENSITY === 0) {
-      return tLinear;
+        // If no spacing taper, return linear
+        if (PATH_SPACING_TAPER_INTENSITY === 0) {
+            return tLinear;
+        }
+
+        // Calculate eased position based on curve type
+        let tEased = tLinear;
+
+        if (PATH_SPACING_TAPER_CURVE === 'sine') {
+            // Smooth S-curve: compresses edges, expands center
+            tEased = (1.0 - p.cos(tLinear * p.PI)) / 2.0;
+        } else if (PATH_SPACING_TAPER_CURVE === 'parabolic') {
+            // Cubic ease in-out: stronger compression at edges, more expansion at center
+            tEased =
+                tLinear < 0.5
+                    ? 4.0 * tLinear * tLinear * tLinear
+                    : 1.0 - 4.0 * (1.0 - tLinear) * (1.0 - tLinear) * (1.0 - tLinear);
+        } else if (PATH_SPACING_TAPER_CURVE === 'exponential') {
+            // Symmetric exponential: compress both edges, expand center
+            let distance = Math.abs(tLinear - 0.5) * 2.0; // 0 at center, 1 at edges
+            let compressionFactor = Math.exp(3.0 * distance) / Math.exp(3.0);
+            tEased =
+                tLinear < 0.5
+                    ? 0.5 - (0.5 - tLinear) * compressionFactor
+                    : 0.5 + (tLinear - 0.5) * compressionFactor;
+        }
+        // "linear" or unknown: use tLinear
+
+        // Blend between linear and eased based on intensity
+        return p.lerp(tLinear, tEased, PATH_SPACING_TAPER_INTENSITY);
     }
 
-    // Calculate eased position based on curve type
-    let tEased = tLinear;
+    // Calculate position along path with arc
+    function calculatePosition(t, arcAmount, arcDirection) {
+        // Linear interpolation for base position
+        let x = p.lerp(ELLIPSE_1_X, ELLIPSE_2_X, t);
+        let y = p.lerp(ELLIPSE_1_Y, ELLIPSE_2_Y, t);
 
-    if (PATH_SPACING_TAPER_CURVE === "sine") {
-      // Smooth S-curve: compresses edges, expands center
-      tEased = (1.0 - p.cos(tLinear * p.PI)) / 2.0;
-    } else if (PATH_SPACING_TAPER_CURVE === "parabolic") {
-      // Cubic ease in-out: stronger compression at edges, more expansion at center
-      tEased = tLinear < 0.5
-        ? 4.0 * tLinear * tLinear * tLinear
-        : 1.0 - 4.0 * (1.0 - tLinear) * (1.0 - tLinear) * (1.0 - tLinear);
-    } else if (PATH_SPACING_TAPER_CURVE === "exponential") {
-      // Symmetric exponential: compress both edges, expand center
-      let distance = Math.abs(tLinear - 0.5) * 2.0; // 0 at center, 1 at edges
-      let compressionFactor = Math.exp(3.0 * distance) / Math.exp(3.0);
-      tEased = tLinear < 0.5
-        ? 0.5 - (0.5 - tLinear) * compressionFactor
-        : 0.5 + (tLinear - 0.5) * compressionFactor;
-    }
-    // "linear" or unknown: use tLinear
+        // Apply arc offset perpendicular to line
+        if (arcAmount > 0) {
+            // Calculate perpendicular offset using sine curve
+            let arcOffset = arcAmount * p.sin(t * p.PI) * arcDirection;
 
-    // Blend between linear and eased based on intensity
-    return p.lerp(tLinear, tEased, PATH_SPACING_TAPER_INTENSITY);
-  }
+            // Calculate perpendicular direction to line
+            let dx = ELLIPSE_2_X - ELLIPSE_1_X;
+            let dy = ELLIPSE_2_Y - ELLIPSE_1_Y;
+            let length = p.sqrt(dx * dx + dy * dy);
 
-  // Calculate position along path with arc
-  function calculatePosition(t, arcAmount, arcDirection) {
-    // Linear interpolation for base position
-    let x = p.lerp(ELLIPSE_1_X, ELLIPSE_2_X, t);
-    let y = p.lerp(ELLIPSE_1_Y, ELLIPSE_2_Y, t);
+            // Perpendicular vector (rotated 90 degrees)
+            let perpX = -dy / length;
+            let perpY = dx / length;
 
-    // Apply arc offset perpendicular to line
-    if (arcAmount > 0) {
-      // Calculate perpendicular offset using sine curve
-      let arcOffset = arcAmount * p.sin(t * p.PI) * arcDirection;
+            // Apply arc offset
+            x += perpX * arcOffset;
+            y += perpY * arcOffset;
+        }
 
-      // Calculate perpendicular direction to line
-      let dx = ELLIPSE_2_X - ELLIPSE_1_X;
-      let dy = ELLIPSE_2_Y - ELLIPSE_1_Y;
-      let length = p.sqrt(dx * dx + dy * dy);
-
-      // Perpendicular vector (rotated 90 degrees)
-      let perpX = -dy / length;
-      let perpY = dx / length;
-
-      // Apply arc offset
-      x += perpX * arcOffset;
-      y += perpY * arcOffset;
+        return { x, y };
     }
 
-    return { x, y };
-  }
+    // Calculate scale modifier based on position curve
+    function calculateScaleModifier(t) {
+        // Edge ellipses always remain at full size (no scaling)
+        if (t === 0 || t === 1) {
+            return 1.0;
+        }
 
-  // Calculate scale modifier based on position curve
-  function calculateScaleModifier(t) {
-    // Edge ellipses always remain at full size (no scaling)
-    if (t === 0 || t === 1) {
-      return 1.0;
+        if (INTERMEDIATE_SCALE_MULTIPLIER >= 1.0) {
+            return 1.0; // No scaling
+        }
+
+        let modifier = 1.0;
+
+        if (INTERMEDIATE_SCALE_CURVE === 'parabolic') {
+            // Parabolic curve - smallest at center, 1.0 at edges
+            modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * 4 * (t - 0.5) * (t - 0.5);
+        } else if (INTERMEDIATE_SCALE_CURVE === 'sine') {
+            // Sine curve - smallest at center, 1.0 at edges
+            modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * p.sin(t * p.PI);
+        } else {
+            // Linear - no curve
+            modifier = 1.0;
+        }
+
+        return modifier;
     }
 
-    if (INTERMEDIATE_SCALE_MULTIPLIER >= 1.0) {
-      return 1.0; // No scaling
+    // Calculate wave taper (0 at edges, 1 at center)
+    function calculateWaveTaper(t) {
+        // Use sine curve: 0 at t=0, 1 at t=0.5, 0 at t=1
+        return p.sin(t * p.PI);
     }
 
-    let modifier = 1.0;
-
-    if (INTERMEDIATE_SCALE_CURVE === "parabolic") {
-      // Parabolic curve - smallest at center, 1.0 at edges
-      modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * 4 * (t - 0.5) * (t - 0.5);
-    } else if (INTERMEDIATE_SCALE_CURVE === "sine") {
-      // Sine curve - smallest at center, 1.0 at edges
-      modifier = 1.0 - (1.0 - INTERMEDIATE_SCALE_MULTIPLIER) * p.sin(t * p.PI);
-    } else {
-      // Linear - no curve
-      modifier = 1.0;
+    // Calculate wave scale multiplier for animation
+    function calculateWaveScale(index, totalEllipses, taper) {
+        let waveValue = p.sin(wavePhase + (index * WAVE_FREQUENCY * p.TWO_PI) / totalEllipses);
+        // Map waveValue from [-1, 1] to [1-AMPLITUDE, 1] so it can only reduce size, never increase
+        let scale = 1.0 - ((1.0 - waveValue) / 2.0) * WAVE_AMPLITUDE * taper;
+        return scale;
     }
 
-    return modifier;
-  }
-
-  // Calculate wave taper (0 at edges, 1 at center)
-  function calculateWaveTaper(t) {
-    // Use sine curve: 0 at t=0, 1 at t=0.5, 0 at t=1
-    return p.sin(t * p.PI);
-  }
-
-  // Calculate wave scale multiplier for animation
-  function calculateWaveScale(index, totalEllipses, taper) {
-    let waveValue = p.sin(wavePhase + index * WAVE_FREQUENCY * p.TWO_PI / totalEllipses);
-    // Map waveValue from [-1, 1] to [1-AMPLITUDE, 1] so it can only reduce size, never increase
-    let scale = 1.0 - ((1.0 - waveValue) / 2.0) * WAVE_AMPLITUDE * taper;
-    return scale;
-  }
-
-  // Calculate dimension with support for flat ellipses (0 width/height)
-  function calculateDimension(dimension1, dimension2, t) {
-    // If both edges are flat (0), create lens shape using INTERMEDIATE_MAX_SIZE
-    if (dimension1 === 0 && dimension2 === 0) {
-      return INTERMEDIATE_MAX_SIZE * p.sin(t * p.PI);
-    }
-    // Otherwise, linear interpolation between the two values
-    return p.lerp(dimension1, dimension2, t);
-  }
-
-  // Calculate opacity based on position (fade at edges, opaque at center)
-  function calculateOpacity(t) {
-    // If opacity taper is disabled, use base alpha
-    if (!STROKE_ALPHA_TAPER_ENABLED) {
-      return STROKE_ALPHA;
+    // Calculate dimension with support for flat ellipses (0 width/height)
+    function calculateDimension(dimension1, dimension2, t) {
+        // If both edges are flat (0), create lens shape using INTERMEDIATE_MAX_SIZE
+        if (dimension1 === 0 && dimension2 === 0) {
+            return INTERMEDIATE_MAX_SIZE * p.sin(t * p.PI);
+        }
+        // Otherwise, linear interpolation between the two values
+        return p.lerp(dimension1, dimension2, t);
     }
 
-    // Calculate fade value (1.0 at center, 0.0 at edges)
-    let fade;
+    // Calculate opacity based on position (fade at edges, opaque at center)
+    function calculateOpacity(t) {
+        // If opacity taper is disabled, use base alpha
+        if (!STROKE_ALPHA_TAPER_ENABLED) {
+            return STROKE_ALPHA;
+        }
 
-    if (STROKE_ALPHA_TAPER_CURVE === "sine") {
-      // Smooth sine curve
-      fade = p.sin(t * p.PI);
-    } else if (STROKE_ALPHA_TAPER_CURVE === "parabolic") {
-      // Parabolic curve
-      fade = 1.0 - 4.0 * (t - 0.5) * (t - 0.5);
-    } else if (STROKE_ALPHA_TAPER_CURVE === "exponential") {
-      // Exponential (Gaussian-like) curve
-      fade = Math.exp(-8.0 * (t - 0.5) * (t - 0.5));
-    } else {
-      // Linear fallback
-      fade = 1.0 - 2.0 * Math.abs(t - 0.5);
+        // Calculate fade value (1.0 at center, 0.0 at edges)
+        let fade;
+
+        if (STROKE_ALPHA_TAPER_CURVE === 'sine') {
+            // Smooth sine curve
+            fade = p.sin(t * p.PI);
+        } else if (STROKE_ALPHA_TAPER_CURVE === 'parabolic') {
+            // Parabolic curve
+            fade = 1.0 - 4.0 * (t - 0.5) * (t - 0.5);
+        } else if (STROKE_ALPHA_TAPER_CURVE === 'exponential') {
+            // Exponential (Gaussian-like) curve
+            fade = Math.exp(-8.0 * (t - 0.5) * (t - 0.5));
+        } else {
+            // Linear fallback
+            fade = 1.0 - 2.0 * Math.abs(t - 0.5);
+        }
+
+        // Interpolate between min and max alpha based on fade
+        return p.lerp(STROKE_ALPHA_MIN, STROKE_ALPHA_MAX, fade);
     }
 
-    // Interpolate between min and max alpha based on fade
-    return p.lerp(STROKE_ALPHA_MIN, STROKE_ALPHA_MAX, fade);
-  }
+    // Apply circularity adjustment - makes scaled ellipses more circular
+    function applyCircularity(width, height, waveScale) {
+        // If no circularity intensity, return unchanged
+        if (WAVE_CIRCULARITY_INTENSITY === 0) {
+            return { width, height };
+        }
 
-  // Apply circularity adjustment - makes scaled ellipses more circular
-  function applyCircularity(width, height, waveScale) {
-    // If no circularity intensity, return unchanged
-    if (WAVE_CIRCULARITY_INTENSITY === 0) {
-      return { width, height };
+        // Calculate how much the ellipse is scaled down from full size (1.0)
+        // waveScale ranges from (1 - WAVE_AMPLITUDE) to 1.0
+        // scaleFactor: 0 = full size, 1 = most scaled down
+        let scaleFactor = (1.0 - waveScale) / WAVE_AMPLITUDE;
+
+        // Calculate the circularity amount based on scale and intensity
+        let circularityAmount = scaleFactor * WAVE_CIRCULARITY_INTENSITY;
+
+        // Calculate the average dimension (what a perfect circle would be)
+        let avgDimension = (width + height) / 2.0;
+
+        // Lerp width and height toward avgDimension based on circularity amount
+        let adjustedWidth = p.lerp(width, avgDimension, circularityAmount);
+        let adjustedHeight = p.lerp(height, avgDimension, circularityAmount);
+
+        return { width: adjustedWidth, height: adjustedHeight };
     }
 
-    // Calculate how much the ellipse is scaled down from full size (1.0)
-    // waveScale ranges from (1 - WAVE_AMPLITUDE) to 1.0
-    // scaleFactor: 0 = full size, 1 = most scaled down
-    let scaleFactor = (1.0 - waveScale) / WAVE_AMPLITUDE;
+    // ============================================
+    // GRADIENT FUNCTIONS
+    // ============================================
 
-    // Calculate the circularity amount based on scale and intensity
-    let circularityAmount = scaleFactor * WAVE_CIRCULARITY_INTENSITY;
-
-    // Calculate the average dimension (what a perfect circle would be)
-    let avgDimension = (width + height) / 2.0;
-
-    // Lerp width and height toward avgDimension based on circularity amount
-    let adjustedWidth = p.lerp(width, avgDimension, circularityAmount);
-    let adjustedHeight = p.lerp(height, avgDimension, circularityAmount);
-
-    return { width: adjustedWidth, height: adjustedHeight };
-  }
-
-  // ============================================
-  // GRADIENT FUNCTIONS
-  // ============================================
-
-  function createGradient() {
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientBuffer.pixelDensity(1);
-    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
-  }
-
-  function drawGradient() {
-    gradientBuffer.shader(gradientShader);
-    gradientShader.setUniform('uResolution', [p.width, p.height]);
-    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    gradientShader.setUniform('uCenterColor', [
-      GRADIENT_CENTER_COLOR.r / 255.0,
-      GRADIENT_CENTER_COLOR.g / 255.0,
-      GRADIENT_CENTER_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uEdgeColor', [
-      GRADIENT_EDGE_COLOR.r / 255.0,
-      GRADIENT_EDGE_COLOR.g / 255.0,
-      GRADIENT_EDGE_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    gradientShader.setUniform('uRotation', p.radians(GRADIENT_ROTATION_ANGLE));
-    gradientShader.setUniform('uPower', GRADIENT_POWER);
-    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
-
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
-    gradientBuffer.rect(0, 0, p.width, p.height);
-
-    p.image(gradientBuffer, 0, 0);
-  }
-
-  // ============================================
-  // P5.JS LIFECYCLE
-  // ============================================
-
-  p.setup = () => {
-    const container = document.getElementById('implementation-canvas');
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent('implementation-canvas');
-
-    createGradient();
-    observer.observe(container);
-  };
-
-  p.draw = () => {
-    // Draw rotated gradient background
-    drawGradient();
-
-    // Update wave animation
-    wavePhase += WAVE_SPEED;
-
-    // Update arc based on mouse position with momentum and intensity
-    if (PATH_ARC_MOUSE_CONTROL && p.mouseX >= 0 && p.mouseX <= p.width && p.mouseY >= 0 && p.mouseY <= p.height) {
-      // Map mouseX from [0, width] to [-1, 1]
-      let mouseNormalized = (p.mouseX / p.width) * 2.0 - 1.0;
-
-      // Apply intensity to mouse influence
-      let mouseInfluence = mouseNormalized * PATH_ARC_MOUSE_INTENSITY;
-
-      // Calculate target arc amount (0 at center, max at edges) with strength multiplier
-      targetArcAmount = Math.abs(mouseInfluence) * PATH_ARC_MAX_AMOUNT * PATH_ARC_STRENGTH_MULTIPLIER;
-
-      // Calculate target direction based on which side of center
-      targetArcDirection = mouseInfluence >= 0 ? 1 : -1;
-    } else {
-      // Mouse outside canvas, use defaults with strength multiplier
-      targetArcAmount = PATH_ARC_DEFAULT_AMOUNT * PATH_ARC_STRENGTH_MULTIPLIER;
-      targetArcDirection = PATH_ARC_DEFAULT_DIRECTION;
+    function createGradient() {
+        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+        gradientBuffer.pixelDensity(1);
+        gradientShader = gradientBuffer.createShader(vertShader, fragShader);
     }
 
-    // Smoothly interpolate current arc amount toward target using momentum
-    currentArcAmount += (targetArcAmount - currentArcAmount) * PATH_ARC_MOUSE_MOMENTUM;
+    function drawGradient() {
+        gradientBuffer.shader(gradientShader);
+        gradientShader.setUniform('uResolution', [p.width, p.height]);
+        gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+        gradientShader.setUniform('uCenterColor', [
+            GRADIENT_CENTER_COLOR.r / 255.0,
+            GRADIENT_CENTER_COLOR.g / 255.0,
+            GRADIENT_CENTER_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uEdgeColor', [
+            GRADIENT_EDGE_COLOR.r / 255.0,
+            GRADIENT_EDGE_COLOR.g / 255.0,
+            GRADIENT_EDGE_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uRadiusScale', [
+            GRADIENT_RADIUS_SCALE_X,
+            GRADIENT_RADIUS_SCALE_Y,
+        ]);
+        gradientShader.setUniform('uRotation', p.radians(GRADIENT_ROTATION_ANGLE));
+        gradientShader.setUniform('uPower', GRADIENT_POWER);
+        gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+        gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
-    // Update direction when arc is very small to avoid abrupt flips
-    if (Math.abs(currentArcAmount) < 0.01) {
-      currentArcDirection = targetArcDirection;
+        gradientBuffer.rectMode(p.CENTER);
+        gradientBuffer.noStroke();
+        gradientBuffer.rect(0, 0, p.width, p.height);
+
+        p.image(gradientBuffer, 0, 0);
     }
 
-    // Calculate total number of ellipses
-    let totalEllipses = INTERMEDIATE_STEPS + 2;
+    // ============================================
+    // P5.JS LIFECYCLE
+    // ============================================
 
-    // Draw all ellipses
-    p.strokeWeight(STROKE_WEIGHT);
-    p.strokeCap(p.ROUND);
-    p.noFill();
+    p.setup = () => {
+        const container = document.getElementById('implementation-canvas');
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent('implementation-canvas');
 
-    for (let i = 0; i < totalEllipses; i++) {
-      // Calculate redistributed position along path with spacing taper
-      let t = calculatePathPosition(i, totalEllipses);
+        createGradient();
+        observer.observe(container);
+    };
 
-      // Get position with dynamic arc
-      let pos = calculatePosition(t, currentArcAmount, currentArcDirection);
-      let x = pos.x * p.width;
-      let y = pos.y * p.height;
+    p.draw = () => {
+        // Draw rotated gradient background
+        drawGradient();
 
-      // Calculate dimensions with support for flat ellipses
-      let baseWidth = calculateDimension(ELLIPSE_1_WIDTH, ELLIPSE_2_WIDTH, t);
-      let baseHeight = calculateDimension(ELLIPSE_1_HEIGHT, ELLIPSE_2_HEIGHT, t);
+        // Update wave animation
+        wavePhase += WAVE_SPEED;
 
-      // Apply scale modifier based on position curve (edges remain 1.0)
-      let scaleModifier = calculateScaleModifier(t);
+        // Update arc based on mouse position with momentum and intensity
+        if (
+            PATH_ARC_MOUSE_CONTROL &&
+            p.mouseX >= 0 &&
+            p.mouseX <= p.width &&
+            p.mouseY >= 0 &&
+            p.mouseY <= p.height
+        ) {
+            // Map mouseX from [0, width] to [-1, 1]
+            let mouseNormalized = (p.mouseX / p.width) * 2.0 - 1.0;
 
-      // Calculate wave taper (0 at edges, 1 at center)
-      let taper = calculateWaveTaper(t);
+            // Apply intensity to mouse influence
+            let mouseInfluence = mouseNormalized * PATH_ARC_MOUSE_INTENSITY;
 
-      // Apply wave animation with taper
-      let waveScale = calculateWaveScale(i, totalEllipses, taper);
+            // Calculate target arc amount (0 at center, max at edges) with strength multiplier
+            targetArcAmount =
+                Math.abs(mouseInfluence) * PATH_ARC_MAX_AMOUNT * PATH_ARC_STRENGTH_MULTIPLIER;
 
-      // Calculate final dimensions
-      let width = baseWidth * scaleModifier * waveScale;
-      let height = baseHeight * scaleModifier * waveScale;
+            // Calculate target direction based on which side of center
+            targetArcDirection = mouseInfluence >= 0 ? 1 : -1;
+        } else {
+            // Mouse outside canvas, use defaults with strength multiplier
+            targetArcAmount = PATH_ARC_DEFAULT_AMOUNT * PATH_ARC_STRENGTH_MULTIPLIER;
+            targetArcDirection = PATH_ARC_DEFAULT_DIRECTION;
+        }
 
-      // Apply circularity adjustment - smaller ellipses become more circular
-      let adjusted = applyCircularity(width, height, waveScale);
-      width = adjusted.width;
-      height = adjusted.height;
+        // Smoothly interpolate current arc amount toward target using momentum
+        currentArcAmount += (targetArcAmount - currentArcAmount) * PATH_ARC_MOUSE_MOMENTUM;
 
-      // Calculate opacity based on position (fade at edges)
-      let opacity = calculateOpacity(t);
+        // Update direction when arc is very small to avoid abrupt flips
+        if (Math.abs(currentArcAmount) < 0.01) {
+            currentArcDirection = targetArcDirection;
+        }
 
-      // Draw ellipse with tapered opacity
-      p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, opacity);
-      p.ellipse(x, y, width, height);
-    }
-  };
+        // Calculate total number of ellipses
+        let totalEllipses = INTERMEDIATE_STEPS + 2;
 
-  p.windowResized = () => {
-    const container = document.getElementById('implementation-canvas');
-    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createGradient();
-  };
+        // Draw all ellipses
+        p.strokeWeight(STROKE_WEIGHT);
+        p.strokeCap(p.ROUND);
+        p.noFill();
+
+        for (let i = 0; i < totalEllipses; i++) {
+            // Calculate redistributed position along path with spacing taper
+            let t = calculatePathPosition(i, totalEllipses);
+
+            // Get position with dynamic arc
+            let pos = calculatePosition(t, currentArcAmount, currentArcDirection);
+            let x = pos.x * p.width;
+            let y = pos.y * p.height;
+
+            // Calculate dimensions with support for flat ellipses
+            let baseWidth = calculateDimension(ELLIPSE_1_WIDTH, ELLIPSE_2_WIDTH, t);
+            let baseHeight = calculateDimension(ELLIPSE_1_HEIGHT, ELLIPSE_2_HEIGHT, t);
+
+            // Apply scale modifier based on position curve (edges remain 1.0)
+            let scaleModifier = calculateScaleModifier(t);
+
+            // Calculate wave taper (0 at edges, 1 at center)
+            let taper = calculateWaveTaper(t);
+
+            // Apply wave animation with taper
+            let waveScale = calculateWaveScale(i, totalEllipses, taper);
+
+            // Calculate final dimensions
+            let width = baseWidth * scaleModifier * waveScale;
+            let height = baseHeight * scaleModifier * waveScale;
+
+            // Apply circularity adjustment - smaller ellipses become more circular
+            let adjusted = applyCircularity(width, height, waveScale);
+            width = adjusted.width;
+            height = adjusted.height;
+
+            // Calculate opacity based on position (fade at edges)
+            let opacity = calculateOpacity(t);
+
+            // Draw ellipse with tapered opacity
+            p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, opacity);
+            p.ellipse(x, y, width, height);
+        }
+    };
+
+    p.windowResized = () => {
+        const container = document.getElementById('implementation-canvas');
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+        createGradient();
+    };
 };
 
 // ============================================
@@ -1532,63 +1562,63 @@ const implementationSketch = (p) => {
 // Colors: Orange (#F97316) + Indigo (#6366F1)
 
 const enablementSketch = (p) => {
-  // ============================================
-  // CUSTOMIZATION VARIABLES
-  // ============================================
+    // ============================================
+    // CUSTOMIZATION VARIABLES
+    // ============================================
 
-  const GRADIENT_CENTER_COLOR = { r: 255, g: 100, b: 100 };   // Random vibrant color
-  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };      // White (matching implementation)
-  const GRADIENT_CENTER_X = 0.5;                               // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.5;                                // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.2;                          // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.8;                          // Y radius scale
-  const GRADIENT_POWER = 1;                                   // Falloff power
-  const GRADIENT_EDGE_EASE = 0.91;                              // Edge ease amount (0-1)
-  const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
+    const GRADIENT_CENTER_COLOR = { r: 255, g: 100, b: 100 }; // Random vibrant color
+    const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // White (matching implementation)
+    const GRADIENT_CENTER_X = 0.5; // X position (0-1)
+    const GRADIENT_CENTER_Y = 0.5; // Y position (0-1)
+    const GRADIENT_RADIUS_SCALE_X = 0.2; // X radius scale
+    const GRADIENT_RADIUS_SCALE_Y = 0.8; // Y radius scale
+    const GRADIENT_POWER = 1; // Falloff power
+    const GRADIENT_EDGE_EASE = 0.91; // Edge ease amount (0-1)
+    const GRADIENT_SCATTER_INTENSITY = 0.1; // Scatter effect intensity
 
-  // ============================================
-  // FLOWFIELD GRID CONFIGURATION
-  // ============================================
-  const GRID_RESOLUTION = 50;                                   // Spacing between grid points (pixels) - lower = denser
-  const MARGIN_X = 620;                                          // Horizontal margin from canvas edge (pixels)
-  const MARGIN_Y = 0;                                          // Vertical margin from canvas edge (pixels)
+    // ============================================
+    // FLOWFIELD GRID CONFIGURATION
+    // ============================================
+    const GRID_RESOLUTION = 50; // Spacing between grid points (pixels) - lower = denser
+    const MARGIN_X = 620; // Horizontal margin from canvas edge (pixels)
+    const MARGIN_Y = 0; // Vertical margin from canvas edge (pixels)
 
-  // ============================================
-  // NOISE CONFIGURATION (Low Octaves = Smoother)
-  // ============================================
-  const NOISE_SCALE = 0.05;                                    // Scale of noise sampling - lower = larger patterns
-  const NOISE_OCTAVES = 2;                                      // Number of noise octaves (low = smooth)
-  const NOISE_FALLOFF = 0.2;                                    // Amplitude falloff per octave (0-1)
-  const NOISE_Z_SPEED = 0.008;                                  // Animation speed in Z-axis (time)
+    // ============================================
+    // NOISE CONFIGURATION (Low Octaves = Smoother)
+    // ============================================
+    const NOISE_SCALE = 0.05; // Scale of noise sampling - lower = larger patterns
+    const NOISE_OCTAVES = 2; // Number of noise octaves (low = smooth)
+    const NOISE_FALLOFF = 0.2; // Amplitude falloff per octave (0-1)
+    const NOISE_Z_SPEED = 0.008; // Animation speed in Z-axis (time)
 
-  // ============================================
-  // FLOWFIELD LINE CONFIGURATION
-  // ============================================
-  const LINE_VISUAL_LENGTH = GRID_RESOLUTION;                   // Length of each rendered line segment (pixels)
-  const LINE_WEIGHT = 1.5;                                      // Stroke thickness (matching hero sketch)
-  const LINE_COLOR = { r: 0, g: 0, b: 0 };                     // Stroke color (black, matching hero)
-  const LINE_ALPHA = 160;                                       // Opacity (constant)
+    // ============================================
+    // FLOWFIELD LINE CONFIGURATION
+    // ============================================
+    const LINE_VISUAL_LENGTH = GRID_RESOLUTION; // Length of each rendered line segment (pixels)
+    const LINE_WEIGHT = 1.5; // Stroke thickness (matching hero sketch)
+    const LINE_COLOR = { r: 0, g: 0, b: 0 }; // Stroke color (black, matching hero)
+    const LINE_ALPHA = 160; // Opacity (constant)
 
-  // ============================================
-  // MOUSE INTERACTION CONFIGURATION
-  // ============================================
-  const MOUSE_INFLUENCE_RADIUS = 800;                           // Distance mouse affects flowfield (pixels)
-  const MOUSE_FORCE_STRENGTH = 1.5;                             // Strength of mouse influence on angles
-  const MOUSE_MOMENTUM = 0.2;                                  // Smoothing factor (0-1, lower = more lag)
+    // ============================================
+    // MOUSE INTERACTION CONFIGURATION
+    // ============================================
+    const MOUSE_INFLUENCE_RADIUS = 800; // Distance mouse affects flowfield (pixels)
+    const MOUSE_FORCE_STRENGTH = 1.5; // Strength of mouse influence on angles
+    const MOUSE_MOMENTUM = 0.2; // Smoothing factor (0-1, lower = more lag)
 
-  // Animation
-  let animationTime = 0;
-  let noiseZOffset = 0;
-  let gradientBuffer;
-  let flowfield;
-  let virtualMouseX = 0;                                        // Smoothed mouse X position
-  let virtualMouseY = 0;                                        // Smoothed mouse Y position
+    // Animation
+    let animationTime = 0;
+    let noiseZOffset = 0;
+    let gradientBuffer;
+    let flowfield;
+    let virtualMouseX = 0; // Smoothed mouse X position
+    let virtualMouseY = 0; // Smoothed mouse Y position
 
-  // ============================================
-  // SHADER CODE (Standardized - matches hero sketch)
-  // ============================================
+    // ============================================
+    // SHADER CODE (Standardized - matches hero sketch)
+    // ============================================
 
-  const vertShader = `
+    const vertShader = `
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
@@ -1601,7 +1631,7 @@ const enablementSketch = (p) => {
     }
   `;
 
-  const fragShader = `
+    const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
@@ -1668,209 +1698,210 @@ const enablementSketch = (p) => {
     }
   `;
 
-  // ============================================
-  // FLOWFIELD CLASS
-  // ============================================
+    // ============================================
+    // FLOWFIELD CLASS
+    // ============================================
 
-  class Flowfield {
-    constructor(width, height) {
-      // Calculate available space within margins
-      this.canvasWidth = width;
-      this.canvasHeight = height;
-      this.availableWidth = width - (MARGIN_X * 2);
-      this.availableHeight = height - (MARGIN_Y * 2);
+    class Flowfield {
+        constructor(width, height) {
+            // Calculate available space within margins
+            this.canvasWidth = width;
+            this.canvasHeight = height;
+            this.availableWidth = width - MARGIN_X * 2;
+            this.availableHeight = height - MARGIN_Y * 2;
 
-      // Calculate grid dimensions
-      this.cols = Math.floor(this.availableWidth / GRID_RESOLUTION);
-      this.rows = Math.floor(this.availableHeight / GRID_RESOLUTION);
-      this.field = new Array(this.cols * this.rows);
+            // Calculate grid dimensions
+            this.cols = Math.floor(this.availableWidth / GRID_RESOLUTION);
+            this.rows = Math.floor(this.availableHeight / GRID_RESOLUTION);
+            this.field = new Array(this.cols * this.rows);
 
-      // Calculate offsets to center grid within margins
-      this.offsetX = MARGIN_X + (this.availableWidth - (this.cols - 1) * GRID_RESOLUTION) / 2;
-      this.offsetY = MARGIN_Y + (this.availableHeight - (this.rows - 1) * GRID_RESOLUTION) / 2;
+            // Calculate offsets to center grid within margins
+            this.offsetX = MARGIN_X + (this.availableWidth - (this.cols - 1) * GRID_RESOLUTION) / 2;
+            this.offsetY =
+                MARGIN_Y + (this.availableHeight - (this.rows - 1) * GRID_RESOLUTION) / 2;
 
-      // Configure noise
-      p.noiseDetail(NOISE_OCTAVES, NOISE_FALLOFF);
-    }
-
-    update() {
-      // Update noise Z offset for animation
-      noiseZOffset += NOISE_Z_SPEED;
-
-      // Calculate angle for each grid cell using Perlin noise
-      for (let y = 0; y < this.rows; y++) {
-        for (let x = 0; x < this.cols; x++) {
-          let index = x + y * this.cols;
-
-          // Sample noise at this position
-          let noiseValue = p.noise(
-            x * NOISE_SCALE,
-            y * NOISE_SCALE,
-            noiseZOffset
-          );
-
-          // Convert noise (0-1) to angle (0-TWO_PI)
-          let angle = noiseValue * p.TWO_PI * 2;
-
-          this.field[index] = angle;
+            // Configure noise
+            p.noiseDetail(NOISE_OCTAVES, NOISE_FALLOFF);
         }
-      }
-    }
 
-    applyMouseInfluence() {
-      // Apply mouse influence with momentum
-      for (let y = 0; y < this.rows; y++) {
-        for (let x = 0; x < this.cols; x++) {
-          let index = x + y * this.cols;
+        update() {
+            // Update noise Z offset for animation
+            noiseZOffset += NOISE_Z_SPEED;
 
-          // Get actual grid position
-          let gridX = x * GRID_RESOLUTION + this.offsetX;
-          let gridY = y * GRID_RESOLUTION + this.offsetY;
+            // Calculate angle for each grid cell using Perlin noise
+            for (let y = 0; y < this.rows; y++) {
+                for (let x = 0; x < this.cols; x++) {
+                    let index = x + y * this.cols;
 
-          // Calculate distance to virtual mouse
-          let dx = virtualMouseX - gridX;
-          let dy = virtualMouseY - gridY;
-          let dist = Math.sqrt(dx * dx + dy * dy);
+                    // Sample noise at this position
+                    let noiseValue = p.noise(x * NOISE_SCALE, y * NOISE_SCALE, noiseZOffset);
 
-          // Apply influence if within radius
-          if (dist < MOUSE_INFLUENCE_RADIUS && dist > 0) {
-            // Calculate angle towards mouse
-            let mouseAngle = Math.atan2(dy, dx);
+                    // Convert noise (0-1) to angle (0-TWO_PI)
+                    let angle = noiseValue * p.TWO_PI * 2;
 
-            // Calculate influence strength (stronger when closer)
-            let influence = 1 - (dist / MOUSE_INFLUENCE_RADIUS);
-            influence = Math.pow(influence, 2); // Ease the falloff
-
-            // Blend current angle with mouse angle
-            let currentAngle = this.field[index];
-            this.field[index] = p.lerp(currentAngle, mouseAngle, influence * MOUSE_FORCE_STRENGTH);
-          }
+                    this.field[index] = angle;
+                }
+            }
         }
-      }
-    }
 
-    display() {
-      // Draw a line segment at each grid point
-      p.stroke(LINE_COLOR.r, LINE_COLOR.g, LINE_COLOR.b, LINE_ALPHA);
-      p.strokeWeight(LINE_WEIGHT);
+        applyMouseInfluence() {
+            // Apply mouse influence with momentum
+            for (let y = 0; y < this.rows; y++) {
+                for (let x = 0; x < this.cols; x++) {
+                    let index = x + y * this.cols;
 
-      for (let y = 0; y < this.rows; y++) {
-        for (let x = 0; x < this.cols; x++) {
-          let index = x + y * this.cols;
-          let angle = this.field[index];
+                    // Get actual grid position
+                    let gridX = x * GRID_RESOLUTION + this.offsetX;
+                    let gridY = y * GRID_RESOLUTION + this.offsetY;
 
-          // Calculate grid point position
-          let gridX = x * GRID_RESOLUTION + this.offsetX;
-          let gridY = y * GRID_RESOLUTION + this.offsetY;
+                    // Calculate distance to virtual mouse
+                    let dx = virtualMouseX - gridX;
+                    let dy = virtualMouseY - gridY;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
 
-          // Calculate line endpoints (centered on grid point)
-          let halfLength = LINE_VISUAL_LENGTH / 2;
-          let x1 = gridX - Math.cos(angle) * halfLength;
-          let y1 = gridY - Math.sin(angle) * halfLength;
-          let x2 = gridX + Math.cos(angle) * halfLength;
-          let y2 = gridY + Math.sin(angle) * halfLength;
+                    // Apply influence if within radius
+                    if (dist < MOUSE_INFLUENCE_RADIUS && dist > 0) {
+                        // Calculate angle towards mouse
+                        let mouseAngle = Math.atan2(dy, dx);
 
-          // Draw line segment
-          p.line(x1, y1, x2, y2);
+                        // Calculate influence strength (stronger when closer)
+                        let influence = 1 - dist / MOUSE_INFLUENCE_RADIUS;
+                        influence = Math.pow(influence, 2); // Ease the falloff
+
+                        // Blend current angle with mouse angle
+                        let currentAngle = this.field[index];
+                        this.field[index] = p.lerp(
+                            currentAngle,
+                            mouseAngle,
+                            influence * MOUSE_FORCE_STRENGTH
+                        );
+                    }
+                }
+            }
         }
-      }
+
+        display() {
+            // Draw a line segment at each grid point
+            p.stroke(LINE_COLOR.r, LINE_COLOR.g, LINE_COLOR.b, LINE_ALPHA);
+            p.strokeWeight(LINE_WEIGHT);
+
+            for (let y = 0; y < this.rows; y++) {
+                for (let x = 0; x < this.cols; x++) {
+                    let index = x + y * this.cols;
+                    let angle = this.field[index];
+
+                    // Calculate grid point position
+                    let gridX = x * GRID_RESOLUTION + this.offsetX;
+                    let gridY = y * GRID_RESOLUTION + this.offsetY;
+
+                    // Calculate line endpoints (centered on grid point)
+                    let halfLength = LINE_VISUAL_LENGTH / 2;
+                    let x1 = gridX - Math.cos(angle) * halfLength;
+                    let y1 = gridY - Math.sin(angle) * halfLength;
+                    let x2 = gridX + Math.cos(angle) * halfLength;
+                    let y2 = gridY + Math.sin(angle) * halfLength;
+
+                    // Draw line segment
+                    p.line(x1, y1, x2, y2);
+                }
+            }
+        }
     }
-  }
 
-  // ============================================
-  // GRADIENT FUNCTIONS
-  // ============================================
+    // ============================================
+    // GRADIENT FUNCTIONS
+    // ============================================
 
-  function createGradient() {
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientBuffer.pixelDensity(1);
+    function createGradient() {
+        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+        gradientBuffer.pixelDensity(1);
 
-    const shader = gradientBuffer.createShader(vertShader, fragShader);
-    gradientBuffer.shader(shader);
+        const shader = gradientBuffer.createShader(vertShader, fragShader);
+        gradientBuffer.shader(shader);
 
-    shader.setUniform('uResolution', [p.width, p.height]);
-    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    shader.setUniform('uCenterColor', [
-      GRADIENT_CENTER_COLOR.r / 255.0,
-      GRADIENT_CENTER_COLOR.g / 255.0,
-      GRADIENT_CENTER_COLOR.b / 255.0
-    ]);
-    shader.setUniform('uEdgeColor', [
-      GRADIENT_EDGE_COLOR.r / 255.0,
-      GRADIENT_EDGE_COLOR.g / 255.0,
-      GRADIENT_EDGE_COLOR.b / 255.0
-    ]);
-    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    shader.setUniform('uPower', GRADIENT_POWER);
-    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+        shader.setUniform('uResolution', [p.width, p.height]);
+        shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+        shader.setUniform('uCenterColor', [
+            GRADIENT_CENTER_COLOR.r / 255.0,
+            GRADIENT_CENTER_COLOR.g / 255.0,
+            GRADIENT_CENTER_COLOR.b / 255.0,
+        ]);
+        shader.setUniform('uEdgeColor', [
+            GRADIENT_EDGE_COLOR.r / 255.0,
+            GRADIENT_EDGE_COLOR.g / 255.0,
+            GRADIENT_EDGE_COLOR.b / 255.0,
+        ]);
+        shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+        shader.setUniform('uPower', GRADIENT_POWER);
+        shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+        shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
-    gradientBuffer.rect(0, 0, p.width, p.height);
-  }
+        gradientBuffer.rectMode(p.CENTER);
+        gradientBuffer.noStroke();
+        gradientBuffer.rect(0, 0, p.width, p.height);
+    }
 
-  function drawGradient() {
-    p.image(gradientBuffer, 0, 0);
-  }
+    function drawGradient() {
+        p.image(gradientBuffer, 0, 0);
+    }
 
-  // ============================================
-  // P5.JS LIFECYCLE
-  // ============================================
+    // ============================================
+    // P5.JS LIFECYCLE
+    // ============================================
 
-  const { observer } = createVisibilityObserver(p);
+    const { observer } = createVisibilityObserver(p);
 
-  p.setup = () => {
-    const container = document.getElementById('enablement-canvas');
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent('enablement-canvas');
+    p.setup = () => {
+        const container = document.getElementById('enablement-canvas');
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent('enablement-canvas');
 
-    createGradient();
+        createGradient();
 
-    // Initialize flowfield
-    flowfield = new Flowfield(p.width, p.height);
+        // Initialize flowfield
+        flowfield = new Flowfield(p.width, p.height);
 
-    // Initialize virtual mouse position to center
-    virtualMouseX = p.width / 2;
-    virtualMouseY = p.height / 2;
+        // Initialize virtual mouse position to center
+        virtualMouseX = p.width / 2;
+        virtualMouseY = p.height / 2;
 
-    observer.observe(container);
-  };
+        observer.observe(container);
+    };
 
-  p.draw = () => {
-    // Draw gradient background
-    drawGradient();
+    p.draw = () => {
+        // Draw gradient background
+        drawGradient();
 
-    animationTime += 1;
+        animationTime += 1;
 
-    // Update virtual mouse position with momentum (smooth following)
-    virtualMouseX = p.lerp(virtualMouseX, p.mouseX, MOUSE_MOMENTUM);
-    virtualMouseY = p.lerp(virtualMouseY, p.mouseY, MOUSE_MOMENTUM);
+        // Update virtual mouse position with momentum (smooth following)
+        virtualMouseX = p.lerp(virtualMouseX, p.mouseX, MOUSE_MOMENTUM);
+        virtualMouseY = p.lerp(virtualMouseY, p.mouseY, MOUSE_MOMENTUM);
 
-    // Update flowfield with noise animation
-    flowfield.update();
+        // Update flowfield with noise animation
+        flowfield.update();
 
-    // Apply mouse influence to flowfield
-    flowfield.applyMouseInfluence();
+        // Apply mouse influence to flowfield
+        flowfield.applyMouseInfluence();
 
-    // Draw flowfield grid
-    flowfield.display();
-  };
+        // Draw flowfield grid
+        flowfield.display();
+    };
 
-  p.mouseMoved = () => {
-    // This event fires when mouse moves, helping track mouse position
-    // The actual smoothing happens in p.draw() with lerp
-    return false; // Prevent default behavior
-  };
+    p.mouseMoved = () => {
+        // This event fires when mouse moves, helping track mouse position
+        // The actual smoothing happens in p.draw() with lerp
+        return false; // Prevent default behavior
+    };
 
-  p.windowResized = () => {
-    const container = document.getElementById('enablement-canvas');
-    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createGradient();
+    p.windowResized = () => {
+        const container = document.getElementById('enablement-canvas');
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+        createGradient();
 
-    // Reinitialize flowfield with new dimensions
-    flowfield = new Flowfield(p.width, p.height);
-  };
+        // Reinitialize flowfield with new dimensions
+        flowfield = new Flowfield(p.width, p.height);
+    };
 };
 
 // ============================================
@@ -1880,67 +1911,67 @@ const enablementSketch = (p) => {
 // Colors: Amber (#F59E0B) + Violet (#8B5CF6)
 
 const evolutionSketch = (p) => {
-  // ============================================
-  // CUSTOMIZATION VARIABLES
-  // ============================================
+    // ============================================
+    // CUSTOMIZATION VARIABLES
+    // ============================================
 
-  // Left Group Configuration
-  const LEFT_INSTANCE_COUNT = 9;                    // Number of overlayed infinities
-  const LEFT_BASE_SIZE = 150;                        // Base size of infinity shape
-  const LEFT_SCALE_Y_MIN = -2;                    // Minimum vertical scale (negative for bottom half)
-  const LEFT_SCALE_Y_MAX = 2;                     // Maximum vertical scale (positive for top half)
-  const LEFT_ANIMATION_SPEED = 0.003;               // Rotation speed
-  const LEFT_CENTER_X = 0.5;                       // X position (0-1)
-  const LEFT_CENTER_Y = 0.2;                        // Y position (0-1)
+    // Left Group Configuration
+    const LEFT_INSTANCE_COUNT = 9; // Number of overlayed infinities
+    const LEFT_BASE_SIZE = 150; // Base size of infinity shape
+    const LEFT_SCALE_Y_MIN = -2; // Minimum vertical scale (negative for bottom half)
+    const LEFT_SCALE_Y_MAX = 2; // Maximum vertical scale (positive for top half)
+    const LEFT_ANIMATION_SPEED = 0.003; // Rotation speed
+    const LEFT_CENTER_X = 0.5; // X position (0-1)
+    const LEFT_CENTER_Y = 0.2; // Y position (0-1)
 
-  // Right Group Configuration
-  const RIGHT_INSTANCE_COUNT = 30;                  // Number of overlayed infinities (more than left)
-  const RIGHT_BASE_SIZE = 150;                      // Base size of infinity shape
-  const RIGHT_SCALE_Y_MIN = -2;                   // Minimum vertical scale (negative for bottom half)
-  const RIGHT_SCALE_Y_MAX = 2;                    // Maximum vertical scale (positive for top half)
-  const RIGHT_ANIMATION_SPEED = 0.0015;              // Rotation speed (independent from left)
-  const RIGHT_CENTER_X = 0.8;                      // X position (0-1)
-  const RIGHT_CENTER_Y = 0.2;                       // Y position (0-1)
+    // Right Group Configuration
+    const RIGHT_INSTANCE_COUNT = 30; // Number of overlayed infinities (more than left)
+    const RIGHT_BASE_SIZE = 150; // Base size of infinity shape
+    const RIGHT_SCALE_Y_MIN = -2; // Minimum vertical scale (negative for bottom half)
+    const RIGHT_SCALE_Y_MAX = 2; // Maximum vertical scale (positive for top half)
+    const RIGHT_ANIMATION_SPEED = 0.0015; // Rotation speed (independent from left)
+    const RIGHT_CENTER_X = 0.8; // X position (0-1)
+    const RIGHT_CENTER_Y = 0.2; // Y position (0-1)
 
-  // Lissajous Parameters
-  const LISSAJOUS_FREQ_RATIO = 2.0;                 // Frequency ratio for infinity (2:1)
-  const LISSAJOUS_PHASE_OFFSET = 0;           // Phase for infinity shape
-  const LISSAJOUS_RESOLUTION = 200;                 // Points in curve
-  const LISSAJOUS_SCALE_X = 1;                    // Horizontal scale multiplier
+    // Lissajous Parameters
+    const LISSAJOUS_FREQ_RATIO = 2.0; // Frequency ratio for infinity (2:1)
+    const LISSAJOUS_PHASE_OFFSET = 0; // Phase for infinity shape
+    const LISSAJOUS_RESOLUTION = 200; // Points in curve
+    const LISSAJOUS_SCALE_X = 1; // Horizontal scale multiplier
 
-  // Stroke Style (matching hero sketch)
-  const STROKE_COLOR = { r: 0, g: 0, b: 0 };       // Black
-  const STROKE_WEIGHT = 1.5;                        // Line thickness
-  const STROKE_ALPHA_MIN = 0;                      // Minimum opacity (far instances)
-  const STROKE_ALPHA_MAX = 200;                     // Maximum opacity (close instances)
+    // Stroke Style (matching hero sketch)
+    const STROKE_COLOR = { r: 0, g: 0, b: 0 }; // Black
+    const STROKE_WEIGHT = 1.5; // Line thickness
+    const STROKE_ALPHA_MIN = 0; // Minimum opacity (far instances)
+    const STROKE_ALPHA_MAX = 200; // Maximum opacity (close instances)
 
-  // Rolling Wheel Effect Configuration
-  const SHOW_STATIC_OUTER_CURVE = false;             // Show static outer "8" at max scale (background)
-  const VISIBILITY_THRESHOLD = -0.2;                 // Only show instances with scaleY > this (0-1, creates rolling effect)
+    // Rolling Wheel Effect Configuration
+    const SHOW_STATIC_OUTER_CURVE = false; // Show static outer "8" at max scale (background)
+    const VISIBILITY_THRESHOLD = -0.2; // Only show instances with scaleY > this (0-1, creates rolling effect)
 
-  // Gradient Configuration (Amber + Violet)
-  const GRADIENT_CENTER_COLOR = { r: 245, g: 118, b: 22 };  // Amber
-  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };
-  const GRADIENT_CENTER_X = 0.6;                    // Center X position (0-1)
-  const GRADIENT_CENTER_Y = 0.95;                    // Center Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.5;              // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.5;              // Y radius scale
-  const GRADIENT_POWER = 1.0;                       // Gradient power curve
-  const GRADIENT_EDGE_EASE = 0.25;                  // Edge easing
-  const GRADIENT_SCATTER_INTENSITY = 0.1;         // Scatter effect intensity
+    // Gradient Configuration (Amber + Violet)
+    const GRADIENT_CENTER_COLOR = { r: 245, g: 118, b: 22 }; // Amber
+    const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };
+    const GRADIENT_CENTER_X = 0.6; // Center X position (0-1)
+    const GRADIENT_CENTER_Y = 0.95; // Center Y position (0-1)
+    const GRADIENT_RADIUS_SCALE_X = 0.5; // X radius scale
+    const GRADIENT_RADIUS_SCALE_Y = 0.5; // Y radius scale
+    const GRADIENT_POWER = 1.0; // Gradient power curve
+    const GRADIENT_EDGE_EASE = 0.25; // Edge easing
+    const GRADIENT_SCATTER_INTENSITY = 0.1; // Scatter effect intensity
 
-  // Animation
-  let animationTime = 0;
-  let gradientBuffer;
-  let gradientShader;
+    // Animation
+    let animationTime = 0;
+    let gradientBuffer;
+    let gradientShader;
 
-  const { observer } = createVisibilityObserver(p);
+    const { observer } = createVisibilityObserver(p);
 
-  // ============================================
-  // SHADER CODE
-  // ============================================
+    // ============================================
+    // SHADER CODE
+    // ============================================
 
-  const vertShader = `
+    const vertShader = `
     precision highp float;
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
@@ -1954,7 +1985,7 @@ const evolutionSketch = (p) => {
     }
   `;
 
-  const fragShader = `
+    const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
@@ -2021,181 +2052,203 @@ const evolutionSketch = (p) => {
     }
   `;
 
-  // ============================================
-  // LISSAJOUS FUNCTIONS
-  // ============================================
+    // ============================================
+    // LISSAJOUS FUNCTIONS
+    // ============================================
 
-  // Calculate a single point on the Lissajous curve
-  function calculateLissajousPoint(t, scaleX, scaleY) {
-    // Swap x and y to rotate 90 degrees - creates vertical "8" instead of horizontal "∞"
-    let x = Math.sin(LISSAJOUS_FREQ_RATIO * t + LISSAJOUS_PHASE_OFFSET) * scaleX;
-    let y = Math.sin(t) * scaleY;
-    return { x, y };
-  }
-
-  // Draw a single Lissajous infinity curve
-  function drawLissajousInfinity(centerX, centerY, baseSize, scaleY, alpha, drawFullCurve = false) {
-    p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
-    p.strokeWeight(STROKE_WEIGHT);
-    p.noFill();
-
-    // Determine which half of the curve to draw based on scale sign
-    let tStart, tEnd;
-    let absScaleY = Math.abs(scaleY);
-
-    if (drawFullCurve) {
-      // Draw complete "8" shape (for static outer curve)
-      tStart = 0;
-      tEnd = p.TWO_PI;
-    } else if (scaleY >= 0) {
-      // Positive scale: draw top half (teardrop shape)
-      tStart = 0;
-      tEnd = p.PI;
-    } else {
-      // Negative scale: draw bottom half (upside-down teardrop)
-      tStart = p.PI;
-      tEnd = p.TWO_PI;
+    // Calculate a single point on the Lissajous curve
+    function calculateLissajousPoint(t, scaleX, scaleY) {
+        // Swap x and y to rotate 90 degrees - creates vertical "8" instead of horizontal "∞"
+        let x = Math.sin(LISSAJOUS_FREQ_RATIO * t + LISSAJOUS_PHASE_OFFSET) * scaleX;
+        let y = Math.sin(t) * scaleY;
+        return { x, y };
     }
 
-    p.beginShape();
-    for (let i = 0; i <= LISSAJOUS_RESOLUTION; i++) {
-      let t = p.map(i, 0, LISSAJOUS_RESOLUTION, tStart, tEnd);
-      let point = calculateLissajousPoint(t, baseSize * LISSAJOUS_SCALE_X, baseSize * absScaleY);
-      p.vertex(centerX + point.x, centerY + point.y);
-    }
-    p.endShape();
-  }
+    // Draw a single Lissajous infinity curve
+    function drawLissajousInfinity(
+        centerX,
+        centerY,
+        baseSize,
+        scaleY,
+        alpha,
+        drawFullCurve = false
+    ) {
+        p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, alpha);
+        p.strokeWeight(STROKE_WEIGHT);
+        p.noFill();
 
-  // Draw static outer curve (background element for rolling wheel effect)
-  function drawStaticOuterCurve(centerX, centerY, baseSize) {
-    // Draw static "8" at maximum scale with very low opacity (background anchor)
-    let alpha = STROKE_ALPHA_MIN * 1.0;
-    drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, 1.0, alpha, true);
-  }
+        // Determine which half of the curve to draw based on scale sign
+        let tStart, tEnd;
+        let absScaleY = Math.abs(scaleY);
 
-  // Draw a group of rotating Lissajous infinities
-  function drawLissajousGroup(centerX, centerY, instanceCount, baseSize, scaleMin, scaleMax, animSpeed) {
-    for (let i = 0; i < instanceCount; i++) {
-      // Evenly distribute instances across the scale range (0 to 1)
-      let scalePosition = i / (instanceCount - 1);
+        if (drawFullCurve) {
+            // Draw complete "8" shape (for static outer curve)
+            tStart = 0;
+            tEnd = p.TWO_PI;
+        } else if (scaleY >= 0) {
+            // Positive scale: draw top half (teardrop shape)
+            tStart = 0;
+            tEnd = p.PI;
+        } else {
+            // Negative scale: draw bottom half (upside-down teardrop)
+            tStart = p.PI;
+            tEnd = p.TWO_PI;
+        }
 
-      // Add animation rotation offset (all instances rotate together)
-      let animationOffset = (animationTime * animSpeed) % 1.0;
-      // scalePosition = Math.sin(scalePosition * Math.PI * 0.5);
-      scalePosition = (scalePosition + animationOffset) % 1.0;
-
-      // Map to scale range (creates even spacing for 3D illusion)
-      let scaleY = p.lerp(scaleMin, scaleMax, scalePosition);
-
-      // ONLY DRAW INSTANCES IN THE FRONT (above visibility threshold)
-      // This creates the rolling wheel effect - back half is hidden
-      let normalizedScale = (scaleY - scaleMin) / (scaleMax - scaleMin);  // 0 to 1
-      if (normalizedScale < VISIBILITY_THRESHOLD) {
-        continue;  // Skip this instance - it's in the "back"
-      }
-
-      // Calculate opacity based on scale (larger = closer = more opaque)
-      let opacityFalloff = scaleY * scaleY;
-      let alpha = p.lerp(STROKE_ALPHA_MAX, STROKE_ALPHA_MIN, opacityFalloff);
-      // if (scaleY < 0) {
-        // alpha = p.map(scaleY, scaleMin, scaleMax, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
-      // }
-
-      // Draw this instance
-      drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, -scaleY, alpha);
-    }
-  }
-
-  // ============================================
-  // GRADIENT FUNCTIONS
-  // ============================================
-
-  function createGradient() {
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientBuffer.pixelDensity(1);
-    gradientShader = gradientBuffer.createShader(vertShader, fragShader);
-  }
-
-  function drawGradient() {
-    gradientBuffer.shader(gradientShader);
-    gradientShader.setUniform('uResolution', [p.width, p.height]);
-    gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    gradientShader.setUniform('uCenterColor', [
-      GRADIENT_CENTER_COLOR.r / 255.0,
-      GRADIENT_CENTER_COLOR.g / 255.0,
-      GRADIENT_CENTER_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uEdgeColor', [
-      GRADIENT_EDGE_COLOR.r / 255.0,
-      GRADIENT_EDGE_COLOR.g / 255.0,
-      GRADIENT_EDGE_COLOR.b / 255.0
-    ]);
-    gradientShader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    gradientShader.setUniform('uPower', GRADIENT_POWER);
-    gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
-
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
-    gradientBuffer.rect(0, 0, p.width, p.height);
-
-    p.image(gradientBuffer, 0, 0);
-  }
-
-  // ============================================
-  // P5.JS LIFECYCLE
-  // ============================================
-
-  p.setup = () => {
-    const container = document.getElementById('evolution-canvas');
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent('evolution-canvas');
-
-    createGradient();
-    observer.observe(container);
-  };
-
-  p.draw = () => {
-    // Draw gradient background
-    drawGradient();
-
-    // Increment animation time
-    animationTime += 1;
-
-    // Draw static outer curves FIRST (background)
-    if (SHOW_STATIC_OUTER_CURVE) {
-      drawStaticOuterCurve(LEFT_CENTER_X, LEFT_CENTER_Y, LEFT_BASE_SIZE);
-      drawStaticOuterCurve(RIGHT_CENTER_X, RIGHT_CENTER_Y, RIGHT_BASE_SIZE);
+        p.beginShape();
+        for (let i = 0; i <= LISSAJOUS_RESOLUTION; i++) {
+            let t = p.map(i, 0, LISSAJOUS_RESOLUTION, tStart, tEnd);
+            let point = calculateLissajousPoint(
+                t,
+                baseSize * LISSAJOUS_SCALE_X,
+                baseSize * absScaleY
+            );
+            p.vertex(centerX + point.x, centerY + point.y);
+        }
+        p.endShape();
     }
 
-    // Draw animated left group (foreground)
-    drawLissajousGroup(
-      LEFT_CENTER_X,
-      LEFT_CENTER_Y,
-      LEFT_INSTANCE_COUNT,
-      LEFT_BASE_SIZE,
-      LEFT_SCALE_Y_MIN,
-      LEFT_SCALE_Y_MAX,
-      LEFT_ANIMATION_SPEED
-    );
+    // Draw static outer curve (background element for rolling wheel effect)
+    function drawStaticOuterCurve(centerX, centerY, baseSize) {
+        // Draw static "8" at maximum scale with very low opacity (background anchor)
+        let alpha = STROKE_ALPHA_MIN * 1.0;
+        drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, 1.0, alpha, true);
+    }
 
-    // Draw animated right group (foreground)
-    drawLissajousGroup(
-      RIGHT_CENTER_X,
-      RIGHT_CENTER_Y,
-      RIGHT_INSTANCE_COUNT,
-      RIGHT_BASE_SIZE,
-      RIGHT_SCALE_Y_MIN,
-      RIGHT_SCALE_Y_MAX,
-      RIGHT_ANIMATION_SPEED
-    );
-  };
+    // Draw a group of rotating Lissajous infinities
+    function drawLissajousGroup(
+        centerX,
+        centerY,
+        instanceCount,
+        baseSize,
+        scaleMin,
+        scaleMax,
+        animSpeed
+    ) {
+        for (let i = 0; i < instanceCount; i++) {
+            // Evenly distribute instances across the scale range (0 to 1)
+            let scalePosition = i / (instanceCount - 1);
 
-  p.windowResized = () => {
-    const container = document.getElementById('evolution-canvas');
-    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createGradient();
-  };
+            // Add animation rotation offset (all instances rotate together)
+            let animationOffset = (animationTime * animSpeed) % 1.0;
+            // scalePosition = Math.sin(scalePosition * Math.PI * 0.5);
+            scalePosition = (scalePosition + animationOffset) % 1.0;
+
+            // Map to scale range (creates even spacing for 3D illusion)
+            let scaleY = p.lerp(scaleMin, scaleMax, scalePosition);
+
+            // ONLY DRAW INSTANCES IN THE FRONT (above visibility threshold)
+            // This creates the rolling wheel effect - back half is hidden
+            let normalizedScale = (scaleY - scaleMin) / (scaleMax - scaleMin); // 0 to 1
+            if (normalizedScale < VISIBILITY_THRESHOLD) {
+                continue; // Skip this instance - it's in the "back"
+            }
+
+            // Calculate opacity based on scale (larger = closer = more opaque)
+            let opacityFalloff = scaleY * scaleY;
+            let alpha = p.lerp(STROKE_ALPHA_MAX, STROKE_ALPHA_MIN, opacityFalloff);
+            // if (scaleY < 0) {
+            // alpha = p.map(scaleY, scaleMin, scaleMax, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
+            // }
+
+            // Draw this instance
+            drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, -scaleY, alpha);
+        }
+    }
+
+    // ============================================
+    // GRADIENT FUNCTIONS
+    // ============================================
+
+    function createGradient() {
+        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+        gradientBuffer.pixelDensity(1);
+        gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+    }
+
+    function drawGradient() {
+        gradientBuffer.shader(gradientShader);
+        gradientShader.setUniform('uResolution', [p.width, p.height]);
+        gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+        gradientShader.setUniform('uCenterColor', [
+            GRADIENT_CENTER_COLOR.r / 255.0,
+            GRADIENT_CENTER_COLOR.g / 255.0,
+            GRADIENT_CENTER_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uEdgeColor', [
+            GRADIENT_EDGE_COLOR.r / 255.0,
+            GRADIENT_EDGE_COLOR.g / 255.0,
+            GRADIENT_EDGE_COLOR.b / 255.0,
+        ]);
+        gradientShader.setUniform('uRadiusScale', [
+            GRADIENT_RADIUS_SCALE_X,
+            GRADIENT_RADIUS_SCALE_Y,
+        ]);
+        gradientShader.setUniform('uPower', GRADIENT_POWER);
+        gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+        gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+
+        gradientBuffer.rectMode(p.CENTER);
+        gradientBuffer.noStroke();
+        gradientBuffer.rect(0, 0, p.width, p.height);
+
+        p.image(gradientBuffer, 0, 0);
+    }
+
+    // ============================================
+    // P5.JS LIFECYCLE
+    // ============================================
+
+    p.setup = () => {
+        const container = document.getElementById('evolution-canvas');
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent('evolution-canvas');
+
+        createGradient();
+        observer.observe(container);
+    };
+
+    p.draw = () => {
+        // Draw gradient background
+        drawGradient();
+
+        // Increment animation time
+        animationTime += 1;
+
+        // Draw static outer curves FIRST (background)
+        if (SHOW_STATIC_OUTER_CURVE) {
+            drawStaticOuterCurve(LEFT_CENTER_X, LEFT_CENTER_Y, LEFT_BASE_SIZE);
+            drawStaticOuterCurve(RIGHT_CENTER_X, RIGHT_CENTER_Y, RIGHT_BASE_SIZE);
+        }
+
+        // Draw animated left group (foreground)
+        drawLissajousGroup(
+            LEFT_CENTER_X,
+            LEFT_CENTER_Y,
+            LEFT_INSTANCE_COUNT,
+            LEFT_BASE_SIZE,
+            LEFT_SCALE_Y_MIN,
+            LEFT_SCALE_Y_MAX,
+            LEFT_ANIMATION_SPEED
+        );
+
+        // Draw animated right group (foreground)
+        drawLissajousGroup(
+            RIGHT_CENTER_X,
+            RIGHT_CENTER_Y,
+            RIGHT_INSTANCE_COUNT,
+            RIGHT_BASE_SIZE,
+            RIGHT_SCALE_Y_MIN,
+            RIGHT_SCALE_Y_MAX,
+            RIGHT_ANIMATION_SPEED
+        );
+    };
+
+    p.windowResized = () => {
+        const container = document.getElementById('evolution-canvas');
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+        createGradient();
+    };
 };
 
 // ============================================
@@ -2205,84 +2258,84 @@ const evolutionSketch = (p) => {
 // Colors: Amber (#D97706) + Violet (#8B5CF6)
 
 const impactSketch = (p) => {
-  // ============================================
-  // CUSTOMIZATION VARIABLES
-  // ============================================
+    // ============================================
+    // CUSTOMIZATION VARIABLES
+    // ============================================
 
-  // Radial Gradient Configuration (Offset Center)
-  const GRADIENT_CENTER_COLOR = { r: 255, g: 200, b: 80 };     // Amber
-  const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 };     // White
-  const GRADIENT_CENTER_X = 0.5;                              // X position (0-1)
-  const GRADIENT_CENTER_Y = 0.85;                               // Y position (0-1)
-  const GRADIENT_RADIUS_SCALE_X = 0.3;                        // X radius scale
-  const GRADIENT_RADIUS_SCALE_Y = 0.5;                        // Y radius scale
-  const GRADIENT_POWER = 1;                                  // Falloff power
-  const GRADIENT_EDGE_EASE = 1;                              // Edge ease amount (0-1)
-  const GRADIENT_SCATTER_INTENSITY = 0.1;                      // Scatter effect intensity
+    // Radial Gradient Configuration (Offset Center)
+    const GRADIENT_CENTER_COLOR = { r: 255, g: 200, b: 80 }; // Amber
+    const GRADIENT_EDGE_COLOR = { r: 255, g: 255, b: 255 }; // White
+    const GRADIENT_CENTER_X = 0.5; // X position (0-1)
+    const GRADIENT_CENTER_Y = 0.85; // Y position (0-1)
+    const GRADIENT_RADIUS_SCALE_X = 0.3; // X radius scale
+    const GRADIENT_RADIUS_SCALE_Y = 0.5; // Y radius scale
+    const GRADIENT_POWER = 1; // Falloff power
+    const GRADIENT_EDGE_EASE = 1; // Edge ease amount (0-1)
+    const GRADIENT_SCATTER_INTENSITY = 0.1; // Scatter effect intensity
 
-  // ============================================
-  // RIPPLE GROUP 1 CONFIGURATION
-  // ============================================
-  const GROUP1_CONFIG = {
-    // Origin Position
-    originX: 0.5,                                             // X position of ripple center (0-1)
-    originY: 0.15,                                             // Y position of ripple center (0-1)
+    // ============================================
+    // RIPPLE GROUP 1 CONFIGURATION
+    // ============================================
+    const GROUP1_CONFIG = {
+        // Origin Position
+        originX: 0.5, // X position of ripple center (0-1)
+        originY: 0.15, // Y position of ripple center (0-1)
 
-    // Animation Settings
-    spawnInterval: 2000,                                        // Milliseconds between new ripples
-    expansionSpeed: 0.5,                                       // Pixels per frame expansion rate
-    maxRadius: 300,                                            // Maximum radius before removal (pixels)
-    startRadius: 8,                                            // Starting radius for new ripples (pixels)
+        // Animation Settings
+        spawnInterval: 2000, // Milliseconds between new ripples
+        expansionSpeed: 0.5, // Pixels per frame expansion rate
+        maxRadius: 300, // Maximum radius before removal (pixels)
+        startRadius: 8, // Starting radius for new ripples (pixels)
 
-    // Appearance Settings
-    strokeWeight: 1.5,                                         // Line thickness
-    strokeColor: { r: 0, g: 0, b: 0 },                        // Stroke color
-    baseAlpha: 200,                                            // Starting opacity
-    fadeStart: 0,                                            // Radius at which fading begins (pixels)
-    fadePower: 1.5,                                            // Controls fade rate (higher = faster fade)
+        // Appearance Settings
+        strokeWeight: 1.5, // Line thickness
+        strokeColor: { r: 0, g: 0, b: 0 }, // Stroke color
+        baseAlpha: 200, // Starting opacity
+        fadeStart: 0, // Radius at which fading begins (pixels)
+        fadePower: 1.5, // Controls fade rate (higher = faster fade)
 
-    // Secondary Ring Settings
-    secondaryEnabled: true,                                    // Enable/disable secondary ring
-    secondaryOffset: -8,                                      // Offset from primary ring (pixels, negative = smaller)
-  };
+        // Secondary Ring Settings
+        secondaryEnabled: true, // Enable/disable secondary ring
+        secondaryOffset: -8, // Offset from primary ring (pixels, negative = smaller)
+    };
 
-  // ============================================
-  // RIPPLE GROUP 2 CONFIGURATION
-  // ============================================
-  const GROUP2_CONFIG = {
-    // Origin Position
-    originX: 0.8,                                             // X position of ripple center (0-1)
-    originY: 0.2,                                             // Y position of ripple center (0-1)
+    // ============================================
+    // RIPPLE GROUP 2 CONFIGURATION
+    // ============================================
+    const GROUP2_CONFIG = {
+        // Origin Position
+        originX: 0.8, // X position of ripple center (0-1)
+        originY: 0.2, // Y position of ripple center (0-1)
 
-    // Animation Settings
-    spawnInterval: 2000,                                       // Milliseconds between new ripples
-    expansionSpeed: 1,                                       // Pixels per frame expansion rate
-    maxRadius: 250,                                            // Maximum radius before removal (pixels)
-    startRadius: 10,                                            // Starting radius for new ripples (pixels)
+        // Animation Settings
+        spawnInterval: 2000, // Milliseconds between new ripples
+        expansionSpeed: 1, // Pixels per frame expansion rate
+        maxRadius: 250, // Maximum radius before removal (pixels)
+        startRadius: 10, // Starting radius for new ripples (pixels)
 
-    // Appearance Settings
-    strokeWeight: 1.5,                                         // Line thickness
-    strokeColor: { r: 0, g: 0, b: 0 },                        // Stroke color
-    baseAlpha: 200,                                             // Starting opacity
-    fadeStart: 0,                                            // Radius at which fading begins (pixels)
-    fadePower: 1,                                            // Controls fade rate (higher = faster fade)
+        // Appearance Settings
+        strokeWeight: 1.5, // Line thickness
+        strokeColor: { r: 0, g: 0, b: 0 }, // Stroke color
+        baseAlpha: 200, // Starting opacity
+        fadeStart: 0, // Radius at which fading begins (pixels)
+        fadePower: 1, // Controls fade rate (higher = faster fade)
 
-    // Secondary Ring Settings
-    secondaryEnabled: true,                                    // Enable/disable secondary ring
-    secondaryOffset: -5,                                      // Offset from primary ring (pixels, negative = smaller)
-  };
+        // Secondary Ring Settings
+        secondaryEnabled: true, // Enable/disable secondary ring
+        secondaryOffset: -5, // Offset from primary ring (pixels, negative = smaller)
+    };
 
-  // Animation
-  let animationTime = 0;
-  let gradientBuffer;
-  let rippleGroup1;
-  let rippleGroup2;
+    // Animation
+    let animationTime = 0;
+    let gradientBuffer;
+    let rippleGroup1;
+    let rippleGroup2;
 
-  // ============================================
-  // SHADER CODE
-  // ============================================
+    // ============================================
+    // SHADER CODE
+    // ============================================
 
-  const vertShader = `
+    const vertShader = `
     precision highp float;
     attribute vec3 aPosition;
     attribute vec2 aTexCoord;
@@ -2296,7 +2349,7 @@ const impactSketch = (p) => {
     }
   `;
 
-  const fragShader = `
+    const fragShader = `
     precision highp float;
     varying vec2 vTexCoord;
 
@@ -2363,190 +2416,199 @@ const impactSketch = (p) => {
     }
   `;
 
-  // ============================================
-  // RIPPLE CLASS
-  // ============================================
+    // ============================================
+    // RIPPLE CLASS
+    // ============================================
 
-  class Ripple {
-    constructor(originX, originY, config, secondaryOffset = 0) {
-      this.originX = originX;
-      this.originY = originY;
-      this.config = config;
-      this.secondaryOffset = secondaryOffset;
-      this.radius = config.startRadius + secondaryOffset;
-      this.isAlive = true;
-    }
-
-    update() {
-      // Expand the ripple
-      this.radius += this.config.expansionSpeed;
-
-      // Remove ripple if it exceeds max radius
-      if (this.radius > this.config.maxRadius) {
-        this.isAlive = false;
-      }
-    }
-
-    display() {
-      // Don't draw if radius is negative
-      if (this.radius < 0) {
-        return;
-      }
-
-      // Calculate opacity based on distance from origin
-      let alpha = this.config.baseAlpha;
-      
-      // Apply fade effect as ripple expands beyond fade threshold
-      if (this.radius > this.config.fadeStart) {
-        let fadeProgress = (this.radius - this.config.fadeStart) / (this.config.maxRadius - this.config.fadeStart);
-        fadeProgress = p.constrain(fadeProgress, 0, 1);
-        
-        // Apply power curve for fade
-        fadeProgress = p.pow(fadeProgress, this.config.fadePower);
-        
-        alpha = this.config.baseAlpha * (1 - fadeProgress);
-      }
-      let weight = p.map(alpha, 0, this.config.baseAlpha, 0, this.config.strokeWeight);
-
-      // Only draw if opacity is visible
-      if (alpha > 0) {
-        p.stroke(this.config.strokeColor.r, this.config.strokeColor.g, this.config.strokeColor.b, alpha);
-        p.strokeWeight(weight);
-        p.noFill();
-        p.circle(this.originX, this.originY, this.radius * 2);
-      }
-    }
-  }
-
-  // ============================================
-  // RIPPLE GROUP CLASS
-  // ============================================
-
-  class RippleGroup {
-    constructor(config) {
-      this.config = config;
-      this.ripples = [];
-      this.lastSpawnTime = 0;
-    }
-
-    update(currentTime, p) {
-      // Calculate origin point based on canvas size
-      let originX = p.width * this.config.originX;
-      let originY = p.height * this.config.originY;
-
-      // Spawn new ripples at regular intervals
-      if (currentTime - this.lastSpawnTime >= this.config.spawnInterval) {
-        // Create primary ripple
-        this.ripples.push(new Ripple(originX, originY, this.config, 0));
-
-        // Create secondary ripple if enabled
-        if (this.config.secondaryEnabled) {
-          // Only spawn if the resulting radius would be >= 0
-          if (this.config.startRadius + this.config.secondaryOffset >= 0) {
-            this.ripples.push(new Ripple(originX, originY, this.config, this.config.secondaryOffset));
-          }
+    class Ripple {
+        constructor(originX, originY, config, secondaryOffset = 0) {
+            this.originX = originX;
+            this.originY = originY;
+            this.config = config;
+            this.secondaryOffset = secondaryOffset;
+            this.radius = config.startRadius + secondaryOffset;
+            this.isAlive = true;
         }
 
-        this.lastSpawnTime = currentTime;
-      }
+        update() {
+            // Expand the ripple
+            this.radius += this.config.expansionSpeed;
 
-      // Update all ripples and remove dead ones
-      for (let i = this.ripples.length - 1; i >= 0; i--) {
-        this.ripples[i].update();
-
-        // Remove dead ripples
-        if (!this.ripples[i].isAlive) {
-          this.ripples.splice(i, 1);
+            // Remove ripple if it exceeds max radius
+            if (this.radius > this.config.maxRadius) {
+                this.isAlive = false;
+            }
         }
-      }
+
+        display() {
+            // Don't draw if radius is negative
+            if (this.radius < 0) {
+                return;
+            }
+
+            // Calculate opacity based on distance from origin
+            let alpha = this.config.baseAlpha;
+
+            // Apply fade effect as ripple expands beyond fade threshold
+            if (this.radius > this.config.fadeStart) {
+                let fadeProgress =
+                    (this.radius - this.config.fadeStart) /
+                    (this.config.maxRadius - this.config.fadeStart);
+                fadeProgress = p.constrain(fadeProgress, 0, 1);
+
+                // Apply power curve for fade
+                fadeProgress = p.pow(fadeProgress, this.config.fadePower);
+
+                alpha = this.config.baseAlpha * (1 - fadeProgress);
+            }
+            let weight = p.map(alpha, 0, this.config.baseAlpha, 0, this.config.strokeWeight);
+
+            // Only draw if opacity is visible
+            if (alpha > 0) {
+                p.stroke(
+                    this.config.strokeColor.r,
+                    this.config.strokeColor.g,
+                    this.config.strokeColor.b,
+                    alpha
+                );
+                p.strokeWeight(weight);
+                p.noFill();
+                p.circle(this.originX, this.originY, this.radius * 2);
+            }
+        }
     }
 
-    display() {
-      // Draw all ripples
-      for (let ripple of this.ripples) {
-        ripple.display();
-      }
+    // ============================================
+    // RIPPLE GROUP CLASS
+    // ============================================
+
+    class RippleGroup {
+        constructor(config) {
+            this.config = config;
+            this.ripples = [];
+            this.lastSpawnTime = 0;
+        }
+
+        update(currentTime, p) {
+            // Calculate origin point based on canvas size
+            let originX = p.width * this.config.originX;
+            let originY = p.height * this.config.originY;
+
+            // Spawn new ripples at regular intervals
+            if (currentTime - this.lastSpawnTime >= this.config.spawnInterval) {
+                // Create primary ripple
+                this.ripples.push(new Ripple(originX, originY, this.config, 0));
+
+                // Create secondary ripple if enabled
+                if (this.config.secondaryEnabled) {
+                    // Only spawn if the resulting radius would be >= 0
+                    if (this.config.startRadius + this.config.secondaryOffset >= 0) {
+                        this.ripples.push(
+                            new Ripple(originX, originY, this.config, this.config.secondaryOffset)
+                        );
+                    }
+                }
+
+                this.lastSpawnTime = currentTime;
+            }
+
+            // Update all ripples and remove dead ones
+            for (let i = this.ripples.length - 1; i >= 0; i--) {
+                this.ripples[i].update();
+
+                // Remove dead ripples
+                if (!this.ripples[i].isAlive) {
+                    this.ripples.splice(i, 1);
+                }
+            }
+        }
+
+        display() {
+            // Draw all ripples
+            for (let ripple of this.ripples) {
+                ripple.display();
+            }
+        }
     }
-  }
 
-  // ============================================
-  // GRADIENT FUNCTIONS
-  // ============================================
+    // ============================================
+    // GRADIENT FUNCTIONS
+    // ============================================
 
-  function createGradient() {
-    gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
-    gradientBuffer.pixelDensity(1);
+    function createGradient() {
+        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+        gradientBuffer.pixelDensity(1);
 
-    const shader = gradientBuffer.createShader(vertShader, fragShader);
-    gradientBuffer.shader(shader);
+        const shader = gradientBuffer.createShader(vertShader, fragShader);
+        gradientBuffer.shader(shader);
 
-    shader.setUniform('uResolution', [p.width, p.height]);
-    shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-    shader.setUniform('uCenterColor', [
-      GRADIENT_CENTER_COLOR.r / 255.0,
-      GRADIENT_CENTER_COLOR.g / 255.0,
-      GRADIENT_CENTER_COLOR.b / 255.0
-    ]);
-    shader.setUniform('uEdgeColor', [
-      GRADIENT_EDGE_COLOR.r / 255.0,
-      GRADIENT_EDGE_COLOR.g / 255.0,
-      GRADIENT_EDGE_COLOR.b / 255.0
-    ]);
-    shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
-    shader.setUniform('uPower', GRADIENT_POWER);
-    shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-    shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+        shader.setUniform('uResolution', [p.width, p.height]);
+        shader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+        shader.setUniform('uCenterColor', [
+            GRADIENT_CENTER_COLOR.r / 255.0,
+            GRADIENT_CENTER_COLOR.g / 255.0,
+            GRADIENT_CENTER_COLOR.b / 255.0,
+        ]);
+        shader.setUniform('uEdgeColor', [
+            GRADIENT_EDGE_COLOR.r / 255.0,
+            GRADIENT_EDGE_COLOR.g / 255.0,
+            GRADIENT_EDGE_COLOR.b / 255.0,
+        ]);
+        shader.setUniform('uRadiusScale', [GRADIENT_RADIUS_SCALE_X, GRADIENT_RADIUS_SCALE_Y]);
+        shader.setUniform('uPower', GRADIENT_POWER);
+        shader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+        shader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
-    gradientBuffer.rectMode(p.CENTER);
-    gradientBuffer.noStroke();
-    gradientBuffer.rect(0, 0, p.width, p.height);
-  }
+        gradientBuffer.rectMode(p.CENTER);
+        gradientBuffer.noStroke();
+        gradientBuffer.rect(0, 0, p.width, p.height);
+    }
 
-  function drawGradient() {
-    p.image(gradientBuffer, 0, 0);
-  }
+    function drawGradient() {
+        p.image(gradientBuffer, 0, 0);
+    }
 
-  // ============================================
-  // P5.JS LIFECYCLE
-  // ============================================
+    // ============================================
+    // P5.JS LIFECYCLE
+    // ============================================
 
-  const { observer } = createVisibilityObserver(p);
+    const { observer } = createVisibilityObserver(p);
 
-  p.setup = () => {
-    const container = document.getElementById('impact-canvas');
-    const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-    canvas.parent('impact-canvas');
+    p.setup = () => {
+        const container = document.getElementById('impact-canvas');
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent('impact-canvas');
 
-    createGradient();
+        createGradient();
 
-    // Initialize ripple groups
-    rippleGroup1 = new RippleGroup(GROUP1_CONFIG);
-    rippleGroup2 = new RippleGroup(GROUP2_CONFIG);
+        // Initialize ripple groups
+        rippleGroup1 = new RippleGroup(GROUP1_CONFIG);
+        rippleGroup2 = new RippleGroup(GROUP2_CONFIG);
 
-    observer.observe(container);
-  };
+        observer.observe(container);
+    };
 
-  p.draw = () => {
-    // Draw gradient background
-    drawGradient();
+    p.draw = () => {
+        // Draw gradient background
+        drawGradient();
 
-    let currentTime = p.millis();
+        let currentTime = p.millis();
 
-    // Update and draw both ripple groups
-    rippleGroup1.update(currentTime, p);
-    rippleGroup1.display();
+        // Update and draw both ripple groups
+        rippleGroup1.update(currentTime, p);
+        rippleGroup1.display();
 
-    // rippleGroup2.update(currentTime, p);
-    // rippleGroup2.display();
+        // rippleGroup2.update(currentTime, p);
+        // rippleGroup2.display();
 
-    animationTime += 1;
-  };
+        animationTime += 1;
+    };
 
-  p.windowResized = () => {
-    const container = document.getElementById('impact-canvas');
-    p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    createGradient();
-  };
+    p.windowResized = () => {
+        const container = document.getElementById('impact-canvas');
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+        createGradient();
+    };
 };
 
 // ============================================

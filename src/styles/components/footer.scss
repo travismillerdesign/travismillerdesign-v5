@@ -1,15 +1,15 @@
 //  FOOTER SECTION
 // ============================================================================
 
-@use "../settings" as *;
+@use '../settings' as *;
 
 .footerLink {
-  @extend h3;
-  display: block;
-  padding-bottom: 0.2em;
-  text-transform: uppercase;
+    @extend h3;
+    display: block;
+    padding-bottom: 0.2em;
+    text-transform: uppercase;
 }
 
 footer hr {
-  margin-bottom: $unit-md;
+    margin-bottom: $unit-md;
 }

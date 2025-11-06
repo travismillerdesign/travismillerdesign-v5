@@ -1,13 +1,13 @@
 // Media asset formatting
 // ============================================================================
 
-@use "../settings" as *;
+@use '../settings' as *;
 
 // Full bleed background image.
 .fillImage {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  @include transition(transform);
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    @include transition(transform);
 }

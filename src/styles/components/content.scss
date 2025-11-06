@@ -1,23 +1,21 @@
 // Shared content elements used across multiple pages
 // ============================================================================
-@use "../settings" as *;
-
+@use '../settings' as *;
 
 .textBlock {
-  @extend %margin-inner;
-  max-width: 40%;
-  margin: $margin-lg 0;
+    @extend %margin-inner;
+    max-width: 40%;
+    margin: $margin-lg 0;
 }
 
-
 .columnContainer {
-  clear: both;
-  .col3 {
-    width: 33%;
-    float: left;
-    padding-right: 1rem;
-    &.right {
-      margin-left: 33%;
+    clear: both;
+    .col3 {
+        width: 33%;
+        float: left;
+        padding-right: 1rem;
+        &.right {
+            margin-left: 33%;
+        }
     }
-  }
 }

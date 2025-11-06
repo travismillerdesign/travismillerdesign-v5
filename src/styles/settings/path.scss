@@ -9,21 +9,17 @@
 //
 //*******************************************
 
-
-
 //*******************************************
 //
 //	ROOT
 //
 //*******************************************
-$path-root: "../../" !default;
-
-
+$path-root: '../../' !default;
 
 //*******************************************
 //
 //	ASSETS
 //
 //*******************************************
-$path-fonts: 	$path-root + "assets/fonts/";
-$path-images: 	$path-root + "assets/images/";
+$path-fonts: $path-root + 'assets/fonts/';
+$path-images: $path-root + 'assets/images/';

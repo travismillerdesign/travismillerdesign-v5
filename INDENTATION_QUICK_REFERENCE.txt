@@ -1,0 +1,199 @@
+================================================================================
+INDENTATION QUICK REFERENCE
+travismillerdesign-v5 Project
+================================================================================
+
+CURRENT STATE
+================================================================================
+Total Files Analyzed: 38
+- Pure 2-space: 5 (13%)
+- Pure 4-space: 5 (13%)
+- Pure tabs: 1 (3%)
+- Mixed: 20 (53%)
+- No pattern: 7 (18%)
+
+Files Needing Attention: 21 out of 38 (55%)
+Consistency Score: ~40%
+
+================================================================================
+FILES GROUPED BY INDENTATION PATTERN
+================================================================================
+
+USING TABS (1 file)
+├── src/styles/utilities/centering.scss
+
+USING 2-SPACE (5 files) ✓ MATCHES STANDARD
+├── src/404.html
+├── src/styles/components/footer.scss
+├── src/styles/components/media-assets.scss
+├── src/styles/components/navigation.scss
+└── src/styles/settings/motion.scss
+
+USING 4-SPACE (5 files)
+├── optimize-images.js
+├── src/_includes/base.html
+├── src/_includes/nav.html
+├── src/styles/components/worklist.scss
+└── src/styles/settings/color.scss
+
+MIXED INDENTATION (20 files) - HIGHEST PRIORITY FOR FIXES
+├── .claude/settings.local.json
+├── .eleventy.js [MOSTLY 4-SPACE]
+├── package-lock.json [MOSTLY 4-SPACE]
+├── package.json
+├── src/_includes/footer.html
+├── src/_includes/section-explorations.html
+├── src/about.html
+├── src/experiments.html
+├── src/index.html
+├── src/scripts/case-study-animations.js [MOSTLY 4-SPACE - 707 LINES]
+├── src/scripts/case-study-navigation.js
+├── src/styles/components/case-study.scss [MOSTLY 2-SPACE]
+├── src/styles/components/content.scss
+├── src/styles/components/header.scss
+├── src/styles/core/tags.scss [USES TABS]
+├── src/styles/project.css [USES TABS]
+├── src/styles/settings/fonts.scss [USES TABS]
+├── src/styles/settings/layout.scss [USES TABS]
+├── src/work.html
+└── src/work/design-systems.html
+
+NO CLEAR PATTERN (7 files - Low priority)
+├── README.md
+├── src/styles/components/_index.scss
+├── src/styles/project.scss
+├── src/styles/settings/_index.scss
+├── src/styles/settings/path.scss
+├── src/styles/settings/zindex.scss
+└── src/styles/utilities/_index.scss
+
+================================================================================
+RECOMMENDED STANDARD: 2-SPACE INDENTATION
+================================================================================
+
+Reasons:
+1. Already used in 5 files consistently
+2. Most common in modern web projects
+3. Better readability on smaller screens
+4. Complements your HTML/template structure
+
+================================================================================
+QUICK FIX: 3 STEPS
+================================================================================
+
+1. Create .editorconfig:
+   root = true
+   [*]
+   indent_style = space
+   indent_size = 2
+   end_of_line = lf
+
+2. Create .prettierrc:
+   {
+     "useTabs": false,
+     "tabWidth": 2
+   }
+
+3. Run Prettier:
+   npm install -D prettier
+   npx prettier --write "src/**/*" ".eleventy.js" "optimize-images.js"
+
+================================================================================
+PRIORITY FIX ORDER
+================================================================================
+
+PRIORITY 1 (Fix first - Active development files):
+1. src/scripts/case-study-animations.js (707 indented lines, mostly 4-space)
+2. src/scripts/case-study-navigation.js (60 indented lines, mostly 4-space)
+3. .eleventy.js (17 indented lines, 4-space)
+4. src/styles/core/tags.scss (uses tabs)
+5. src/styles/project.css (uses tabs)
+6. src/styles/settings/fonts.scss (uses tabs)
+7. src/styles/settings/layout.scss (uses tabs)
+
+PRIORITY 2 (Fix second - Page/component files):
+1. src/work/design-systems.html (67 indented lines)
+2. src/about.html (44 indented lines)
+3. src/index.html (30 indented lines)
+4. src/work.html (20 indented lines)
+5. src/styles/components/case-study.scss (33 indented lines)
+
+PRIORITY 3 (Fix last - Configuration files):
+1. package.json
+2. package-lock.json
+3. .claude/settings.local.json
+
+================================================================================
+KEY ISSUES
+================================================================================
+
+Issue #1: Mixed 2-space and 4-space (20 files)
+  Cause: Different editor settings or multiple developers
+  Fix: Run Prettier with 2-space config
+  Impact: High - Affects code readability and consistency
+
+Issue #2: Tabs in CSS/SCSS files (5 files)
+  Cause: Manual indentation or legacy code
+  Fix: Convert tabs to spaces in configuration
+  Impact: Medium - Can be ambiguous across editors
+
+Issue #3: Large JavaScript file with inconsistent indentation
+  Cause: Multiple edits with different settings
+  File: src/scripts/case-study-animations.js
+  Fix: Use Prettier to standardize
+  Impact: High - 1,235 total indented lines
+
+================================================================================
+FILE TYPE BREAKDOWN
+================================================================================
+
+HTML Files (10 total)
+├── Consistent (2-space): 1 file (404.html)
+├── Consistent (4-space): 2 files (base.html, nav.html)
+├── Mixed: 7 files (need fixing)
+Status: Needs standardization
+
+JavaScript Files (4 total)
+├── Consistent (4-space): 1 file (optimize-images.js)
+├── Mixed/Inconsistent: 3 files (all need fixing)
+Status: Needs standardization - all JS should be 2-space
+
+SCSS Files (13 total)
+├── Consistent (2-space): 3 files (footer, media-assets, navigation, motion)
+├── Consistent (4-space): 1 file (worklist.scss, color.scss)
+├── Using tabs: 4 files (core/tags, settings/fonts, settings/layout, utilities/centering)
+├── Mixed: 4 files
+└── No pattern: 5 files (index files)
+Status: Worst offender - needs major cleanup
+
+CSS Files (1 total)
+├── Uses tabs + mixed spaces: project.css
+Status: Should convert to 2-space
+
+JSON Files (3 total)
+├── All mixed indentation
+Status: Needs fixing
+
+================================================================================
+NOTES
+================================================================================
+
+1. package-lock.json will be regenerated when npm is run
+   - Don't manually edit this file
+   - Its inconsistency is less critical
+
+2. After running Prettier, commit with message:
+   "chore: standardize indentation to 2 spaces"
+
+3. Add to git pre-commit hooks to prevent future inconsistency
+
+4. Educate team on the standard (update CONTRIBUTING.md if exists)
+
+5. This analysis excludes:
+   - node_modules/ (external dependencies)
+   - dist/ (generated files)
+   - .git/ (version control)
+
+================================================================================
+For detailed information, see: INDENTATION_ANALYSIS.md
+================================================================================
