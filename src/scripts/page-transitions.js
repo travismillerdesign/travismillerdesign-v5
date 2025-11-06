@@ -89,14 +89,14 @@ class PageTransitions {
             // Fade out
             await this.fadeOut();
 
+            // Scroll to top BEFORE loading new content (old content is invisible)
+            window.scrollTo(0, 0);
+
             // Fetch new page content
             const html = await this.fetchPage(url);
 
-            // Update the page
+            // Update the page (new content loads at top position)
             this.updatePage(html, url);
-
-            // Scroll to top
-            window.scrollTo(0, 0);
 
             // Fade in
             await this.fadeIn();

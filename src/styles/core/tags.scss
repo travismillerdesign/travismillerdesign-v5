@@ -33,7 +33,7 @@
 
 html {
     font-size: $fontSize-root;
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
 }
 body {
     @extend %fontFamily-primary;
