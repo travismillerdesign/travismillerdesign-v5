@@ -10,8 +10,8 @@ class ScrollAnimations {
         this.animatedElements = [];
         this.observerOptions = {
             root: null, // viewport
-            rootMargin: '0px 0px -100px 0px', // Trigger slightly before element enters viewport
-            threshold: 0.1 // Trigger when 10% of element is visible
+            rootMargin: '0px', // Trigger as soon as element enters viewport
+            threshold: 0.01 // Trigger when just 1% of element is visible
         };
 
         this.init();
@@ -29,40 +29,28 @@ class ScrollAnimations {
     }
 
     findAnimatableElements() {
-        // Target specific inner content elements (not section/header backgrounds)
-        const selectors = [
+        // Target content inside sections/headers, not the backgrounds themselves
+        // This keeps section/header backgrounds static while content fades in
+        const selector = [
             '.workitem',                    // Work items
             '.featured-card',               // Featured cards
-            '.case-study-section > *',      // Content inside case study sections (not section itself)
-            '.section-label',               // Section labels
-            '.sectionLabel',                // Section labels (alternative)
-            '.content-block',               // Content blocks
-            'article > *',                  // Content inside articles (not article itself)
-            '.experiment-item',             // Experiment items
-            '.flex-container > *',          // Children of flex containers
-            'main > :not(section):not(header):not(footer)', // Direct main children, excluding containers
-            'section > *:not(section)',     // Direct children of sections (not nested sections)
-            'header > *:not(nav)',          // Content inside headers (not nav)
-            'p',                            // Paragraphs
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', // Headings
-            'img',                          // Images
-            '.button',                      // Buttons
-            'ul:not(footer ul)',            // Lists (not in footer)
-            'ol:not(footer ol)',            // Ordered lists (not in footer)
-            'li'                            // List items
-        ];
+            '.textBlock',                   // Text blocks
+            '.sectionLabel',                // Section labels
+            '.heroLeft',                    // Hero left section
+            '.heroRight',                   // Hero right section
+            '.worklist-small'               // Small worklist container
+        ].join(', ');
 
-        // Collect all matching elements
+        // Query all at once and filter, preserving DOM order
+        const allElements = document.querySelectorAll(selector);
         this.animatedElements = [];
-        selectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                // Avoid duplicates and skip footer elements
-                if (!this.animatedElements.includes(el) && !el.closest('footer')) {
-                    this.animatedElements.push(el);
-                    el.classList.add('scroll-animate');
-                }
-            });
+
+        allElements.forEach(el => {
+            // Skip footer elements and avoid duplicates
+            if (!el.closest('footer') && !this.animatedElements.includes(el)) {
+                this.animatedElements.push(el);
+                el.classList.add('scroll-animate');
+            }
         });
     }
 
@@ -70,10 +58,7 @@ class ScrollAnimations {
         this.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // Element is in viewport, trigger animation
                     entry.target.classList.add('scroll-animate-visible');
-
-                    // Stop observing after animation (only animate once)
                     this.observer.unobserve(entry.target);
                 }
             });

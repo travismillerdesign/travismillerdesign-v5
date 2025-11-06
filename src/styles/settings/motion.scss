@@ -1,8 +1,81 @@
 //*******************************************
 //	MOTION
 //*******************************************
+$transition-fadeIn: 500ms;
+$transition-stagger: 100ms;
+$ease-out: cubic-bezier(.08,.2,.5,1);
 
 // @include transition(opacity);
-@mixin transition($property, $duration: 100ms, $timing-function: ease-out, $delay: 0s) {
+@mixin transition($property, $duration: 100ms, $timing-function: $ease-out, $delay: 0s) {
     transition: $property $duration $timing-function $delay;
+}
+
+/**
+ * Scroll-Triggered Animations
+ *
+ * Elements fade in and move up as they enter the viewport
+ * Sibling elements stagger with delays
+ */
+
+// Default state: hidden and slightly below position
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity $transition-fadeIn $ease-out, transform $transition-fadeIn $ease-out;
+}
+
+// Visible state: fully opaque and in position
+.scroll-animate-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+// Stagger sibling elements
+@for $i from 1 through 10 {
+    .scroll-animate:nth-child(#{$i}) {
+        transition-delay: $transition-stagger * ($i - 1);
+    }
+}
+
+// Respect user motion preferences
+@media (prefers-reduced-motion: reduce) {
+    .scroll-animate {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+
+/**
+ * Page Transitions
+ *
+ * Smooth fade transition for main content and footer
+ * Only nav remains static
+ */
+
+main.page-transition-content,
+footer.page-transition-content {
+    transition: opacity $transition-fadeIn ease-in-out, transform $transition-fadeIn $ease-out;
+}
+
+// Fade out: content becomes transparent
+main.page-transitioning-out,
+footer.page-transitioning-out {
+    opacity: 0;
+}
+
+// Fade in: content fades in with subtle upward movement
+main.page-transitioning-in,
+footer.page-transitioning-in {
+    animation: fadeInContent $transition-fadeIn $ease-out;
+}
+
+@keyframes fadeInContent {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

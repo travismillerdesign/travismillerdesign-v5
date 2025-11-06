@@ -8,14 +8,14 @@
 
 class PageTransitions {
     constructor() {
-        this.transitionDuration = 300; // milliseconds
+        this.transitionDuration = 500; // milliseconds
         this.isTransitioning = false;
 
         this.init();
     }
 
     init() {
-        // Mark content that should transition (only main)
+        // Mark content that should transition (main and footer)
         this.prepareTransitionContent();
 
         // Intercept all internal navigation clicks
@@ -30,9 +30,13 @@ class PageTransitions {
 
     prepareTransitionContent() {
         const main = document.querySelector('main');
+        const footer = document.querySelector('footer');
 
         if (main) {
             main.classList.add('page-transition-content');
+        }
+        if (footer) {
+            footer.classList.add('page-transition-content');
         }
     }
 
@@ -189,9 +193,13 @@ class PageTransitions {
     fadeOut() {
         return new Promise((resolve) => {
             const main = document.querySelector('main');
+            const footer = document.querySelector('footer');
 
             if (main) {
                 main.classList.add('page-transitioning-out');
+            }
+            if (footer) {
+                footer.classList.add('page-transitioning-out');
             }
 
             setTimeout(resolve, this.transitionDuration);
@@ -201,6 +209,7 @@ class PageTransitions {
     fadeIn() {
         return new Promise((resolve) => {
             const main = document.querySelector('main');
+            const footer = document.querySelector('footer');
 
             // Small delay to ensure content is rendered
             setTimeout(() => {
@@ -211,6 +220,16 @@ class PageTransitions {
                     // Remove the transitioning-in class after animation completes
                     setTimeout(() => {
                         main.classList.remove('page-transitioning-in');
+                    }, this.transitionDuration);
+                }
+
+                if (footer) {
+                    footer.classList.remove('page-transitioning-out');
+                    footer.classList.add('page-transitioning-in');
+
+                    // Remove the transitioning-in class after animation completes
+                    setTimeout(() => {
+                        footer.classList.remove('page-transitioning-in');
                     }, this.transitionDuration);
                 }
 
