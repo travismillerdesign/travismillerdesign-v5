@@ -33,14 +33,12 @@
 
 html {
     font-size: $fontSize-root;
-    color: $glyph-black;
-    background: $fill-white;
     scroll-behavior: smooth;
 }
 body {
     @extend %fontFamily-primary;
     @extend %fontSize-body;
-	@extend .theme-light;
+    @extend .theme-dark;
     position: relative;
     min-width: $bp_min;
 }
