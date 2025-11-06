@@ -5,7 +5,6 @@
 
 header.hero {
     height: 90vh;
-    background: lavender;
     .flex-container {
         @extend %absolute-bottom;
         align-items: bottom;
@@ -17,6 +16,24 @@ header.hero {
         justify-content: flex-end;
         &:first-child { flex-basis: 40%; }
         &:last-child { flex-basis: 30%; }
+        p { margin-bottom: 0; }
+    }
+}
+
+
+header.hero-compact {
+    height: 50vh;
+    .flex-container {
+        @extend %absolute-bottom;
+        align-items: bottom;
+        justify-content: space-between;
+    }
+    .flexItem {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        &:first-child { flex-basis: 22%; }
+        &:last-child { flex-basis: 45%; }
         p { margin-bottom: 0; }
     }
 }

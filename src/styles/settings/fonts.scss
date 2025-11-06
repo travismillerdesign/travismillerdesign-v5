@@ -48,6 +48,7 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
     line-height: 1.2em;
 	font-display: swap;
     margin: 0;
+    letter-spacing: -0.005em;
 }
 
 %fontSize-body {
@@ -79,7 +80,8 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 //	- Custom styles can be added
 //
 //*******************************************
-p {
+p,
+h5 {
     @extend %fontFamily-primary;
     margin-bottom: 1em;
     font-size: 1.8rem;
@@ -88,12 +90,17 @@ p {
     }
 }
 
-p.large {
+p.large,
+h4 {
     @extend p;
     font-size: 2.6rem;
     @include breakpoint-up($bp-sm) {
         font-size: 2.8rem;
     }
+}
+h5,h4 {
+    margin-bottom: 0.4em;
+    margin-top: 1em;
 }
 
 h1 {
@@ -103,8 +110,20 @@ h1 {
     line-height: 1em;
     margin-top: 0.15em;
     @include breakpoint-up($bp-sm) {
-        font-size: 9.5rem;
+        font-size: 7.5rem;
     }
+    &.hero {
+        @include breakpoint-up($bp-sm) {
+            font-size: 9.5rem;
+        }
+    }
+}
+h2 {
+    @extend %fontFamily-primary;
+    font-size: 5.6rem;
+    letter-spacing: -0.03em;
+    line-height: 1em;
+    margin-top: 0.15em;
 }
 h3 {
     @extend %fontFamily-primary;
@@ -114,23 +133,8 @@ h3 {
     letter-spacing: -0.02em;
 }
 
+
 // Old stuff
-h2 {
-    @extend %fontFamily-primary;
-    font-size: 2.7rem;
-    line-height: 1.05em;
-}
-h4 {
-    @extend %fontFamily-primary;
-    font-size: 1.728rem;
-    line-height: 1.4em;
-}
-h5 {
-    @extend %fontFamily-primary;
-    font-size: 1rem;
-    text-transform: uppercase;
-    margin: 1em 0;
-}
 h6 {
     @extend %fontFamily-primary;
     font-size: 1.2rem;

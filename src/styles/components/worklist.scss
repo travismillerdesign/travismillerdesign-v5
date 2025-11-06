@@ -63,6 +63,15 @@ a:hover .featured-image .fillImage {
     border-radius: $border-radius;
     flex: 1;
     flex-basis: 33%;
+    &.bottomText {
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        padding-bottom: 0;
+        p {
+            padding-right: 2em;
+        }
+    }
     .title {
         height: 11.5em;
     }

@@ -39,7 +39,7 @@ $glyph-white: #ffffff;
 //	PROJECT COLORS
 //*******************************************
 .theme-leia {
-    @include button-hover-swap($glyph-white, #0b09aa);
+    @include button-hover-swap(#AACCE3, #0b09aa);
 }
 
 .theme-ds {
@@ -57,7 +57,7 @@ $glyph-white: #ffffff;
 // Workaround for worklist button hover
 a:hover {
     .theme-leia .button {
-        background-color: $glyph-white;
+        background-color: #AACCE3;
         color: #0b09aa;
     }
 

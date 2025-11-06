@@ -2,6 +2,15 @@
 // ============================================================================
 @use '../settings' as *;
 
+.contentBlock {
+    margin: $margin-section auto;
+    max-width: 1440px;
+    p, h4 {
+        display: block;
+        max-width: 25em;
+    }
+}
+
 .textBlock {
     @extend %padding-inner;
     max-width: 40%;
