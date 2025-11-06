@@ -60,10 +60,19 @@ a.textLink {
         bottom: 0.2em;
         height: $border-width;
         background-color: currentColor;
-        opacity: 0;
-        @include transition(opacity transform, 500ms);
+        // Transition
+        @include transition(transform, 200ms);
+        transform: scale(0,1);
+        transform-origin: 100% 0%;
     }
     &:hover::after {
-        opacity: 1;
+        transform: scale(1,1);
+        transform-origin: 0% 0%;
+
     }
+}
+
+a.inlineLink {
+    display: inline-block;
+    text-decoration: underline;
 }
