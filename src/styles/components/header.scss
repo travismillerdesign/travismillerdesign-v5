@@ -17,9 +17,12 @@ header.hero {
         // Mobile: full width (let flex-container stack them)
         flex-basis: 100%;
 
-        // Tablet and up: specific proportions
+        @include breakpoint-up($bp_sm) {
+            &:first-child { flex-basis: 60%; }
+            &:last-child { flex-basis: 40%; }
+        }
         @include breakpoint-up($bp_lg) {
-            &:first-child { flex-basis: 40%; }
+            &:first-child { flex-basis: 50%; }
             &:last-child { flex-basis: 30%; }
         }
 

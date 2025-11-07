@@ -11,6 +11,9 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addPassthroughCopy('src/styles/project.css');
     eleventyConfig.addPassthroughCopy('src/scripts');
 
+    // Copy fonts folder
+    eleventyConfig.addPassthroughCopy('src/fonts');
+
     // Copy and optimize assets folder
     eleventyConfig.addPassthroughCopy('src/assets');
 

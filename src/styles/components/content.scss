@@ -2,6 +2,11 @@
 // ============================================================================
 @use '../settings' as *;
 
+.hide-mobile {
+    @include breakpoint-down($bp_sm) {
+        display: none;
+    }
+}
 
 .textBlock {
     @extend %padding-inner;

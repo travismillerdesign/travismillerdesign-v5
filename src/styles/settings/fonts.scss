@@ -33,6 +33,17 @@ $fontSize-28: 2.8rem;
 //	FAMILIES
 //	- Font families, weights, and styles
 //*******************************************
+
+// Load PPMori font
+@font-face {
+    font-family: 'PPMori-SemiBold';
+    src: url('/fonts/PPMori-Semibold.woff2') format('woff2'),
+         url('/fonts/PPMori-Semibold.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 %fontSmoothing {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -110,14 +121,19 @@ h1 {
     @extend %fontFamily-primary;
     font-size: 5.6rem;
     letter-spacing: -0.03em;
-    line-height: 1em;
+    line-height: 0.98em;
     margin-top: 0.15em;
     @include breakpoint-up($bp-sm) {
         font-size: 7.5rem;
     }
     &.hero {
         @include breakpoint-up($bp-sm) {
+            font-size: 7.5rem;
+            line-height: 0.97em;
+        }
+        @include breakpoint-up($bp-lg) {
             font-size: 9.5rem;
+            line-height: 0.95em;
         }
     }
 }
