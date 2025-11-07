@@ -6,10 +6,7 @@
 $bp_min: 320px;
 $bp_sm: 800px;
 
-//	Medium Devices i.e. "Tablets"
-$bp_md: 1080px;
-
-//	Standard Devices i.e. "Laptops or Desktops"
+//	Large Devices i.e. "Laptops or Desktops"
 $bp_lg: 1240px;
 
 //*******************************************
@@ -20,8 +17,8 @@ $bp_lg: 1240px;
 	.my-element {
 	font-size: 16px; // Default style
 
-	@include breakpoint-up($bp-md) {
-		font-size: 18px; // Style for medium and larger screens
+	@include breakpoint-up($bp-lg) {
+		font-size: 18px; // Style for large screens
 	}
 
 	@include breakpoint-down($bp-sm) {
@@ -63,17 +60,17 @@ $margin-section: 64px;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md;
     }
-    @include breakpoint-up($bp-md) {
+    @include breakpoint-up($bp-lg) {
         padding: $margin-md;
     }
 }
 
 %padding-inner {
-    padding: $margin-md;
+    padding: $margin-sm;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md;
     }
-    @include breakpoint-up($bp-md) {
+    @include breakpoint-up($bp-lg) {
         padding: $margin-md;
     }
 }
@@ -82,27 +79,27 @@ $margin-section: 64px;
     @include breakpoint-up($bp-sm) {
         margin: $margin-md;
     }
-    @include breakpoint-up($bp-md) {
+    @include breakpoint-up($bp-lg) {
         margin: $margin-md;
     }
 }
 
 // Outer and inner margins combined
 %padding-full {
-    padding: $margin-sm + $margin-md;
+    padding: $margin-sm + $margin-sm;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md + $margin-md;
     }
-    @include breakpoint-up($bp-md) {
+    @include breakpoint-up($bp-lg) {
         padding: $margin-md + $margin-md;
     }
 }
 %padding-extra {
-    padding: ($margin-sm + $margin-md) * 2;
+    padding: ($margin-sm + $margin-sm) * 2;
     @include breakpoint-up($bp-sm) {
         padding: ($margin-md + $margin-md) * 2;
     }
-    @include breakpoint-up($bp-md) {
+    @include breakpoint-up($bp-lg) {
         padding: (($margin-md + $margin-md) * 2) ;
     }
 }
@@ -111,7 +108,7 @@ $margin-section: 64px;
     @include breakpoint-up($bp-sm) {
         margin: $margin-md + $margin-md;
     }
-    @include breakpoint-up($bp-md) {
+    @include breakpoint-up($bp-lg) {
         margin: $margin-md + $margin-md;
     }
 }
@@ -125,7 +122,7 @@ $margin-section: 64px;
         right: $margin-md + $margin-md;
         bottom: $margin-md + $margin-md;
     }
-    @include breakpoint-up($bp-md) {
+    @include breakpoint-up($bp-lg) {
         left: $margin-md + $margin-md;
         right: $margin-md + $margin-md;
         bottom: $margin-md + $margin-md;
