@@ -23,6 +23,10 @@ module.exports = function (eleventyConfig) {
     // Set browser sync to reload on CSS changes
     eleventyConfig.setServerOptions({
         watch: ['dist/styles/project.css'],
+        // Allow access from other devices on the network (e.g., phone)
+        host: '0.0.0.0',
+        port: 8080,
+        showAllHosts: true,
     });
 
     return {
