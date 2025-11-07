@@ -8,6 +8,8 @@ $bp_sm: 1080px;
 
 //	Large Devices i.e. "Laptops or Desktops"
 $bp_lg: 1440px;
+$maxWidth-lg: 1376px;
+
 
 //*******************************************
 //	BREAKPOINT UTILITY
@@ -143,7 +145,7 @@ $margin-section: 6.4rem;
 //	BORDER
 //*******************************************
 $border-width: 2px;
-$border-radius: 24px;
+$border-radius: 1.6rem;
 
 //*******************************************
 //	CLEARFIX

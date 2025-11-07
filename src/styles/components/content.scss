@@ -2,24 +2,32 @@
 // ============================================================================
 @use '../settings' as *;
 
-.contentBlock {
-    margin: $margin-section auto;
-    max-width: 1440px;
-    p, h4 {
-        display: block;
-        max-width: 25em;
-    }
-}
 
 .textBlock {
     @extend %padding-inner;
     // Mobile: full width
     max-width: 100%;
     margin: $margin-lg 0 $margin-sm;
-
+    
     // Tablet and up: 40% width
     @include breakpoint-up($bp_sm) {
         max-width: 40%;
+    }
+}
+
+.contentBlock {
+    margin: $margin-section auto;
+    max-width: $maxWidth-lg;
+    p, h4 {
+        display: block;
+        max-width: 25em;
+    }
+    .textBlock {
+        padding-top: 0;
+        padding-bottom: 0;
+        @include breakpoint-up($bp_sm) {
+            padding-left: 0;
+        }
     }
 }
 
