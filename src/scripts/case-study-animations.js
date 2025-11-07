@@ -2614,10 +2614,12 @@ const impactSketch = (p) => {
 // ============================================
 // Initialize all sketches
 // ============================================
-new p5(heroSketch);
-new p5(approachSketch);
-new p5(foundationPrinciplesSketch);
-new p5(implementationSketch);
-new p5(enablementSketch);
-new p5(evolutionSketch);
-new p5(impactSketch);
+document.addEventListener('DOMContentLoaded', () => {
+    new p5(heroSketch);
+    new p5(approachSketch);
+    new p5(foundationPrinciplesSketch);
+    new p5(implementationSketch);
+    new p5(enablementSketch);
+    new p5(evolutionSketch);
+    new p5(impactSketch);
+});

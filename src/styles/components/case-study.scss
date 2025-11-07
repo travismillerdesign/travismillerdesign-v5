@@ -10,7 +10,6 @@ $p5-margin: 1rem * 0.5;
     overflow: hidden;
     padding: 6rem $pagemargin;
     width: 100%;
-    background: black;
 }
 
 // P5.js Canvas Container - Full bleed background
@@ -22,7 +21,7 @@ $p5-margin: 1rem * 0.5;
     right: $p5-margin;
     overflow: hidden;
     border-radius: $p5-margin * 2;
-    z-index: 1;
+    z-index: -1;
 
     canvas {
         display: block;
