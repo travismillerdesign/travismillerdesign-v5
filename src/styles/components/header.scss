@@ -7,6 +7,7 @@ header.hero {
     height: 90vh;
     .flex-container {
         @extend %absolute-bottom;
+        @extend %padding-outer;
         align-items: bottom;
         justify-content: space-between;
     }
@@ -35,6 +36,7 @@ header.hero-compact {
     height: 50vh;
     .flex-container {
         @extend %absolute-bottom;
+        @extend %padding-outer;
         align-items: bottom;
         justify-content: space-between;
     }

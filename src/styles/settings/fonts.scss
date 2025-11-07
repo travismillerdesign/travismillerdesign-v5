@@ -136,6 +136,9 @@ h1 {
             line-height: 0.95em;
         }
     }
+    + p {
+        margin-top: 0.4em;
+    }
 }
 h2 {
     @extend %fontFamily-primary;
