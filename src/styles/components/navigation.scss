@@ -18,10 +18,6 @@
     }
 }
 
-.siteName {
-    @extend %fontSize-bodyLarge;
-    @extend .uppercase;
-}
 
 // Button
 .button {
@@ -36,6 +32,15 @@
     // Transition
     // @include transition(transform, 20ms);
     // transform: scale(1);
+}
+.siteName {
+    @extend %fontSize-body;
+    @extend .uppercase;
+    display: block;
+    padding: 8px 0 3px;
+    border-radius: 1em;
+    background-color: transparent;
+    border: $border-width solid transparent;
 }
 
 // Button hover state

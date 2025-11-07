@@ -1,5 +1,9 @@
 // Case Study Components - P5.js Animated Backgrounds
 // ============================================================================
+@use '../settings' as *;
+
+// Mobile-first padding variables
+$pagemargin-sm: 1.5rem;
 $pagemargin: 4rem;
 $p5-margin: 1rem * 0.5;
 
@@ -8,8 +12,14 @@ $p5-margin: 1rem * 0.5;
     position: relative;
     min-height: 100vh;
     overflow: hidden;
-    padding: 6rem $pagemargin;
     width: 100%;
+    // Mobile: smaller padding
+    padding: 3rem $pagemargin-sm;
+
+    // Tablet and up: larger padding
+    @include breakpoint-up($bp_sm) {
+        padding: 6rem $pagemargin;
+    }
 }
 
 // P5.js Canvas Container - Full bleed background

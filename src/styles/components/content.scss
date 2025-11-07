@@ -13,18 +13,48 @@
 
 .textBlock {
     @extend %padding-inner;
-    max-width: 40%;
+    // Mobile: full width
+    max-width: 100%;
     margin: $margin-lg 0 $margin-sm;
+
+    // Tablet and up: 40% width
+    @include breakpoint-up($bp_sm) {
+        max-width: 40%;
+    }
 }
 
 .columnContainer {
-    clear: both;
+    // Convert to flexbox for better responsive behavior
+    display: flex;
+    flex-wrap: wrap;
+    gap: $unit-sm;
+
+    // Tablet and up: larger gap
+    @include breakpoint-up($bp_sm) {
+        gap: $unit-md;
+    }
+
     .col3 {
-        width: 33%;
-        float: left;
-        padding-right: 1rem;
+        // Mobile: full width
+        width: 100%;
+        flex: 1 1 100%;
+        padding-right: 0;
+
+        // Tablet and up: 33% width (3 columns)
+        @include breakpoint-up($bp_sm) {
+            width: calc(33.333% - #{$unit-md});
+            flex: 1 1 calc(33.333% - #{$unit-md});
+            padding-right: 1rem;
+        }
+
         &.right {
-            margin-left: 33%;
+            // Mobile: no margin (stacked)
+            margin-left: 0;
+
+            // Tablet and up: skip first column (33% margin)
+            @include breakpoint-up($bp_sm) {
+                margin-left: calc(33.333% + #{$unit-md});
+            }
         }
     }
 }

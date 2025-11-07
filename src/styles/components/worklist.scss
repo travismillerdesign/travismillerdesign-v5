@@ -12,10 +12,18 @@
 }
 .worklist-small {
     display: flex;
-    flex-direction: row;
-    gap: $unit-md;
+    // Mobile: stack vertically with smaller gap
+    flex-direction: column;
+    gap: $unit-sm;
     justify-content: center;
     align-items: stretch;
+
+    // Tablet and up: horizontal layout with larger gap
+    @include breakpoint-up($bp_sm) {
+        flex-direction: row;
+        gap: $unit-md;
+    }
+
     .workitem {
         .flex-container {
             flex-direction: column;
@@ -33,10 +41,21 @@
 .workitem {
     display: flex;
     flex-direction: column;
-    margin: $unit-md 0;
+    // Mobile: smaller margin
+    margin: $unit-sm 0;
     flex: 1;
+
+    // Tablet and up: larger margin
+    @include breakpoint-up($bp_sm) {
+        margin: $unit-md 0;
+    }
+
     .flex-container {
-        flex-direction: row-reverse;
+        // Mobile: stack naturally (column from base .flex-container)
+        // Tablet and up: reverse row for visual interest
+        @include breakpoint-up($bp_sm) {
+            flex-direction: row-reverse;
+        }
     }
 }
 .workitem-link {
@@ -58,11 +77,19 @@ a:hover .featured-image .fillImage {
 // Text Card content
 .featured-card {
     @extend %padding-inner;
-    padding-bottom: 5.5rem;
     position: relative;
     border-radius: $border-radius;
+    padding-bottom: 8rem;
     flex: 1;
-    flex-basis: 33%;
+    // Mobile: full width
+    flex-basis: 100%;
+
+    // Tablet and up: 33% width
+    @include breakpoint-up($bp_sm) {
+        flex-basis: 33%;
+        padding-bottom: 5.5rem;
+    }
+
     &.bottomText {
         display: flex;
         flex-direction: column;
@@ -73,7 +100,16 @@ a:hover .featured-image .fillImage {
         }
     }
     .title {
-        height: 11.5em;
+        // Mobile: auto height (don't force fixed height)
+        height: auto;
+        // Add some minimum spacing on mobile
+        min-height: 3em;
+
+        // Tablet and up: fixed height for consistent card alignment
+        @include breakpoint-up($bp_sm) {
+            height: 11.5em;
+            min-height: 0;
+        }
     }
     .button {
         @extend %margin-inner;

@@ -4,7 +4,7 @@
 
 //	Small Devices i.e. "Phones"
 $bp_min: 320px;
-$bp_sm: 720px;
+$bp_sm: 800px;
 
 //	Medium Devices i.e. "Tablets"
 $bp_md: 1080px;
@@ -53,7 +53,7 @@ $unit-lg: 32px;
 //*******************************************
 //	MARGINS
 //*******************************************
-$margin-sm: 16px;
+$margin-sm: 10px;
 $margin-md: 24px;
 $margin-lg: 32px;
 $margin-section: 64px;
@@ -69,7 +69,7 @@ $margin-section: 64px;
 }
 
 %padding-inner {
-    padding: $margin-sm;
+    padding: $margin-md;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md;
     }
@@ -89,7 +89,7 @@ $margin-section: 64px;
 
 // Outer and inner margins combined
 %padding-full {
-    padding: $margin-sm + $margin-sm;
+    padding: $margin-sm + $margin-md;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md + $margin-md;
     }
@@ -98,7 +98,7 @@ $margin-section: 64px;
     }
 }
 %padding-extra {
-    padding: ($margin-sm + $margin-sm) * 2;
+    padding: ($margin-sm + $margin-md) * 2;
     @include breakpoint-up($bp-sm) {
         padding: ($margin-md + $margin-md) * 2;
     }
@@ -155,19 +155,43 @@ $border-radius: 24px;
 
 .flex-container {
     display: flex;
-    gap: $unit-md;
+    // Mobile-first: stack vertically with smaller gap
+    flex-direction: column;
+    gap: $unit-sm;
     flex: 1;
     align-items: stretch;
+
+    // Tablet and up: horizontal layout with larger gap
+    @include breakpoint-up($bp_sm) {
+        flex-direction: row;
+        gap: $unit-md;
+    }
 }
+
 // The proportion of the flex box the item should take up
 .column-1 {
     flex: 1;
-    flex-basis: 33%;
-    max-width: 33%;
+    // Mobile: full width
+    flex-basis: 100%;
+    max-width: 100%;
+
+    // Tablet and up: 33% width
+    @include breakpoint-up($bp_sm) {
+        flex-basis: 33%;
+        max-width: 33%;
+    }
 }
+
 .column-2 {
-    flex: 2;
-    flex-basis: 66%;
+    flex: 1;
+    // Mobile: full width
+    flex-basis: 100%;
+
+    // Tablet and up: 66% width
+    @include breakpoint-up($bp_sm) {
+        flex: 2;
+        flex-basis: 66%;
+    }
 }
 
 /*
