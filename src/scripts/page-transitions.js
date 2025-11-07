@@ -15,6 +15,13 @@ class PageTransitions {
     }
 
     init() {
+        // Disable page transitions on mobile for performance
+        const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase());
+        if (isMobile) {
+            console.log('Mobile detected - page transitions disabled for performance');
+            return;  // Don't set up transitions on mobile
+        }
+
         // Mark content that should transition (main and footer)
         this.prepareTransitionContent();
 

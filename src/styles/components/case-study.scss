@@ -33,10 +33,24 @@ $p5-margin: 1rem * 0.5;
     border-radius: $p5-margin * 2;
     z-index: -1;
 
+    // GPU acceleration hints for better mobile performance
+    // Note: will-change removed to reduce memory pressure on mobile
+    transform: translateZ(0);
+    backface-visibility: hidden;
+
     canvas {
         display: block;
         width: 100% !important;
         height: 100% !important;
+
+        // Optimize rendering
+        image-rendering: auto;
+        image-rendering: crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+
+        // GPU acceleration for canvas
+        transform: translateZ(0);
+        backface-visibility: hidden;
     }
 }
 

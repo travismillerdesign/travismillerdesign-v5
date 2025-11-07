@@ -4,7 +4,7 @@
 @use '../settings' as *;
 
 header.hero {
-    height: 90vh;
+    height: 90dvh;
     .flex-container {
         @extend %absolute-bottom;
         @extend %padding-outer;
@@ -33,7 +33,7 @@ header.hero {
 
 
 header.hero-compact {
-    height: 50vh;
+    height: 50dvh;
     .flex-container {
         @extend %absolute-bottom;
         @extend %padding-outer;
@@ -59,7 +59,7 @@ header.hero-compact {
 
 header.hero-full {
     @extend %padding-full;
-    min-height: 100vh;
+    min-height: 100dvh;
     overflow: hidden;
     .flex-container {
         @extend %absolute-bottom;

@@ -3,6 +3,43 @@
 // ============================================
 // Each sketch has a unique two-color palette and design system theme
 // All sketches respond to mouse hover interactions
+// Optimized for mobile performance using p5MobileOptimizer
+
+// Get mobile optimizer (loaded from p5-mobile-optimizer.js)
+const getOptimizer = () => window.p5MobileOptimizer;
+
+// Helper function for setting up canvas with optimization
+const setupOptimizedCanvas = (p, containerId) => {
+    const optimizer = getOptimizer();
+    const container = document.getElementById(containerId);
+
+    if (optimizer) {
+        return optimizer.setupCanvas(p, containerId);
+    } else {
+        // Fallback: standard canvas setup with pixel density optimization
+        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        canvas.parent(containerId);
+        p.pixelDensity(1); // Always optimize pixel density
+        return canvas;
+    }
+};
+
+// Helper function for adaptive curve resolution
+const getAdaptiveCurveResolution = (defaultResolution) => {
+    const optimizer = getOptimizer();
+    return optimizer ? optimizer.getCurveResolution(defaultResolution) : defaultResolution;
+};
+
+// Helper function to get appropriate fallback background color based on page theme
+const getThemeAwareBackground = (p) => {
+    // Check if page/section has dark theme
+    const isDarkTheme = document.body.classList.contains('theme-dark');
+
+    // Return appropriate background color
+    // Dark theme = black background (0)
+    // Light theme = white background (255)
+    return isDarkTheme ? p.color(0) : p.color(255);
+};
 
 // Utility function to create visibility observers for performance
 const createVisibilityObserver = (sketch, threshold = 0.1) => {
@@ -32,6 +69,8 @@ const createVisibilityObserver = (sketch, threshold = 0.1) => {
 // Frequency ratios auto-change at regular intervals
 
 const heroSketch = (p) => {
+    const optimizer = getOptimizer();
+
     let currentFreqX = 3; // Current X frequency ratio
     let currentFreqY = 2; // Current Y frequency ratio
     let lastChangeTime = 0; // Track when frequency last changed
@@ -40,7 +79,7 @@ const heroSketch = (p) => {
     let gradientShader; // Shader for radial gradient
 
     const CHANGE_INTERVAL = 3000; // Change frequency every x seconds when idle
-    const CURVE_RESOLUTION = 2000; // Number of points in the curve
+    const CURVE_RESOLUTION = optimizer ? optimizer.getCurveResolution(2000) : 2000; // Adaptive resolution
     const GAP_SIZE = 0.03; // Size of gaps as fraction of curve (15%)
     const NUM_GAPS = 4; // Number of gaps in the curve
     const GAP_ANIMATION_SPEED = 0.001; // Speed at which gaps move around the curve
@@ -176,56 +215,85 @@ const heroSketch = (p) => {
 
     // Create gradient buffer and render gradient
     const createGradient = () => {
-        // Create WEBGL graphics buffer
-        gradientBuffer = p.createGraphics(p.width, p.height, p.WEBGL);
+        // Use optimizer to create gradient buffer (returns null on low-end devices)
+        if (optimizer && optimizer.shouldEnableGradients()) {
+            gradientBuffer = optimizer.createOptimizedGradientBuffer(p);
 
-        // Create shader
-        gradientShader = gradientBuffer.createShader(vertShader, fragShader);
+            // Only create shader if gradients and shaders are enabled
+            if (gradientBuffer && optimizer.shouldEnableShaders()) {
+                // Create shader
+                gradientShader = gradientBuffer.createShader(vertShader, fragShader);
 
-        // Render gradient to buffer
-        gradientBuffer.shader(gradientShader);
+                // Render gradient to buffer
+                gradientBuffer.shader(gradientShader);
 
-        // Set shader uniforms
-        gradientShader.setUniform('uResolution', [p.width, p.height]);
-        gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
-        gradientShader.setUniform('uCenterColor', [
-            GRADIENT_CENTER_COLOR.r / 255.0,
-            GRADIENT_CENTER_COLOR.g / 255.0,
-            GRADIENT_CENTER_COLOR.b / 255.0,
-        ]);
-        gradientShader.setUniform('uEdgeColor', [
-            GRADIENT_EDGE_COLOR.r / 255.0,
-            GRADIENT_EDGE_COLOR.g / 255.0,
-            GRADIENT_EDGE_COLOR.b / 255.0,
-        ]);
-        gradientShader.setUniform('uRadiusScale', [
-            GRADIENT_RADIUS_SCALE_X,
-            GRADIENT_RADIUS_SCALE_Y,
-        ]);
-        gradientShader.setUniform('uPower', GRADIENT_POWER);
-        gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
-        gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
+                // Set shader uniforms
+                gradientShader.setUniform('uResolution', [gradientBuffer.width, gradientBuffer.height]);
+                gradientShader.setUniform('uCenter', [GRADIENT_CENTER_X, GRADIENT_CENTER_Y]);
+                gradientShader.setUniform('uCenterColor', [
+                    GRADIENT_CENTER_COLOR.r / 255.0,
+                    GRADIENT_CENTER_COLOR.g / 255.0,
+                    GRADIENT_CENTER_COLOR.b / 255.0,
+                ]);
+                gradientShader.setUniform('uEdgeColor', [
+                    GRADIENT_EDGE_COLOR.r / 255.0,
+                    GRADIENT_EDGE_COLOR.g / 255.0,
+                    GRADIENT_EDGE_COLOR.b / 255.0,
+                ]);
+                gradientShader.setUniform('uRadiusScale', [
+                    GRADIENT_RADIUS_SCALE_X,
+                    GRADIENT_RADIUS_SCALE_Y,
+                ]);
+                gradientShader.setUniform('uPower', GRADIENT_POWER);
+                gradientShader.setUniform('uEdgeEase', GRADIENT_EDGE_EASE);
+                gradientShader.setUniform('uScatterIntensity', GRADIENT_SCATTER_INTENSITY);
 
-        // Draw full-screen quad
-        gradientBuffer.rectMode(p.CENTER);
-        gradientBuffer.noStroke();
-        gradientBuffer.rect(0, 0, p.width, p.height);
+                // Draw full-screen quad
+                gradientBuffer.rectMode(p.CENTER);
+                gradientBuffer.noStroke();
+                gradientBuffer.rect(0, 0, gradientBuffer.width, gradientBuffer.height);
+            } else if (gradientBuffer) {
+                // Fallback: Simple gradient without shader for low-end devices
+                gradientBuffer.background(255);
+                for (let i = 0; i < gradientBuffer.width; i += 20) {
+                    for (let j = 0; j < gradientBuffer.height; j += 20) {
+                        let x = i / gradientBuffer.width;
+                        let y = j / gradientBuffer.height;
+                        let dist = p.dist(x, y, GRADIENT_CENTER_X, GRADIENT_CENTER_Y);
+                        let c = p.lerpColor(
+                            p.color(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b),
+                            p.color(GRADIENT_EDGE_COLOR.r, GRADIENT_EDGE_COLOR.g, GRADIENT_EDGE_COLOR.b),
+                            dist
+                        );
+                        gradientBuffer.fill(c);
+                        gradientBuffer.noStroke();
+                        gradientBuffer.rect(i, j, 20, 20);
+                    }
+                }
+            }
+        }
     };
 
     // Draw gradient background from buffer
     const drawGradient = () => {
-        p.image(gradientBuffer, 0, 0);
+        if (gradientBuffer) {
+            p.image(gradientBuffer, 0, 0, p.width, p.height);
+        } else {
+            // Fallback: Use theme-aware background color
+            // This ensures visibility on both light and dark themed pages
+            p.background(getThemeAwareBackground(p));
+        }
     };
 
     p.setup = () => {
-        const container = document.getElementById('hero-canvas');
-        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        canvas.parent('hero-canvas');
+        // Use optimized canvas setup
+        setupOptimizedCanvas(p, 'hero-canvas');
 
         // Create gradient buffer with shader
         createGradient();
 
         lastChangeTime = p.millis();
+        const container = document.getElementById('hero-canvas');
         observer.observe(container);
     };
 
@@ -640,7 +708,11 @@ const approachSketch = (p) => {
     }
 
     function drawGradient() {
-        p.image(gradientBuffer, 0, 0);
+        if (gradientBuffer) {
+            p.image(gradientBuffer, 0, 0, p.width, p.height);
+        } else {
+            p.background(getThemeAwareBackground(p));
+        }
     }
 
     // ============================================
@@ -663,13 +735,13 @@ const approachSketch = (p) => {
     }
 
     p.setup = () => {
-        const container = document.getElementById('approach-canvas');
-        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        canvas.parent('approach-canvas');
+        // Use optimized canvas setup
+        setupOptimizedCanvas(p, 'approach-canvas');
 
         createGradient();
         calculateSegmentLength();
 
+        const container = document.getElementById('approach-canvas');
         observer.observe(container);
     };
 
@@ -890,7 +962,11 @@ const foundationPrinciplesSketch = (p) => {
     };
 
     const drawGradient = () => {
-        p.image(gradientBuffer, 0, 0);
+        if (gradientBuffer) {
+            p.image(gradientBuffer, 0, 0, p.width, p.height);
+        } else {
+            p.background(getThemeAwareBackground(p));
+        }
     };
 
     // ============================================
@@ -1025,13 +1101,13 @@ const foundationPrinciplesSketch = (p) => {
     // ============================================
 
     p.setup = () => {
-        const container = document.getElementById('foundation-principles-canvas');
-        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        canvas.parent('foundation-principles-canvas');
+        // Use optimized canvas setup
+        setupOptimizedCanvas(p, 'foundation-principles-canvas');
 
         createGradient();
         gridOffset = initializeTiles();
 
+        const container = document.getElementById('foundation-principles-canvas');
         observer.observe(container);
     };
 
@@ -1451,11 +1527,11 @@ const implementationSketch = (p) => {
     // ============================================
 
     p.setup = () => {
-        const container = document.getElementById('implementation-canvas');
-        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        canvas.parent('implementation-canvas');
+        // Use optimized canvas setup
+        setupOptimizedCanvas(p, 'implementation-canvas');
 
         createGradient();
+        const container = document.getElementById('implementation-canvas');
         observer.observe(container);
     };
 
@@ -1580,7 +1656,8 @@ const enablementSketch = (p) => {
     // FLOWFIELD GRID CONFIGURATION
     // ============================================
     const GRID_RESOLUTION = 50; // Spacing between grid points (pixels) - lower = denser
-    const MARGIN_X = 620; // Horizontal margin from canvas edge (pixels)
+    // Responsive margins: large on desktop (620px), small on mobile (20px)
+    // Calculated dynamically in Flowfield constructor based on canvas width
     const MARGIN_Y = 0; // Vertical margin from canvas edge (pixels)
 
     // ============================================
@@ -1707,12 +1784,18 @@ const enablementSketch = (p) => {
             // Calculate available space within margins
             this.canvasWidth = width;
             this.canvasHeight = height;
-            this.availableWidth = width - MARGIN_X * 2;
-            this.availableHeight = height - MARGIN_Y * 2;
 
-            // Calculate grid dimensions
-            this.cols = Math.floor(this.availableWidth / GRID_RESOLUTION);
-            this.rows = Math.floor(this.availableHeight / GRID_RESOLUTION);
+            // Responsive horizontal margin: 620px on desktop (>768px), 20px on mobile
+            const MARGIN_X = width > 768 ? 620 : 20;
+            this.marginX = MARGIN_X;
+
+            // Calculate available space with safety checks to prevent negative values
+            this.availableWidth = Math.max(100, width - MARGIN_X * 2);
+            this.availableHeight = Math.max(100, height - MARGIN_Y * 2);
+
+            // Calculate grid dimensions with safety checks (minimum 1x1 grid)
+            this.cols = Math.max(1, Math.floor(this.availableWidth / GRID_RESOLUTION));
+            this.rows = Math.max(1, Math.floor(this.availableHeight / GRID_RESOLUTION));
             this.field = new Array(this.cols * this.rows);
 
             // Calculate offsets to center grid within margins
@@ -1842,7 +1925,11 @@ const enablementSketch = (p) => {
     }
 
     function drawGradient() {
-        p.image(gradientBuffer, 0, 0);
+        if (gradientBuffer) {
+            p.image(gradientBuffer, 0, 0, p.width, p.height);
+        } else {
+            p.background(getThemeAwareBackground(p));
+        }
     }
 
     // ============================================
@@ -1852,9 +1939,8 @@ const enablementSketch = (p) => {
     const { observer } = createVisibilityObserver(p);
 
     p.setup = () => {
-        const container = document.getElementById('enablement-canvas');
-        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        canvas.parent('enablement-canvas');
+        // Use optimized canvas setup
+        setupOptimizedCanvas(p, 'enablement-canvas');
 
         createGradient();
 
@@ -1865,6 +1951,7 @@ const enablementSketch = (p) => {
         virtualMouseX = p.width / 2;
         virtualMouseY = p.height / 2;
 
+        const container = document.getElementById('enablement-canvas');
         observer.observe(container);
     };
 
@@ -2200,11 +2287,11 @@ const evolutionSketch = (p) => {
     // ============================================
 
     p.setup = () => {
-        const container = document.getElementById('evolution-canvas');
-        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        canvas.parent('evolution-canvas');
+        // Use optimized canvas setup
+        setupOptimizedCanvas(p, 'evolution-canvas');
 
         createGradient();
+        const container = document.getElementById('evolution-canvas');
         observer.observe(container);
     };
 
@@ -2565,7 +2652,11 @@ const impactSketch = (p) => {
     }
 
     function drawGradient() {
-        p.image(gradientBuffer, 0, 0);
+        if (gradientBuffer) {
+            p.image(gradientBuffer, 0, 0, p.width, p.height);
+        } else {
+            p.background(getThemeAwareBackground(p));
+        }
     }
 
     // ============================================
@@ -2575,9 +2666,8 @@ const impactSketch = (p) => {
     const { observer } = createVisibilityObserver(p);
 
     p.setup = () => {
-        const container = document.getElementById('impact-canvas');
-        const canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        canvas.parent('impact-canvas');
+        // Use optimized canvas setup
+        setupOptimizedCanvas(p, 'impact-canvas');
 
         createGradient();
 
@@ -2585,6 +2675,7 @@ const impactSketch = (p) => {
         rippleGroup1 = new RippleGroup(GROUP1_CONFIG);
         rippleGroup2 = new RippleGroup(GROUP2_CONFIG);
 
+        const container = document.getElementById('impact-canvas');
         observer.observe(container);
     };
 
@@ -2612,11 +2703,85 @@ const impactSketch = (p) => {
 };
 
 // ============================================
-// Initialize all sketches
+// Initialize all sketches with lazy loading
 // ============================================
 
 // Store active sketch instances for cleanup
 let activeSketchInstances = [];
+
+// Track which sketches have been initialized
+const initializedSketches = new Set();
+
+// Lazy loading observer for performance
+let lazyLoadObserver = null;
+
+// Initialize a single sketch
+function initializeSketch(containerId, sketchFunction) {
+    // Check if already initialized
+    if (initializedSketches.has(containerId)) {
+        return;
+    }
+
+    // Check if container exists
+    const container = document.getElementById(containerId);
+    if (!container) {
+        return;
+    }
+
+    // Create and store the sketch instance
+    const instance = new p5(sketchFunction);
+    activeSketchInstances.push(instance);
+    initializedSketches.add(containerId);
+
+    console.log(`Initialized sketch: ${containerId}`);
+}
+
+// Lazy load a sketch when it's near the viewport
+function lazyInitializeSketch(containerId, sketchFunction) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        return;
+    }
+
+    // Don't observe if already initialized
+    if (initializedSketches.has(containerId)) {
+        return;
+    }
+
+    // Create observer if it doesn't exist
+    if (!lazyLoadObserver) {
+        lazyLoadObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.id;
+
+                        // Find the sketch function for this container
+                        const sketchMap = {
+                            'approach-canvas': approachSketch,
+                            'foundation-principles-canvas': foundationPrinciplesSketch,
+                            'implementation-canvas': implementationSketch,
+                            'enablement-canvas': enablementSketch,
+                            'evolution-canvas': evolutionSketch,
+                            'impact-canvas': impactSketch
+                        };
+
+                        if (sketchMap[id]) {
+                            initializeSketch(id, sketchMap[id]);
+                            lazyLoadObserver.unobserve(entry.target);
+                        }
+                    }
+                });
+            },
+            {
+                rootMargin: '200px' // Start loading 200px before element enters viewport
+            }
+        );
+    }
+
+    // Observe the container
+    lazyLoadObserver.observe(container);
+}
 
 // Main initialization function (called on page load and page transitions)
 function initializeCaseStudyAnimations() {
@@ -2627,29 +2792,27 @@ function initializeCaseStudyAnimations() {
         }
     });
     activeSketchInstances = [];
+    initializedSketches.clear();
 
-    // Only initialize sketches if their containers exist on this page
+    // Disconnect existing observer
+    if (lazyLoadObserver) {
+        lazyLoadObserver.disconnect();
+        lazyLoadObserver = null;
+    }
+
+    // TIER 1: Initialize hero sketch immediately (above the fold)
     if (document.getElementById('hero-canvas')) {
-        activeSketchInstances.push(new p5(heroSketch));
+        initializeSketch('hero-canvas', heroSketch);
     }
-    if (document.getElementById('approach-canvas')) {
-        activeSketchInstances.push(new p5(approachSketch));
-    }
-    if (document.getElementById('foundation-principles-canvas')) {
-        activeSketchInstances.push(new p5(foundationPrinciplesSketch));
-    }
-    if (document.getElementById('implementation-canvas')) {
-        activeSketchInstances.push(new p5(implementationSketch));
-    }
-    if (document.getElementById('enablement-canvas')) {
-        activeSketchInstances.push(new p5(enablementSketch));
-    }
-    if (document.getElementById('evolution-canvas')) {
-        activeSketchInstances.push(new p5(evolutionSketch));
-    }
-    if (document.getElementById('impact-canvas')) {
-        activeSketchInstances.push(new p5(impactSketch));
-    }
+
+    // TIER 2: Lazy-load remaining sketches when they come into view
+    // This dramatically improves initial page load performance
+    lazyInitializeSketch('approach-canvas', approachSketch);
+    lazyInitializeSketch('foundation-principles-canvas', foundationPrinciplesSketch);
+    lazyInitializeSketch('implementation-canvas', implementationSketch);
+    lazyInitializeSketch('enablement-canvas', enablementSketch);
+    lazyInitializeSketch('evolution-canvas', evolutionSketch);
+    lazyInitializeSketch('impact-canvas', impactSketch);
 }
 
 // Export to window so page transition system can call it

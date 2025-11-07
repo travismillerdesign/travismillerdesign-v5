@@ -84,6 +84,9 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
     text-transform: uppercase;
     letter-spacing: -0.01em;
 }
+.uppercase-cancel {
+    text-transform: none;
+}
 
 //*******************************************
 //
@@ -115,6 +118,7 @@ h4 {
 h5,h4 {
     margin-bottom: 0.4em;
     margin-top: 1em;
+    text-transform: uppercase;
 }
 
 h1 {
