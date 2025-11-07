@@ -54,6 +54,7 @@ a:hover .button {
     @extend %absolute-bottom;
     text-align: right;
     @include breakpoint-down($bp-sm) {
+        position: static;
         padding-bottom: 1.6rem;
     }
 }

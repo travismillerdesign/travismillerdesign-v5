@@ -123,11 +123,11 @@ $margin-section: 6.4rem;
     }
 }
 %absolute-bottom {
-    // left: $margin-sm;
-    // right: $margin-sm;
-    // bottom: $margin-sm;
+    position: absolute;
+    left: $margin-sm;
+    right: $margin-sm;
+    bottom: $margin-sm;
     @include breakpoint-up($bp-sm) {
-        position: absolute;
         left: $margin-md;
         right: $margin-md;
         bottom: $margin-md;
