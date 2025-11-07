@@ -2614,12 +2614,53 @@ const impactSketch = (p) => {
 // ============================================
 // Initialize all sketches
 // ============================================
-document.addEventListener('DOMContentLoaded', () => {
-    new p5(heroSketch);
-    new p5(approachSketch);
-    new p5(foundationPrinciplesSketch);
-    new p5(implementationSketch);
-    new p5(enablementSketch);
-    new p5(evolutionSketch);
-    new p5(impactSketch);
-});
+
+// Store active sketch instances for cleanup
+let activeSketchInstances = [];
+
+// Main initialization function (called on page load and page transitions)
+function initializeCaseStudyAnimations() {
+    // Clean up any existing sketch instances to prevent memory leaks
+    activeSketchInstances.forEach((instance) => {
+        if (instance && typeof instance.remove === 'function') {
+            instance.remove();
+        }
+    });
+    activeSketchInstances = [];
+
+    // Only initialize sketches if their containers exist on this page
+    if (document.getElementById('hero-canvas')) {
+        activeSketchInstances.push(new p5(heroSketch));
+    }
+    if (document.getElementById('approach-canvas')) {
+        activeSketchInstances.push(new p5(approachSketch));
+    }
+    if (document.getElementById('foundation-principles-canvas')) {
+        activeSketchInstances.push(new p5(foundationPrinciplesSketch));
+    }
+    if (document.getElementById('implementation-canvas')) {
+        activeSketchInstances.push(new p5(implementationSketch));
+    }
+    if (document.getElementById('enablement-canvas')) {
+        activeSketchInstances.push(new p5(enablementSketch));
+    }
+    if (document.getElementById('evolution-canvas')) {
+        activeSketchInstances.push(new p5(evolutionSketch));
+    }
+    if (document.getElementById('impact-canvas')) {
+        activeSketchInstances.push(new p5(impactSketch));
+    }
+}
+
+// Export to window so page transition system can call it
+window.initializeCaseStudyAnimations = initializeCaseStudyAnimations;
+
+// Initialize on initial page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCaseStudyAnimations);
+} else {
+    initializeCaseStudyAnimations();
+}
+
+// Re-initialize when page transitions occur
+document.addEventListener('page:loaded', initializeCaseStudyAnimations);
