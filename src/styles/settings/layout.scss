@@ -4,10 +4,10 @@
 
 //	Small Devices i.e. "Phones"
 $bp_min: 320px;
-$bp_sm: 800px;
+$bp_sm: 1080px;
 
 //	Large Devices i.e. "Laptops or Desktops"
-$bp_lg: 1240px;
+$bp_lg: 1440px;
 
 //*******************************************
 //	BREAKPOINT UTILITY
@@ -83,6 +83,15 @@ $margin-section: 64px;
         margin: $margin-md;
     }
 }
+.margin-outer {
+    margin: $margin-sm;
+    @include breakpoint-up($bp-sm) {
+        margin: $margin-md;
+    }
+    @include breakpoint-up($bp-lg) {
+        margin: $margin-md;
+    }
+}
 
 // Outer and inner margins combined
 %padding-full {
@@ -114,18 +123,18 @@ $margin-section: 64px;
 }
 %absolute-bottom {
     position: absolute;
-    left: $margin-sm + $margin-sm;
-    right: $margin-sm + $margin-sm;
-    bottom: $margin-sm + $margin-sm;
+    left: $margin-sm;
+    right: $margin-sm;
+    bottom: $margin-sm;
     @include breakpoint-up($bp-sm) {
-        left: $margin-md + $margin-md;
-        right: $margin-md + $margin-md;
-        bottom: $margin-md + $margin-md;
+        left: $margin-md;
+        right: $margin-md;
+        bottom: $margin-md;
     }
     @include breakpoint-up($bp-lg) {
-        left: $margin-md + $margin-md;
-        right: $margin-md + $margin-md;
-        bottom: $margin-md + $margin-md;
+        left: $margin-md;
+        right: $margin-md;
+        bottom: $margin-md;
     }
 }
 
