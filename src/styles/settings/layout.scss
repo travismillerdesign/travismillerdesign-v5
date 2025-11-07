@@ -43,20 +43,21 @@ $bp_lg: 1440px;
 //*******************************************
 //	GRID UNIT
 //*******************************************
-$unit-sm: 8px;
-$unit-md: 16px;
-$unit-lg: 32px;
+$unit-sm: 0.8rem;
+$unit-md: 1.6rem;
+$unit-lg: 3.2rem;
 
 //*******************************************
 //	MARGINS
 //*******************************************
-$margin-sm: 10px;
-$margin-md: 24px;
-$margin-lg: 32px;
-$margin-section: 64px;
+$margin-xs: 0.8rem;
+$margin-sm: 1.6rem;
+$margin-md: 2.4rem;
+$margin-lg: 3.2rem;
+$margin-section: 6.4rem;
 
 %padding-outer {
-    padding: $margin-sm;
+    padding: $margin-xs;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md;
     }
@@ -84,7 +85,7 @@ $margin-section: 64px;
     }
 }
 .margin-outer {
-    margin: $margin-sm;
+    margin: $margin-xs;
     @include breakpoint-up($bp-sm) {
         margin: $margin-md;
     }
@@ -95,7 +96,7 @@ $margin-section: 64px;
 
 // Outer and inner margins combined
 %padding-full {
-    padding: $margin-sm + $margin-sm;
+    padding: $margin-xs + $margin-sm;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md + $margin-md;
     }
@@ -104,7 +105,7 @@ $margin-section: 64px;
     }
 }
 %padding-extra {
-    padding: ($margin-sm + $margin-sm) * 2;
+    padding: ($margin-xs + $margin-sm) * 2;
     @include breakpoint-up($bp-sm) {
         padding: ($margin-md + $margin-md) * 2;
     }
@@ -113,7 +114,7 @@ $margin-section: 64px;
     }
 }
 %margin-full {
-    margin: $margin-sm + $margin-sm;
+    margin: $margin-xs + $margin-sm;
     @include breakpoint-up($bp-sm) {
         margin: $margin-md + $margin-md;
     }
@@ -122,11 +123,11 @@ $margin-section: 64px;
     }
 }
 %absolute-bottom {
-    position: absolute;
-    left: $margin-sm;
-    right: $margin-sm;
-    bottom: $margin-sm;
+    // left: $margin-sm;
+    // right: $margin-sm;
+    // bottom: $margin-sm;
     @include breakpoint-up($bp-sm) {
+        position: absolute;
         left: $margin-md;
         right: $margin-md;
         bottom: $margin-md;
@@ -183,6 +184,10 @@ $border-radius: 24px;
 
     // Tablet and up: 33% width
     @include breakpoint-up($bp_sm) {
+        flex-basis: 50%;
+        max-width: 50%;
+    }
+    @include breakpoint-up($bp_lg) {
         flex-basis: 33%;
         max-width: 33%;
     }

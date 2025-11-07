@@ -84,11 +84,11 @@ a:hover .featured-image .fillImage {
     @extend %padding-inner;
     position: relative;
     border-radius: $border-radius;
-    padding-bottom: 8rem;
     flex: 1;
+    padding-bottom: $margin-sm;
     // Mobile: full width
     flex-basis: 100%;
-
+    
     // Tablet and up: 33% width
     @include breakpoint-up($bp_sm) {
         flex-basis: 50%;

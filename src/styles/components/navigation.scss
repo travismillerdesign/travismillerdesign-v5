@@ -53,6 +53,9 @@ a:hover .button {
 .button-bottomRight {
     @extend %absolute-bottom;
     text-align: right;
+    @include breakpoint-down($bp-sm) {
+        padding-bottom: 1.6rem;
+    }
 }
 
 // textLink
