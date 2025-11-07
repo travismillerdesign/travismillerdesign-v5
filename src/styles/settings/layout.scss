@@ -98,7 +98,7 @@ $margin-section: 6.4rem;
 
 // Outer and inner margins combined
 %padding-full {
-    padding: $margin-xs + $margin-sm;
+    padding: $margin-xs + $margin-xs;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md + $margin-md;
     }

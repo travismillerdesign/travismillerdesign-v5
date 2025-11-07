@@ -50,7 +50,7 @@ section {
 header {
     @extend %padding-full;
     position: relative;
-    height: 11.5rem;
+    min-height: 11.5rem;
     z-index: 0;
 }
 nav {

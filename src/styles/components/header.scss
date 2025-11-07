@@ -33,12 +33,19 @@ header.hero {
 
 
 header.hero-compact {
-    height: 50dvh;
+    padding-top: 20rem;
+    min-height: none;
+    @include breakpoint-up($bp_sm) {
+        min-height: 50dvh;
+    }
     .flex-container {
         @extend %absolute-bottom;
         @extend %padding-outer;
         align-items: bottom;
         justify-content: space-between;
+        @include breakpoint-down($bp_sm) {
+            position: static;
+        }
     }
     .flexItem {
         display: flex;
@@ -49,7 +56,6 @@ header.hero-compact {
 
         // Tablet and up: specific proportions
         @include breakpoint-up($bp_lg) {
-            &:first-child { flex-basis: 24%; }
             &:last-child { flex-basis: 45%; }
         }
 
