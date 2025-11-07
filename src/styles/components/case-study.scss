@@ -36,19 +36,3 @@ $p5-margin: 1rem * 0.5;
     position: relative;
     z-index: 10;
 }
-
-// Page header styling
-.page-header {
-    position: relative;
-    height: 100vh;
-    padding: $pagemargin;
-    overflow: hidden;
-    width: 100%;
-    margin: 0 auto;
-    background: black;
-    .section-content {
-        position: absolute;
-        bottom: $pagemargin;
-        width: 66%;
-    }
-}

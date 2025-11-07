@@ -45,11 +45,13 @@ body {
 section {
     @extend %padding-outer;
 	position: relative;
+    z-index: 0;
 }
 header {
     @extend %padding-full;
     position: relative;
     height: 11.5rem;
+    z-index: 0;
 }
 nav {
     @extend %padding-full;

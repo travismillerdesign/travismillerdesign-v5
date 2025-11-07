@@ -37,3 +37,15 @@ header.hero-compact {
         p { margin-bottom: 0; }
     }
 }
+
+header.hero-full {
+    @extend %padding-full;
+    min-height: 100vh;
+    overflow: hidden;
+    .flex-container {
+        @extend %absolute-bottom;
+        .flexItem {
+            max-width: 40em;
+        }
+    }
+}
