@@ -28,15 +28,12 @@ $glyph-white: hsl(0, 0, 94%);
 // Sub class default theme
 .theme-light {
     @include button-hover-swap($glyph-black, $fill-white);
-    .backgroundImage { background-color: #e2e2e2; }
 }
 .theme-light-alt {
     @include button-hover-swap(#494949, #D9D9D9);
-    .backgroundImage { background-color: #c1c1c1; }
 }
 .theme-dark {
     @include button-hover-swap($glyph-white, $fill-black);
-    .backgroundImage { background-color: #181818; }
 }
 
 //*******************************************
