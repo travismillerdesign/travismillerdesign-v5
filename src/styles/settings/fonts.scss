@@ -41,7 +41,7 @@ $fontSize-28: 2.8rem;
          url('/fonts/PPMori-Semibold.woff') format('woff');
     font-weight: 400;
     font-style: normal;
-    font-display: swap;
+    // font-display: swap;
 }
 
 %fontSmoothing {
@@ -157,6 +157,7 @@ h3 {
     line-height: 1.04em;
     padding-bottom: 0.4em;
     letter-spacing: -0.02em;
+    margin-top: 0.15em;
 }
 
 
