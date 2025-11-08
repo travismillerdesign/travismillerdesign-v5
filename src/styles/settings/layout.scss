@@ -175,6 +175,13 @@ $border-radius: 1.6rem;
         flex-direction: row;
         gap: $unit-md;
     }
+
+    + .flex-container { // When one follows the other
+        margin-top: $unit-sm;
+        @include breakpoint-up($bp_sm) {
+            margin-top: $unit-md;
+        }
+    }
 }
 
 // The proportion of the flex box the item should take up
