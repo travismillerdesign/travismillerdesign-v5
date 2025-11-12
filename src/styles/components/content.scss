@@ -15,9 +15,15 @@
     }
 }
 
+.cornerRadius-24 {
+    overflow: hidden;
+    border-radius: 24px;
+}
+
 .contentBlock {
     margin: $margin-section auto;
     max-width: $maxWidth-lg;
+
     p, h4 {
         display: block;
     }

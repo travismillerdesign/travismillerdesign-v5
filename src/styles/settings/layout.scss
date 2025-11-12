@@ -179,6 +179,10 @@ $border-radius: 1.6rem;
     &.gutter-large {
         gap: $unit-lg;
     }
+    &.tall {
+        margin-top: $margin-section;
+        margin-bottom: $margin-section;
+    }
 
     + .flex-container { // When one follows the other
         margin-top: $unit-sm;
