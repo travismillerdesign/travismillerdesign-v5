@@ -176,6 +176,10 @@ $border-radius: 1.6rem;
         gap: $unit-md;
     }
 
+    &.gutter-large {
+        gap: $unit-lg;
+    }
+
     + .flex-container { // When one follows the other
         margin-top: $unit-sm;
         @include breakpoint-up($bp_sm) {
@@ -211,6 +215,17 @@ $border-radius: 1.6rem;
     @include breakpoint-up($bp_sm) {
         flex: 2;
         flex-basis: 66%;
+    }
+}
+.column-12 {
+    flex: 1;
+    // Mobile: full width
+    flex-basis: 100%;
+
+    // Tablet and up: 66% width
+    @include breakpoint-up($bp_sm) {
+        flex: 1;
+        flex-basis: 50%;
     }
 }
 

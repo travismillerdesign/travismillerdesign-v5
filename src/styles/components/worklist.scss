@@ -130,6 +130,7 @@ ul.statList {
         } // removes bullet from basic bullet list
         @extend .uppercase;
         padding: 0.7em 0 0.5em;
+        margin-bottom: 0;
         border-top: $border-width solid currentColor;
         &:last-child {
             border-bottom: $border-width solid currentColor;

@@ -11,7 +11,7 @@
     
     // Tablet and up: 40% width
     @include breakpoint-up($bp_sm) {
-        max-width: 40%;
+        max-width: 50%;
     }
 }
 
@@ -20,7 +20,6 @@
     max-width: $maxWidth-lg;
     p, h4 {
         display: block;
-        max-width: 25em;
     }
     .textBlock {
         padding-top: 0;
