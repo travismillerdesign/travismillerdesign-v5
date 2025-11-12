@@ -10,7 +10,7 @@
         "optimize:images": "node optimize-images.js",
         "prebuild": "npm run compile:scss",
         "build": "npx @11ty/eleventy && npm run optimize:images",
-        "serve": "npm-run-all compile:scss --parallel watch:*"
+        "serve": "npm run optimize:images && npm-run-all compile:scss --parallel watch:*"
     },
     "repository": {
         "type": "git",
