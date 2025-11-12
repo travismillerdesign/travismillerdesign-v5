@@ -225,6 +225,7 @@ $border-radius: 1.6rem;
     // Tablet and up: 66% width
     @include breakpoint-up($bp_sm) {
         flex: 1;
+        // max-width: 50%;
         flex-basis: 50%;
     }
 }
