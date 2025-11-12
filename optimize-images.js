@@ -33,22 +33,27 @@ async function optimizeImages() {
         console.log(`Optimizing: ${relativePath}`);
 
         await Image(imagePath, {
-            widths: [null], // null means original size
+            widths: [1080, null], // 1080w for mobile, null for original size
             formats: ['jpeg', 'webp'],
             outputDir: outputPath,
             filenameFormat: function (id, src, width, format, options) {
                 const extension = path.extname(src);
                 const name = path.basename(src, extension);
 
-                // Keep original format with same name, add suffix for webp
-                if (format === 'jpeg' || format === 'jpg') {
-                    return `${name}.jpg`;
+                // Generate filenames with width suffix for 1080w, no suffix for original
+                if (width === 1080) {
+                    return `${name}-1080w.${format === 'jpeg' ? 'jpg' : format}`;
+                } else {
+                    // Original size
+                    return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
                 }
-                return `${name}.${format}`;
             },
             jpegOptions: {
                 quality: 85,
                 progressive: true,
+            },
+            webpOptions: {
+                quality: 85,
             },
         });
     }
