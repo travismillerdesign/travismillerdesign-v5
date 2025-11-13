@@ -17,9 +17,10 @@ module.exports = function (eleventyConfig) {
     // Copy fonts folder
     eleventyConfig.addPassthroughCopy('src/fonts');
 
-    // Copy assets folder (GIFs and other non-optimized assets)
+    // Copy assets folder (GIFs, MP4s, and other non-optimized assets)
     // Note: Optimized images are handled by optimize-images.js
     eleventyConfig.addPassthroughCopy('src/assets/**/*.gif');
+    eleventyConfig.addPassthroughCopy('src/assets/**/*.mp4');
 
     // Watch the compiled CSS file and trigger browser reload when it changes
     eleventyConfig.addWatchTarget('src/styles/project.css');
