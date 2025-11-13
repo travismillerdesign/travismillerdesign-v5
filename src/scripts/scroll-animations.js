@@ -38,7 +38,12 @@ class ScrollAnimations {
             '.sectionLabel',                // Section labels
             '.heroLeft',                    // Hero left section
             '.heroRight',                   // Hero right section
-            '.worklist-small'               // Small worklist container
+            '.worklist-small',              // Small worklist container
+            '.contentBlock',                // Content blocks on project pages
+            '.flex-container > div > video', // Videos in flex containers
+            '.flex-container > div > .vimeo-container', // Vimeo containers
+            '.flex-container > div:has(> img)', // Flex items containing images
+            '.flex-container > div:has(> picture)' // Flex items containing responsive images
         ].join(', ');
 
         // Query all at once and filter, preserving DOM order

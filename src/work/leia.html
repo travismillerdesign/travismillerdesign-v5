@@ -1,6 +1,6 @@
 ---
 layout: base.html
-title: Leia Inc. - Travis Miller
+title: Lume Pad Design System - Travis Miller
 ---
 
 <header id="hero" class="hero-compact theme-light">
@@ -10,8 +10,8 @@ title: Leia Inc. - Travis Miller
     <div class="flex-container">
 
         <div class="flexItem">
-            <h1>Leia Inc</h1>
-            <p class="large">Unifying design language for 3D technology</p>
+            <h1>Leia 3D<br>Design System</h1>
+            <p class="large">Unifying design language for <span class="nobreak">3D Lightfield</span> Technology</p>
         </div>
 
     </div>
@@ -19,36 +19,35 @@ title: Leia Inc. - Travis Miller
 
 <section class="worklist theme-dark">
     <div class="sectionLabel">
-        <p class="uppercase">Case Study —</p>
+        <p class="uppercase">Case Study</p>
     </div>
 
     <div class="flex-container">
-        <div class="featured-image column-2">
-            <img class="fillImage" src="/assets/leia/leia_wallpaper_4.jpg" alt="Leia art direction" />
+        <div class="featured-image column-12">
+            {% responsiveImage "/assets/leia/leia_leia_social-cropped.gif", "Animated showcase of Leia's 3D lightfield display technology with dynamic depth effects and brand elements", "fillImage" %}
         </div>
         <div class="featured-card bottomText theme-leia">
-            <h4 class="uppercase">My role</h4>
-            <p>With the Lume Pad 2 launch approaching, Leia needed a unified design system and cohesive brand identity. The unique challenge: no one had systematically designed for 3D displays before. Every component needed to work in 3D space with appropriate depth, contrast, and scale.</p>
+            <ul class="bulletList">
+                <h4 class="uppercase">My role</h4>
+                <li>Brand refresh (logo refinement, wordmarks, color system)</li>
+                <li>Complete component library optimized for 3D viewing</li>
+                <li>App icon family</li>
+                <li>Documentation and implementation guidelines</li>
+            </ul>
         </div>
     </div>
 </section>
-
-<section class="theme-light">
+<section class="theme-dark">
 
     <div class="contentBlock">
         <div class="textBlock">
-            <h5 class="uppercase">Brand Evolution</h5>
-            <p>Refined logo proportions, created custom product wordmarks, and established a consolidated color palette with semantic variables.</p>
-        </div>
-        <div class="flex-container">
-            <div>
-                <img class="fillImage" src="/assets/leia/leia_logomark.png" alt="" />
-            </div>
-            <div>
-                <img class="fillImage" src="/assets/leia/leia_product_wordmarks.png" alt="" />
-            </div>
+            <h4 class="uppercase">The challenge</h4>
+            <p>With the Lume Pad 2 launch approaching, Leia needed a unified design system and cohesive brand identity. The unique challenge: no one had systematically designed for 3D displays before. Every component needed to work in 3D space with appropriate depth, contrast, and scale.</p>
         </div>
     </div>
+    
+</section>
+<section class="theme-light">
 
     <div class="contentBlock">
         <div class="textBlock">
@@ -57,51 +56,140 @@ title: Leia Inc. - Travis Miller
         </div>
         <div class="flex-container">
             <div>
-                <img class="fillImage" src="/assets/leia/leia_color_values.png" alt="" />
+                {% responsiveImage "/assets/leia/leia_color_values.png", "Leia design system color palette showing primary, secondary, and semantic color values with hex codes and usage guidelines", "fillImage" %}
             </div>
             <div>
-                <img class="fillImage" src="/assets/leia/leia_typography.png" alt="" />
+                {% responsiveImage "/assets/leia/leia_typography.png", "Typography specifications showing font families, sizes, weights, and baseline grid system for Leia's design language", "fillImage" %}
             </div>
         </div>
         <div class="flex-container">
-            <div>
-                <img class="fillImage" src="/assets/leia/leia_color_example_backgrounds.png" alt="" />
+            <div class="cornerRadius-24">
+                {% responsiveImage "/assets/leia/leia_iconsystemdark.png", "Comprehensive icon system displayed on dark background, showing Material Design icons extended with consistent construction guidelines for 3D interface use", "fillImage" %}
             </div>
         </div>
     </div>
+
+    <div class="contentBlock">
+        <div class="textBlock">
+            <h5 class="uppercase">Build Component Library</h5>
+            <p>I used Material Design as the foundation (Android platform) and customized it for 3D requirements. Designing for 3D meant adapting Material Design—buttons needed more contrast than guidelines recommended because depth perception changes how users see color. This required balancing established patterns with novel constraints. Built navigation, buttons, media controls, typography, and icons—all documented with clear guidelines for designers and engineers.</p>
+        </div>
+
+        <div class="flex-container">
+            <div class="cornerRadius-24">
+                {% responsiveImage "/assets/leia/leia_color_example_backgrounds.png", "Color application examples showing various background treatments and layering techniques optimized for 3D lightfield displays", "fillImage" %}
+            </div>
+        </div>
+
+        <div class="flex-container">
+            <div class="cornerRadius-24">
+                {% responsiveImage "/assets/leia/leia_leiadesignsystem.png", "Complete Leia design system overview displaying component library including buttons, navigation elements, media controls, and UI patterns for 3D interfaces", "fillImage" %}
+            </div>
+        </div>
+        
+    </div>
     
 </section>
-
 <section class="theme-dark">
 
     <div class="contentBlock">
+
+        <div class="textBlock">
+            <h5 class="uppercase">Brand Evolution</h5>
+            <p>Refined logo proportions, created custom product wordmarks, and established a consolidated color palette with semantic variables.</p>
+        </div>
+
+        <div class="flex-container tall">
+            <div>
+                {% responsiveImage "/assets/leia/leia_logomark.png", "Leia logomark refinement specifications showing precise proportions, spacing measurements, and construction guidelines for consistent brand application", "fillImage" %}
+            </div>
+            <div>
+                {% responsiveImage "/assets/leia/leia_product_wordmarks.png", "Custom product wordmark designs for Leia's app family including LeiaChat, LeiaPlayer, and other applications with consistent stroke weights and proportions", "fillImage" %}
+            </div>
+        </div>    
+
         <div class="textBlock">
             <h5 class="uppercase">App Icons</h5>
             <p>Redesigned the icon family so each clearly communicates its app's function while maintaining visual unity. For example, the LeiaChat icon represents "video with depth" using a camera's profile angle.</p>
         </div>
-        <div class="flex-container">
-            <div>
-                <img class="fillImage" src="/assets/leia/leia_appicons.png" alt="" />
+
+        <div class="flex-container viewportAgnostic">
+            <div class="featured-image column-2">
+                {% responsiveImage "/assets/leia/LeiaChat-AppIcon.png", "LeiaChat app icon featuring a camera profile angle design representing video communication with depth, using Leia's brand colors and visual language", "fillImage" %}
+            </div>
+            <div class="featured-image column-2">
+                {% responsiveImage "/assets/leia/LeiaPlayer-AppIcon.png", "LeiaPlayer app icon with media playback symbolism incorporating 3D depth elements and Leia's signature gradient system", "fillImage" %}
             </div>
         </div>
+
+        <div class="flex-container">
+            <div>
+                {% responsiveImage "/assets/leia/leia_appicons.png", "Complete Leia app icon family displaying unified visual design across all applications with consistent depth treatment and brand identity", "fillImage" %}
+            </div>
+        </div>
+
+    </div>
+
+</section>
+<section class="theme-dark">
+
+    <div class="contentBlock">
+        <div class="textBlock">
+            <h4 class="uppercase">Implement and Enable</h4>
+            <p>Rolled out the system app-by-app with phased implementation. Conducted 1:1 working sessions with the design team and collaborated with engineering to establish design-code parity. Presented to stakeholders weekly to maintain alignment.</p>
+        </div>
+            {% responsiveImage "/assets/leia/leia_leiaflix.jpg", "LeiaFlix streaming app interface showcasing content browsing experience with 3D media thumbnails and navigation optimized for landscape tablet viewing" %}
+            {% responsiveImage "/assets/leia/leia_leialink.jpg", "LeiaLink screen mirroring app interface demonstrating wireless connectivity features with clear visual hierarchy and 3D-optimized controls" %}
+            <div class="flex-container">
+                <div>
+                    {% responsiveImage "/assets/leia/leia_player_overlay_ui_example_assembly.jpg", "Modular media player overlay UI component assembly showing playback controls, progress bars, and interactive elements with appropriate scale and contrast for 3D viewing", "fillImage" %}
+                </div>
+                <div>
+                    {% responsiveImage "/assets/leia/leia_camera.jpg", "Leia Camera app interface featuring intuitive capture controls and real-time 3D preview with depth adjustment settings", "fillImage" %}
+                </div>
+            </div>
     </div>
     
 </section>
+<section class="theme-dark">
 
+    <div class="contentBlock">
+            <h4>Solution</h4>
+            <div class="flex-container gutter-large">
+                <div class="column--1">
+                    
+                    <ul class="bulletList">
+                        <h5>Component Library</h5>
+                        <li>Navigation: Sidebar approach optimized for landscape tablet use</li>
+                        <li>Buttons: Unified variations with flexible white space</li>
+                        <li>3D Media Controls: Modular system with appropriate scale and contrast</li>
+                        <li>Typography: Consistent size ratios with baseline grid</li>
+                        <li>Icons: Extended Material library with consistent construction</li>
+                    </ul>
+                </div>
+                <div class="column--1">
+
+                    <h5 class="uppercase">Brand System</h5>
+                    <p>Refined logos with clear usage guidelines, custom product wordmarks with consistent stroke weights and proportions, and a consolidated color palette with semantic variables for Material Design layering.</p>
+                    <h5 class="uppercase">Visual Language</h5>
+                    <p>Gradient system using Cinema4D prism concepts to represent the optical technology, plus device animations and default wallpapers for a cohesive branded experience.</p>
+                </div>
+            </div>
+    </div>
+    
+</section>
 <section class="worklist theme-dark">
 
-        <div class="flex-container">
-            <div class="featured-image column-2">
-                <img class="fillImage" src="/assets/leia/leia_wallpaper_4.jpg" alt="" />
-            </div>
-            <div class="featured-card bottomText theme-leia">
-                <h5 class="uppercase">Results</h5>
-                <ul class="statList">
-                    <li><span>0–1 </span>Foundational design sysetem</li>
-                    <li><span>50+ </span>Designers and engineers</li>
-                    <li><span>10+ </span>Apps and services</li>
-                    <li><span>50% </span>Reduction in handoff time</li>
-                </ul>
-            </div>
+    <div class="flex-container">
+        <div class="featured-image column-2">
+            {% responsiveImage "/assets/leia/leia_wallpaper_4.jpg", "Leia device wallpaper design featuring Cinema4D-inspired prismatic gradients representing the company's optical lightfield technology", "fillImage" %}
         </div>
+        <div class="featured-image column-2">
+            {% responsiveImage "/assets/leia/leia_wallpaper_1.jpg", "Abstract wallpaper showcasing Leia's gradient system with dynamic depth and color transitions optimized for 3D display technology", "fillImage" %}
+        </div>
+        <div class="featured-image column-2">
+            {% responsiveImage "/assets/leia/leia_wallpaper_2.jpg", "Vibrant wallpaper design utilizing Leia's brand colors and geometric patterns to create an immersive 3D visual experience", "fillImage" %}
+        </div>
+    </div>
+
 </section>

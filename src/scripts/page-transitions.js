@@ -8,7 +8,7 @@
 
 class PageTransitions {
     constructor() {
-        this.transitionDuration = 500; // milliseconds
+        this.transitionDuration = 200; // milliseconds - must match $transition-fadeIn in CSS
         this.isTransitioning = false;
 
         this.init();
@@ -84,11 +84,11 @@ class PageTransitions {
         return true;
     }
 
-    async navigateToPage(url) {
+    async navigateToPage(url, skipHistoryUpdate = false) {
         if (this.isTransitioning) return;
 
-        // Don't transition if we're already on this page
-        if (url === window.location.pathname) return;
+        // Don't transition if we're already on this page (unless it's from browser navigation)
+        if (url === window.location.pathname && !skipHistoryUpdate) return;
 
         this.isTransitioning = true;
 
@@ -103,7 +103,7 @@ class PageTransitions {
             const html = await this.fetchPage(url);
 
             // Update the page (new content loads at top position)
-            this.updatePage(html, url);
+            this.updatePage(html, url, skipHistoryUpdate);
 
             // Fade in
             await this.fadeIn();
@@ -127,7 +127,7 @@ class PageTransitions {
         return await response.text();
     }
 
-    updatePage(html, url) {
+    updatePage(html, url, skipHistoryUpdate = false) {
         // Parse the new HTML
         const parser = new DOMParser();
         const newDoc = parser.parseFromString(html, 'text/html');
@@ -154,8 +154,10 @@ class PageTransitions {
         // Update navigation active states
         this.updateNavigationState(url);
 
-        // Update browser history
-        window.history.pushState({ path: url }, '', url);
+        // Update browser history (only if not from browser navigation)
+        if (!skipHistoryUpdate) {
+            window.history.pushState({ path: url }, '', url);
+        }
 
         // Re-initialize any scripts that need to run on the new content
         this.reinitializeScripts();
@@ -190,10 +192,12 @@ class PageTransitions {
     }
 
     handleBrowserNavigation() {
-        window.addEventListener('popstate', (e) => {
-            if (e.state && e.state.path) {
-                this.navigateToPage(e.state.path);
-            }
+        window.addEventListener('popstate', () => {
+            // Get the URL from the current location (browser has already updated it)
+            const url = window.location.pathname;
+
+            // Navigate to the page, but skip updating history since browser already did it
+            this.navigateToPage(url, true);
         });
     }
 

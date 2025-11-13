@@ -87,6 +87,9 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 .uppercase-cancel {
     text-transform: none;
 }
+.nobreak {
+    white-space: nowrap;
+}
 
 //*******************************************
 //
@@ -101,6 +104,7 @@ h5 {
     @extend %fontSize-body;
     margin-bottom: 1em;
     font-size: 1.8rem;
+    max-width: 30em;
     @include breakpoint-up($bp-sm) {
         font-size: 2.2rem;
     }
@@ -111,12 +115,13 @@ h4 {
     @extend p;
     @extend %fontSize-bodyLarge;
     font-size: 2.6rem;
+    max-width: 30em;
     @include breakpoint-up($bp-sm) {
         font-size: 2.8rem;
     }
 }
 h5,h4 {
-    margin-bottom: 0.4em;
+    margin-bottom: 1em;
     margin-top: 1em;
     text-transform: uppercase;
 }
@@ -154,7 +159,7 @@ h2 {
 h3 {
     @extend %fontFamily-primary;
     font-size: 4.5rem;
-    line-height: 1.04em;
+    line-height: 1.06em;
     padding-bottom: 0.4em;
     letter-spacing: -0.02em;
     margin-top: 0.15em;
@@ -162,31 +167,27 @@ h3 {
 
 
 // Old stuff
-h6 {
-    @extend %fontFamily-primary;
-    font-size: 1.2rem;
-    line-height: 1.4em;
-}
-small {
-    @extend %fontFamily-primary;
-    font-size: 0.833rem;
-    line-height: 1.4em;
-}
-
 ul,
 ol {
     @extend p;
     padding-left: 0;
+    padding-bottom: 0.5em;
+    list-style-type: none;
 }
 
 ul li {
     list-style: none; /* Remove default marker */
+    list-style-type: none;
     position: relative;
-    padding-left: 1rem; /* Make space for custom marker */
+    margin-bottom: 0.5em;
+    &:last-child { margin-bottom: 0; }
 }
 
-ul li::before {
-    content: '•'; /* Custom character or emoji */
-    position: absolute;
-    left: 0;
+ul.bulletList {
+    margin: 0.75em;
+    li::before {
+        content: '•'; /* Custom character or emoji */
+        position: absolute;
+        left: -0.75em;
+    }
 }

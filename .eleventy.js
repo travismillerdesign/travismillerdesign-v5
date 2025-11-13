@@ -1,6 +1,9 @@
 // .eleventy.js
 
 module.exports = function (eleventyConfig) {
+    // Register shortcodes
+    require('./src/_includes/shortcodes')(eleventyConfig);
+
     // Tells Eleventy to use Nunjucks for files ending in .html
     eleventyConfig.setLiquidOptions({
         dynamicPartials: false,
@@ -14,8 +17,10 @@ module.exports = function (eleventyConfig) {
     // Copy fonts folder
     eleventyConfig.addPassthroughCopy('src/fonts');
 
-    // Copy and optimize assets folder
-    eleventyConfig.addPassthroughCopy('src/assets');
+    // Copy assets folder (GIFs, MP4s, and other non-optimized assets)
+    // Note: Optimized images are handled by optimize-images.js
+    eleventyConfig.addPassthroughCopy('src/assets/**/*.gif');
+    eleventyConfig.addPassthroughCopy('src/assets/**/*.mp4');
 
     // Watch the compiled CSS file and trigger browser reload when it changes
     eleventyConfig.addWatchTarget('src/styles/project.css');

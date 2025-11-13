@@ -80,14 +80,16 @@ footer.page-transitioning-out {
 // Fade in: content fades in with subtle upward movement
 main.page-transitioning-in,
 footer.page-transitioning-in {
-    animation: fadeInContent $transition-fadeIn $ease-out;
+    animation: fadeInContent $transition-fadeIn $ease-out forwards;
 }
 
 @keyframes fadeInContent {
     from {
         opacity: 0;
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
