@@ -87,6 +87,9 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 .uppercase-cancel {
     text-transform: none;
 }
+.nobreak {
+    white-space: nowrap;
+}
 
 //*******************************************
 //
@@ -156,7 +159,7 @@ h2 {
 h3 {
     @extend %fontFamily-primary;
     font-size: 4.5rem;
-    line-height: 1.04em;
+    line-height: 1.06em;
     padding-bottom: 0.4em;
     letter-spacing: -0.02em;
     margin-top: 0.15em;
