@@ -169,6 +169,7 @@ $border-radius: 1.6rem;
     gap: $unit-sm;
     flex: 1;
     align-items: stretch;
+    justify-content: flex-start;
 
     // Tablet and up: horizontal layout with larger gap
     @include breakpoint-up($bp_sm) {
