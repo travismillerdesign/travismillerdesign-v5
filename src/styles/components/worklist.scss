@@ -6,7 +6,7 @@
 .worklist {
     @extend %padding-outer;
     .sectionLabel {
-        @extend %padding-inner;
+        @extend .padding-inner;
         padding-bottom: 0;
     }
 }
@@ -81,7 +81,7 @@ a:hover .featured-image .fillImage {
 
 // Text Card content
 .featured-card {
-    @extend %padding-inner;
+    @extend .padding-inner;
     position: relative;
     border-radius: $border-radius;
     flex: 1;

@@ -4,7 +4,7 @@
 
 
 .textBlock {
-    @extend %padding-inner;
+    @extend .padding-inner;
     // Mobile: full width
     max-width: 100%;
     margin: $margin-lg 0 $margin-sm;

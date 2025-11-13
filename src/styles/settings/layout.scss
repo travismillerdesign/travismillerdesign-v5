@@ -68,7 +68,7 @@ $margin-section: 6.4rem;
     }
 }
 
-%padding-inner {
+.padding-inner {
     padding: $margin-sm;
     @include breakpoint-up($bp-sm) {
         padding: $margin-md;
