@@ -46,6 +46,9 @@ section {
     @extend %padding-outer;
 	position: relative;
     z-index: 0;
+    &:last-of-type {
+        padding-bottom: $unit-lg*2;
+    }
 }
 header {
     @extend %padding-full;
