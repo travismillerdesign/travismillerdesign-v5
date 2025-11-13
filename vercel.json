@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/latest",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/latest/",
+      "destination": "/",
+      "permanent": false
+    }
+  ]
+}
