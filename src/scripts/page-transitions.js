@@ -8,7 +8,7 @@
 
 class PageTransitions {
     constructor() {
-        this.transitionDuration = 500; // milliseconds
+        this.transitionDuration = 200; // milliseconds - must match $transition-fadeIn in CSS
         this.isTransitioning = false;
 
         this.init();
