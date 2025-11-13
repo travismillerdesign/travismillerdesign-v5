@@ -55,6 +55,10 @@ $glyph-white: hsl(0, 0, 94%);
     @include button-hover-swap(#bfdded, #005376);
 }
 
+.theme-beam {
+    @include button-hover-swap(#ffffff, #4285f4);
+}
+
 // Workaround for worklist button hover
 a:hover {
     .theme-leia .button {
@@ -75,6 +79,11 @@ a:hover {
     .theme-brand .button {
         background-color: #bfdded;
         color: #005376;
+    }
+
+    .theme-beam .button {
+        background-color: #ffffff;
+        color: #4285f4;
     }
 }
 
