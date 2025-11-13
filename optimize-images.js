@@ -32,10 +32,11 @@ async function optimizeImages() {
 
         console.log(`Optimizing: ${relativePath}`);
 
-        await Image(imagePath, {
+        const metadata = await Image(imagePath, {
             widths: [1080, null], // 1080w for mobile, null for original size
             formats: ['jpeg', 'webp'],
             outputDir: outputPath,
+            useCache: false, // Disable cache to ensure all versions are generated
             filenameFormat: function (id, src, width, format, options) {
                 const extension = path.extname(src);
                 const name = path.basename(src, extension);
@@ -44,7 +45,7 @@ async function optimizeImages() {
                 if (width === 1080) {
                     return `${name}-1080w.${format === 'jpeg' ? 'jpg' : format}`;
                 } else {
-                    // Original size
+                    // Original size - ensure it's always generated
                     return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
                 }
             },
@@ -56,6 +57,24 @@ async function optimizeImages() {
                 quality: 85,
             },
         });
+
+        // Handle edge case: if image is exactly 1080px wide, copy 1080w as base version
+        for (const format of ['jpeg', 'webp']) {
+            const outputs = metadata[format] || [];
+            const has1080 = outputs.find(img => img.width === 1080);
+            const hasBase = outputs.find(img => img.outputPath && !img.outputPath.includes('-1080w'));
+
+            if (has1080 && !hasBase) {
+                // Copy 1080w version as base version
+                const extension = path.extname(imagePath);
+                const name = path.basename(imagePath, extension);
+                const baseFilename = `${name}.${format === 'jpeg' ? 'jpg' : format}`;
+                const basePath = path.join(outputPath, baseFilename);
+                const source1080Path = has1080.outputPath;
+
+                fs.copyFileSync(source1080Path, basePath);
+            }
+        }
     }
 
     console.log('Image optimization complete!');
