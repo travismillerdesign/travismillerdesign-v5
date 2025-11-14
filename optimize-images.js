@@ -32,9 +32,13 @@ async function optimizeImages() {
 
         console.log(`Optimizing: ${relativePath}`);
 
+        // Determine if source is PNG to preserve transparency
+        const isPng = /\.png$/i.test(imagePath);
+        const formats = isPng ? ['png', 'webp'] : ['jpeg', 'webp'];
+
         const metadata = await Image(imagePath, {
             widths: [1080, null], // 1080w for mobile, null for original size
-            formats: ['jpeg', 'webp'],
+            formats: formats,
             outputDir: outputPath,
             useCache: false, // Disable cache to ensure all versions are generated
             filenameFormat: function (id, src, width, format, options) {
@@ -56,10 +60,13 @@ async function optimizeImages() {
             webpOptions: {
                 quality: 85,
             },
+            pngOptions: {
+                quality: 85,
+            },
         });
 
         // Handle edge case: if image is exactly 1080px wide, copy 1080w as base version
-        for (const format of ['jpeg', 'webp']) {
+        for (const format of formats) {
             const outputs = metadata[format] || [];
             const has1080 = outputs.find(img => img.width === 1080);
             const hasBase = outputs.find(img => img.outputPath && !img.outputPath.includes('-1080w'));

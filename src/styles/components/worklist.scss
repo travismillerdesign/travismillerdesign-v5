@@ -41,6 +41,9 @@
             max-width: 15em;
         }
     }
+    + .worklist-small .workitem {
+        margin-top: 0;
+    }
 }
 
 .workitem {
