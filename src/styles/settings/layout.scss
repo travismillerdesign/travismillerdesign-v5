@@ -194,6 +194,19 @@ $border-radius: 1.6rem;
             margin-top: $unit-md;
         }
     }
+
+    // Grid variant: rows of 2 on mobile
+    &.grid-mobile-2 {
+        @include breakpoint-down($bp_sm) {
+            flex-direction: row;
+            flex-wrap: wrap;
+
+            > * {
+                flex: 1 1 calc(50% - #{$unit-sm} / 2);
+                max-width: calc(50% - #{$unit-sm} / 2);
+            }
+        }
+    }
 }
 
 // The proportion of the flex box the item should take up
