@@ -17,18 +17,18 @@ module.exports = function (eleventyConfig) {
         }
 
         // Build paths for different sizes and formats
-        const mobile1080wWebp = `/${nameWithoutExt}-1080w.webp`;
-        const mobile1080wJpg = `/${nameWithoutExt}-1080w.jpg`;
-        const desktopWebp = `/${nameWithoutExt}.webp`;
-        const desktopJpg = `/${nameWithoutExt}.jpg`;
+        // Determine the output extension based on input type
+        const outputExt = ext.toLowerCase() === '.png' ? '.png' : '.jpg';
 
-        // Generate picture element with sources for different breakpoints
+        const desktopWebp = `/${nameWithoutExt}.webp`;
+        const desktopImg = `/${nameWithoutExt}${outputExt}`;
+
+        // Simple picture element with WebP and fallback
+        // Browser will handle responsive sizing via CSS
         return `<picture>
-            <source media="(max-width: 1079px)" srcset="${mobile1080wWebp}" type="image/webp">
-            <source media="(max-width: 1079px)" srcset="${mobile1080wJpg}" type="image/jpeg">
-            <source media="(min-width: 1080px)" srcset="${desktopWebp}" type="image/webp">
-            <source media="(min-width: 1080px)" srcset="${desktopJpg}" type="image/jpeg">
-            <img class="${className}" src="${desktopJpg}" alt="${alt}" loading="lazy" />
+            <source srcset="${desktopWebp}" type="image/webp">
+            <source srcset="${desktopImg}" type="image/${outputExt.substring(1)}">
+            <img class="${className}" src="${desktopImg}" alt="${alt}" loading="lazy" />
         </picture>`;
     });
 };
