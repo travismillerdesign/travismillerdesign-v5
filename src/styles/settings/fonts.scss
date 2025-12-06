@@ -34,14 +34,21 @@ $fontSize-28: 2.8rem;
 //	- Font families, weights, and styles
 //*******************************************
 
-// Load PPMori font
+// Load PPMori font - Regular (400) and Semibold (600)
 @font-face {
-    font-family: 'PPMori-SemiBold';
-    src: url('/fonts/PPMori-Semibold.woff2') format('woff2'),
-         url('/fonts/PPMori-Semibold.woff') format('woff');
+    font-family: 'PPMori';
+    src: url('/fonts/PPMori-Regular.woff2') format('woff2'),
+         url('/fonts/PPMori-Regular.woff') format('woff');
     font-weight: 400;
     font-style: normal;
-    // font-display: swap;
+}
+
+@font-face {
+    font-family: 'PPMori';
+    src: url('/fonts/PPMori-Semibold.woff2') format('woff2'),
+         url('/fonts/PPMori-Semibold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
 }
 
 %fontSmoothing {
@@ -50,7 +57,7 @@ $fontSize-28: 2.8rem;
     text-rendering: optimizeLegibility;
 }
 
-$fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
+$fontFamily-primary: 'PPMori', Helvetica, sans-serif;
 %fontFamily-primary {
 	@extend %fontSmoothing;
     font-family: $fontFamily-primary;
@@ -59,7 +66,7 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
     line-height: 1.15em;
 	font-display: swap;
     margin: 0;
-    letter-spacing: -0.005em;
+    // letter-spacing: -0.001em;
 }
 
 %fontSize-body {
@@ -82,7 +89,7 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 
 .uppercase {
     text-transform: uppercase;
-    letter-spacing: -0.01em;
+    // letter-spacing: -0.01em;
 }
 .uppercase-cancel {
     text-transform: none;
@@ -99,15 +106,21 @@ $fontFamily-primary: 'PPMori-SemiBold', Helvetica, sans-serif;
 //	- Custom styles can be added
 //
 //*******************************************
-p,
-h5 {
+p {
     @extend %fontSize-body;
     margin-bottom: 1em;
     font-size: 1.8rem;
-    max-width: 30em;
+    max-width: 40em;
     @include breakpoint-up($bp-sm) {
         font-size: 2.2rem;
     }
+}
+
+h5 {
+    @extend p;
+    margin-bottom: 0em;
+    margin-top: 0.5em;
+    text-transform: uppercase;
 }
 
 p.large,
@@ -115,21 +128,23 @@ h4 {
     @extend p;
     @extend %fontSize-bodyLarge;
     font-size: 2.6rem;
-    max-width: 30em;
+    max-width: 40em;
     @include breakpoint-up($bp-sm) {
         font-size: 2.8rem;
     }
 }
-h5,h4 {
+h4 {
     margin-bottom: 1em;
     margin-top: 1em;
+    font-weight: 600;
     text-transform: uppercase;
 }
 
 h1 {
     @extend %fontFamily-primary;
     font-size: 5.6rem;
-    letter-spacing: -0.03em;
+    font-weight: 600;
+    // letter-spacing: -0.03em;
     line-height: 0.98em;
     margin-top: 0.15em;
     @include breakpoint-up($bp-sm) {
@@ -152,21 +167,21 @@ h1 {
 h2 {
     @extend %fontFamily-primary;
     font-size: 5.6rem;
-    letter-spacing: -0.03em;
+    font-weight: 600;
+    // letter-spacing: -0.03em;
     line-height: 1em;
     margin-top: 0.15em;
 }
 h3 {
     @extend %fontFamily-primary;
     font-size: 4.5rem;
+    font-weight: 600;
     line-height: 1.06em;
     padding-bottom: 0.4em;
-    letter-spacing: -0.02em;
+    // letter-spacing: -0.02em;
     margin-top: 0.15em;
 }
 
-
-// Old stuff
 ul,
 ol {
     @extend p;
@@ -190,4 +205,17 @@ ul.bulletList {
         position: absolute;
         left: -0.75em;
     }
+}
+
+//*******************************************
+//	UTILITY CLASSES
+//	- Font weight utilities
+//*******************************************
+
+.font-regular {
+    font-weight: 400;
+}
+
+.font-semibold {
+    font-weight: 600;
 }

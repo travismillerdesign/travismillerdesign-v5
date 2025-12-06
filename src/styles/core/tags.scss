@@ -92,7 +92,9 @@ a {
 // p {}
 // abbr[title] {}
 // b {}
-// strong {}
+strong {
+    text-transform: uppercase;
+}
 // dfn {}
 hr {
     border: none; /* Remove default border */
