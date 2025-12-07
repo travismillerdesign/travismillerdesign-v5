@@ -62,17 +62,18 @@ $fontFamily-primary: 'PPMori', Helvetica, sans-serif;
 	@extend %fontSmoothing;
     font-family: $fontFamily-primary;
     font-style:  normal;
-    font-weight: 400;
+    // font-weight: 400;
     line-height: 1.15em;
 	font-display: swap;
     margin: 0;
     // letter-spacing: -0.001em;
+    letter-spacing: 0.015em;
 }
 
 %fontSize-body {
     @extend %fontFamily-primary;
     font-size: $fontSize-20;
-    line-height: 1.27em;
+    line-height: 1.4em;
     @include breakpoint-up($bp-sm) {
         font-size: $fontSize-22; // Style for medium and larger screens
     }
@@ -81,7 +82,7 @@ $fontFamily-primary: 'PPMori', Helvetica, sans-serif;
 %fontSize-bodyLarge {
     @extend %fontFamily-primary;
     font-size: $fontSize-26;
-    line-height: 1.2em;
+    line-height: 1.3em;
     @include breakpoint-up($bp-sm) {
         font-size: $fontSize-28; // Style for medium and larger screens
     }
@@ -97,6 +98,16 @@ $fontFamily-primary: 'PPMori', Helvetica, sans-serif;
 .nobreak {
     white-space: nowrap;
 }
+span.halfspace {
+    margin: 0 0.1em;
+    &.left {margin-right: 0.1em;}
+    &.right {margin-left: 0.1em;}
+}
+span.thinspace {
+    margin: 0 0.2em;
+    &.left {margin-right: 0.1em;}
+    &.right {margin-left: 0.1em;}
+}
 
 //*******************************************
 //
@@ -110,7 +121,7 @@ p {
     @extend %fontSize-body;
     margin-bottom: 1em;
     font-size: 1.8rem;
-    max-width: 40em;
+    max-width: 30em;
     @include breakpoint-up($bp-sm) {
         font-size: 2.2rem;
     }
@@ -128,7 +139,7 @@ h4 {
     @extend p;
     @extend %fontSize-bodyLarge;
     font-size: 2.6rem;
-    max-width: 40em;
+    max-width: 30em;
     @include breakpoint-up($bp-sm) {
         font-size: 2.8rem;
     }
@@ -144,9 +155,10 @@ h1 {
     @extend %fontFamily-primary;
     font-size: 5.6rem;
     font-weight: 600;
-    // letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
     line-height: 0.98em;
     margin-top: 0.15em;
+    margin-left: -0.025em; // 'story' bleed of the left edge
     @include breakpoint-up($bp-sm) {
         font-size: 7.5rem;
     }
