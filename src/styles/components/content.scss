@@ -13,6 +13,11 @@
     @include breakpoint-up($bp_sm) {
         max-width: 66%;
     }
+    &.wide {
+        @include breakpoint-up($bp_sm) {
+            max-width: 100%;
+        }
+    }
 }
 
 .cornerRadius-24 {
@@ -75,4 +80,36 @@
 .sectionEyebrow {
     @extend .uppercase;
     @extend .font-semibold;
+}
+
+.caption {
+    margin-bottom: 0.75em;
+    &.right {
+        text-align: right;
+    }
+    &.top-right {
+        @include breakpoint-up($bp_sm) {
+            text-align: right;
+            position: absolute;
+            top:0;
+            right: 0;
+        }
+    }
+}
+.caption-content {
+    @extend %fontSize-bodySmall;
+    // Duplicate details from ul.chipList
+    text-transform: uppercase;
+    display:inline-block;
+    background: currentColor;
+    line-height: 1em; // to normalize chip height
+    padding: 0.2em 0.4em 0.2em;
+    border-radius: 0.3em;
+    //
+    @include breakpoint-down($bp_sm) {
+        display:inline-block;
+    }
+    a:hover {
+        opacity: 0.8;
+    }
 }

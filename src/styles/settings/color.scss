@@ -7,6 +7,10 @@ $glyph-black: #080808;
 $fill-white: hsl(0, 0, 94%);
 $glyph-white: hsl(0, 0, 94%);
 
+// EXCEPTION
+$lighten-amt: 3%;
+$darken-amt: 15%;
+
 //*******************************************
 //	MIXINS
 //*******************************************
@@ -19,6 +23,16 @@ $glyph-white: hsl(0, 0, 94%);
     &a:hover {
         background-color: $text-color;
         color: $bg-color;
+    }
+
+    // EXCEPTIONS
+    .chipList li {
+        color: $bg-color;
+        background-color: $text-color;
+    }
+    .caption-content {
+        color: $text-color;
+        background-color: darken($bg-color, $darken-amt);
     }
 }
 
@@ -34,6 +48,11 @@ $glyph-white: hsl(0, 0, 94%);
 }
 .theme-dark {
     @include button-hover-swap($glyph-white, $fill-black);
+    // EXCEPTIONS
+    .caption-content {
+        color: darken($glyph-white, $lighten-amt);
+        background-color: lighten($fill-black, $darken-amt);
+    }
 }
 
 //*******************************************

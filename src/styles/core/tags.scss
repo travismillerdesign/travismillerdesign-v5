@@ -93,7 +93,7 @@ a {
 // abbr[title] {}
 // b {}
 strong {
-    text-transform: uppercase;
+    @extend .font-semibold;
 }
 // dfn {}
 hr {
