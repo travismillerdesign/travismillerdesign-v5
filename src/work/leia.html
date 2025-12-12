@@ -60,31 +60,33 @@ title: Lume Pad Design System - Travis Miller
     <div class="contentBlock">
         <div class="textBlock">
             <h3>Design Foundation</h3>
-            <p>Built systematic approach to layering UI in 3D space. Working within an 8pt grid system, I defined depth zones, contrast requirements, and scale specifications for Lightfield viewing. Extended Material Design's semantic variables with depth-specific adjustments. Typography established baseline grid alignment across all depth planes.</p>
+            <p>Established core design language for Leia's Android tablet ecosystem. I defined the grid system, color tokenization, typography scales, and iconography that extended Material Design conventions to address Leia's technical requirements. These foundational elements ensured visual consistency while accounting for how 3D content affects contrast and readability.</p>
         </div>
         <div class="flex-container">
             <div>{% responsiveImage "/assets/leia/leia_color_values.png", "Leia design system color palette showing primary, secondary, and semantic color values with hex codes and usage guidelines", "fillImage" %}</div>
             <div>{% responsiveImage "/assets/leia/leia_typography.png", "Typography specifications showing font families, sizes, weights, and baseline grid system for Leia's design language", "fillImage" %}</div>
         </div>
         <div class="flex-container">
-            <div class="cornerRadius-24">{% responsiveImage "/assets/leia/leia_iconsystemdark.png", "Comprehensive icon system displayed on dark background, showing Material Design icons extended with consistent construction guidelines for 3D interface use", "fillImage" %}</div>
+            <div class="roundedCorners">{% responsiveImage "/assets/leia/leia_iconsystemdark.png", "Comprehensive icon system displayed on dark background, showing Material Design icons extended with consistent construction guidelines for 3D interface use", "fillImage" %}</div>
         </div>
     </div>
 
     <div class="contentBlock">
         <div class="textBlock">
             <h3>Component Architecture</h3>
-            <p>Extended Material Design for Leia's Android platform with depth-specific adaptations. Buttons required higher contrast ratios because depth perception changes color relationships. Built navigation optimized for landscape tablets, modular media controls for 3D viewing, and extended Material icon sets.</p>
-            
-            <p>Each component included technical implementation guidelines—not just visual specs, but the reasoning behind depth placement and contrast decisions so engineers understood why components behaved differently in 3D space.</p>
+            <p>Established depth-based layering system where background shades indicate hierarchy. Lighter surfaces sit on top of darker ones, creating clean visual structure without harsh borders or keylines. This approach gave designers a clear mental model for building interfaces that felt cohesive alongside 3D content.</p>
         </div>
 
         <div class="flex-container">
-            <div class="cornerRadius-24">{% responsiveImage "/assets/leia/leia_color_example_backgrounds.png", "Color application examples showing various background treatments and layering techniques optimized for 3D Lightfield displays", "fillImage" %}</div>
+            <div class="roundedCorners">{% responsiveImage "/assets/leia/leia_color_layering.png", "Color application examples showing various background treatments and layering techniques optimized for 3D Lightfield displays", "fillImage" %}</div>
         </div>
-
+        
+        <div class="textBlock">
+            <p>Built comprehensive component library addressing Leia's technical constraints. Buttons and controls required higher contrast ratios to perform best on the Lightfield display. Navigation was optimized for landscape tablets, and media controls became modular for different viewing contexts.</p>
+        </div>
+        
         <div class="flex-container">
-            <div class="cornerRadius-24">{% responsiveImage "/assets/leia/leia_leiadesignsystem.png", "Complete Leia design system overview displaying component library including buttons, navigation elements, media controls, and UI patterns for 3D interfaces", "fillImage" %}</div>
+            <div class="roundedCorners">{% responsiveImage "/assets/leia/leia_leiadesignsystem.png", "Complete Leia design system overview displaying component library including buttons, navigation elements, media controls, and UI patterns for 3D interfaces", "fillImage" %}</div>
         </div>
         
     </div>  
