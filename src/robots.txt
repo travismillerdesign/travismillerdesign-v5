@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Sitemap: https://travismillerdesign.com/sitemap.xml
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /

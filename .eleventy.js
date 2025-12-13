@@ -22,6 +22,9 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addPassthroughCopy('src/assets/**/*.gif');
     eleventyConfig.addPassthroughCopy('src/assets/**/*.mp4');
 
+    // Copy robots.txt to output
+    eleventyConfig.addPassthroughCopy('src/robots.txt');
+
     // Watch the compiled CSS file and trigger browser reload when it changes
     eleventyConfig.addWatchTarget('src/styles/project.css');
 
