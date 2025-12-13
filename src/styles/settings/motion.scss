@@ -1,6 +1,8 @@
 //*******************************************
 //	MOTION
 //*******************************************
+@use 'sass:meta';
+
 $transition-fadeIn: 200ms;
 $transition-stagger: 100ms;
 $ease-out: cubic-bezier(.08,.2,.5,1);
@@ -9,7 +11,7 @@ $ease-out: cubic-bezier(.08,.2,.5,1);
 // @include transition(opacity, 200ms);
 // @include transition((opacity 100ms, transform 100ms));
 @mixin transition($property, $duration: 100ms, $timing-function: $ease-out, $delay: 0s) {
-    @if type-of($property) == 'list' and length($property) > 1 and type-of(nth($property, 1)) != 'number' {
+    @if meta.type-of($property) == 'list' and length($property) > 1 and meta.type-of(nth($property, 1)) != 'number' {
         // Multiple properties passed as a list
         transition: $property;
     } @else {

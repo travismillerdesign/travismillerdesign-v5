@@ -1,11 +1,13 @@
 //*******************************************
 //	COLOR VARIABLES
 //*******************************************
+@use 'sass:color';
+
 $fill-black: #000000;
 $glyph-black: #080808;
 
-$fill-white: hsl(0, 0, 94%);
-$glyph-white: hsl(0, 0, 94%);
+$fill-white: hsl(0, 0%, 94%);
+$glyph-white: hsl(0, 0%, 94%);
 
 // EXCEPTION
 $lighten-amt: 3%;
@@ -32,7 +34,7 @@ $darken-amt: 15%;
     }
     .caption-content {
         color: $text-color;
-        background-color: darken($bg-color, $darken-amt);
+        background-color: color.adjust($bg-color, $lightness: -$darken-amt);
     }
 }
 
@@ -50,8 +52,8 @@ $darken-amt: 15%;
     @include button-hover-swap($glyph-white, $fill-black);
     // EXCEPTIONS
     .caption-content {
-        color: darken($glyph-white, $lighten-amt);
-        background-color: lighten($fill-black, $darken-amt);
+        color: color.adjust($glyph-white, $lightness: -$lighten-amt);
+        background-color: color.adjust($fill-black, $lightness: $darken-amt);
     }
 }
 
