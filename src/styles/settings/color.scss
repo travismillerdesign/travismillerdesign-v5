@@ -84,7 +84,6 @@ $darken-amt: 15%;
     @include button-hover-swap(#f5f5f7, #1d1d1f);
 }
 
-
 // Workaround for worklist button hover
 a:hover {
     .theme-leia .button {
@@ -117,5 +116,3 @@ a:hover {
         color: #1d1d1d;
     }
 }
-
-

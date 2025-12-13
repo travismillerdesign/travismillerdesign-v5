@@ -5,7 +5,6 @@ title: Page Moved - Travis Miller Design
 
 <header></header>
 
-
 <section class="theme-dark">
 
     <div class="contentBlock">
@@ -15,20 +14,20 @@ title: Page Moved - Travis Miller Design
             <p>Redirecting in <span id="countdown">3</span> seconds...</p>
         </div>
     </div>
-    
+
 </section>
 
 <script>
-  let seconds = 3;
-  const countdownElement = document.getElementById('countdown');
+    let seconds = 3;
+    const countdownElement = document.getElementById('countdown');
 
-  const countdown = setInterval(() => {
-    seconds--;
-    countdownElement.textContent = seconds;
+    const countdown = setInterval(() => {
+        seconds--;
+        countdownElement.textContent = seconds;
 
-    if (seconds <= 0) {
-      clearInterval(countdown);
-      window.location.href = '/';
-    }
-  }, 1000);
+        if (seconds <= 0) {
+            clearInterval(countdown);
+            window.location.href = '/';
+        }
+    }, 1000);
 </script>

@@ -10,7 +10,6 @@ $bp_sm: 1080px;
 $bp_lg: 1440px;
 $maxWidth-lg: 1400px;
 
-
 //*******************************************
 //	BREAKPOINT UTILITY
 //*******************************************
@@ -257,9 +256,9 @@ $border-radius: 1.6rem;
 /*
 .column-fixed-width {
   // Set a specific width for this column
-  width: 300px; 
+  width: 300px;
   // Prevent it from growing or shrinking
-  flex-shrink: 0; 
-  flex-grow: 0; 
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 */

@@ -2,13 +2,12 @@
 // ============================================================================
 @use '../settings' as *;
 
-
 .textBlock {
     @extend .padding-inner;
     // Mobile: full width
     max-width: 100%;
     margin: $margin-lg 0 $margin-sm;
-    
+
     // Tablet and up: 40% width
     @include breakpoint-up($bp_sm) {
         max-width: 66%;
