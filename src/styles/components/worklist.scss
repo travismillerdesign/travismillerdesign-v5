@@ -125,7 +125,7 @@ a:hover .featured-image .fillImage {
     }
 }
 
-ul.statList {
+.statList { // ul
     list-style-type: none;
     li {
         &::before {
@@ -143,6 +143,40 @@ ul.statList {
             display: inline-block;
             // width: 2.6em;
             margin-right: 0.25em;
+        }
+    }
+}
+.tableList { // ul
+    @extend .statList;
+    li {
+        // Mobile: stack vertically (no flexbox)
+        display: block;
+
+        // Large screens: use flexbox
+        @include breakpoint-up($bp_sm) {
+            display: flex;
+        }
+
+        span {
+            // Large screens: all columns equal width
+            @include breakpoint-up($bp_sm) {
+                flex: 1;
+            }
+
+            &:first-child {
+                @extend .font-semibold;
+                @extend .uppercase;
+            }
+
+            &:nth-child(n+2) {
+                font-weight: 400;
+                text-transform: none;
+
+                // Add left margin for gutter, but not on first child
+                @include breakpoint-up($bp_sm) {
+                    margin-left: 3rem;
+                }
+            }
         }
     }
 }
