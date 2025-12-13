@@ -158,14 +158,18 @@ a:hover .featured-image .fillImage {
         }
 
         span {
+            // Mobile: force block display to stack vertically
+            display: block;
+            margin-right: 0;
+            
             // Large screens: all columns equal width
             @include breakpoint-up($bp_sm) {
                 flex: 1;
             }
-
+            
             &:first-child {
-                @extend .font-semibold;
                 @extend .uppercase;
+                @extend .font-semibold;
             }
 
             &:nth-child(n+2) {

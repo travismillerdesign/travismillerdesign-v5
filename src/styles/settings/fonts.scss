@@ -82,7 +82,7 @@ $fontFamily-primary: 'PPMori', Helvetica, sans-serif;
 %fontSize-bodyLarge {
     @extend %fontFamily-primary;
     font-size: $fontSize-26;
-    line-height: 1.4em;
+    line-height: 1.38em;
     letter-spacing: 0em;
     @include breakpoint-up($bp-sm) {
         font-size: $fontSize-28; // Style for medium and larger screens
