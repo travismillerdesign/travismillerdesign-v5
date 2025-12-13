@@ -6,12 +6,15 @@
     "scripts": {
         "compile:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --style=compressed",
         "watch:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch",
+        "watch:scss:verbose": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch --verbose",
         "watch:11ty": "npx @11ty/eleventy --serve --quiet",
+        "watch:11ty:verbose": "npx @11ty/eleventy --serve",
         "optimize:images": "node optimize-images.js",
         "prebuild": "npm run compile:scss",
         "build": "npx @11ty/eleventy && npm run optimize:images",
         "serve": "npm-run-all compile:scss --parallel watch:*",
-        "serve:full": "npm run optimize:images && npm-run-all compile:scss --parallel watch:*"
+        "serve:full": "npm run optimize:images && npm-run-all compile:scss --parallel watch:*",
+        "serve:verbose": "npm-run-all compile:scss --parallel watch:scss:verbose watch:11ty:verbose"
     },
     "repository": {
         "type": "git",
