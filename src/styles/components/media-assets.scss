@@ -12,6 +12,16 @@
     @include transition(transform);
 }
 
+.fitImage-white {
+    background-color: #ffffff;
+    position: relative;
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
 // Video element styling
 video {
     display: block;

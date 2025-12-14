@@ -10,7 +10,9 @@
       "Bash(ls:*)",
       "Bash(ffmpeg:*)",
       "Bash(timeout 180 npm run optimize:videos:*)",
-      "Bash(npx @11ty/eleventy:*)"
+      "Bash(npx @11ty/eleventy:*)",
+      "Bash(npm run build:scss:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []
