@@ -17,7 +17,7 @@ const tests = [
 ];
 
 let currentTest = 0;
-let failedTests = [];
+const failedTests = [];
 
 function runNextTest() {
     if (currentTest >= tests.length) {

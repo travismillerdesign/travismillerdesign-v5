@@ -257,10 +257,10 @@ const heroSketch = (p) => {
                 gradientBuffer.background(255);
                 for (let i = 0; i < gradientBuffer.width; i += 20) {
                     for (let j = 0; j < gradientBuffer.height; j += 20) {
-                        let x = i / gradientBuffer.width;
-                        let y = j / gradientBuffer.height;
-                        let dist = p.dist(x, y, GRADIENT_CENTER_X, GRADIENT_CENTER_Y);
-                        let c = p.lerpColor(
+                        const x = i / gradientBuffer.width;
+                        const y = j / gradientBuffer.height;
+                        const dist = p.dist(x, y, GRADIENT_CENTER_X, GRADIENT_CENTER_Y);
+                        const c = p.lerpColor(
                             p.color(GRADIENT_CENTER_COLOR.r, GRADIENT_CENTER_COLOR.g, GRADIENT_CENTER_COLOR.b),
                             p.color(GRADIENT_EDGE_COLOR.r, GRADIENT_EDGE_COLOR.g, GRADIENT_EDGE_COLOR.b),
                             dist
@@ -298,7 +298,7 @@ const heroSketch = (p) => {
     };
 
     p.draw = () => {
-        let currentTime = p.millis();
+        const currentTime = p.millis();
 
         // Draw gradient background
         drawGradient();
@@ -321,14 +321,14 @@ const heroSketch = (p) => {
         animationOffset += GAP_ANIMATION_SPEED;
 
         // Calculate uniform margins based on smallest dimension
-        let minDimension = Math.min(p.width, p.height);
-        let margin = minDimension * 0.2; // margin %
+        const minDimension = Math.min(p.width, p.height);
+        const margin = minDimension * 0.2; // margin %
 
         // Calculate available space with uniform margins
-        let availableWidth = p.width - margin * 2;
-        let availableHeight = p.height - margin * 2;
-        let sizeX = availableWidth / 2;
-        let sizeY = availableHeight / 2;
+        const availableWidth = p.width - margin * 2;
+        const availableHeight = p.height - margin * 2;
+        const sizeX = availableWidth / 2;
+        const sizeY = availableHeight / 2;
 
         // Center the pattern
         p.push();
@@ -341,21 +341,21 @@ const heroSketch = (p) => {
             p.stroke(grey.r, grey.g, grey.b, grey.alpha);
             p.strokeWeight(1.5 - layerIndex * 0.3);
 
-            let offset = layerIndex * 0.1;
+            const offset = layerIndex * 0.1;
 
             // Draw the Lissajous curve in segments with gaps
             let isDrawing = false;
 
             for (let i = 0; i <= CURVE_RESOLUTION; i++) {
-                let t = i / CURVE_RESOLUTION;
+                const t = i / CURVE_RESOLUTION;
 
                 // Check if this point should be drawn (not in a gap)
-                let normalizedT = (t + animationOffset + offset) % 1;
+                const normalizedT = (t + animationOffset + offset) % 1;
                 let shouldDraw = false;
 
                 for (let s = 0; s < NUM_GAPS; s++) {
-                    let gapStart = s / NUM_GAPS;
-                    let gapEnd = (s + 1 - GAP_SIZE) / NUM_GAPS;
+                    const gapStart = s / NUM_GAPS;
+                    const gapEnd = (s + 1 - GAP_SIZE) / NUM_GAPS;
 
                     if (normalizedT >= gapStart && normalizedT <= gapEnd) {
                         shouldDraw = true;
@@ -364,9 +364,9 @@ const heroSketch = (p) => {
                 }
 
                 // Lissajous curve parametric equations
-                let angle = t * p.TWO_PI;
-                let x = sizeX * p.sin(currentFreqX * angle + offset);
-                let y = sizeY * p.sin(currentFreqY * angle);
+                const angle = t * p.TWO_PI;
+                const x = sizeX * p.sin(currentFreqX * angle + offset);
+                const y = sizeY * p.sin(currentFreqY * angle);
 
                 if (shouldDraw) {
                     if (!isDrawing) {
@@ -463,7 +463,7 @@ const approachSketch = (p) => {
     let gradientBuffer;
 
     // Line tracking for collision detection
-    let allLines = []; // Store all completed line segments {x1, y1, x2, y2}
+    const allLines = []; // Store all completed line segments {x1, y1, x2, y2}
 
     // ============================================
     // COLLISION DETECTION
@@ -472,14 +472,14 @@ const approachSketch = (p) => {
     function lineSegmentsIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
         // Check if line segment (x1,y1)-(x2,y2) intersects with (x3,y3)-(x4,y4)
         // Using parametric line equation
-        let denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+        const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
 
         if (denom === 0) {
             return false; // Lines are parallel
         }
 
-        let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
-        let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+        const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+        const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
 
         // Check if intersection point is within both line segments
         return ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99; // Small buffer to avoid endpoint touches
@@ -490,21 +490,21 @@ const approachSketch = (p) => {
         let closestDist = Infinity;
         let closestT = null;
 
-        for (let line of allLines) {
+        for (const line of allLines) {
             // Calculate intersection point
-            let denom = (line.y2 - line.y1) * (x2 - x1) - (line.x2 - line.x1) * (y2 - y1);
+            const denom = (line.y2 - line.y1) * (x2 - x1) - (line.x2 - line.x1) * (y2 - y1);
             if (denom === 0) continue; // Parallel lines
 
-            let ua =
+            const ua =
                 ((line.x2 - line.x1) * (y1 - line.y1) - (line.y2 - line.y1) * (x1 - line.x1)) /
                 denom;
-            let ub = ((x2 - x1) * (y1 - line.y1) - (y2 - y1) * (x1 - line.x1)) / denom;
+            const ub = ((x2 - x1) * (y1 - line.y1) - (y2 - y1) * (x1 - line.x1)) / denom;
 
             if (ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99) {
                 // Intersection found
-                let ix = x1 + ua * (x2 - x1);
-                let iy = y1 + ua * (y2 - y1);
-                let dist = p.dist(x1, y1, ix, iy);
+                const ix = x1 + ua * (x2 - x1);
+                const iy = y1 + ua * (y2 - y1);
+                const dist = p.dist(x1, y1, ix, iy);
 
                 if (dist < closestDist && ua > 0.01) {
                     // Only consider forward intersections
@@ -607,7 +607,7 @@ const approachSketch = (p) => {
 
     function drawBranch(x, y, angle, depth, segmentLength) {
         // Check if this depth level should be visible based on growth progress
-        let depthStartTime = depth * GROWTH_DELAY_PER_LEVEL;
+        const depthStartTime = depth * GROWTH_DELAY_PER_LEVEL;
 
         if (animationTime < depthStartTime || depth > TREE_MAX_DEPTH) {
             return;
@@ -620,13 +620,13 @@ const approachSketch = (p) => {
         depthProgress = p.pow(depthProgress, 0.8); // Gentle easing
 
         // Calculate the FULL end point (where this segment will end when complete)
-        let fullX2 = x + p.cos(angle) * segmentLength;
-        let fullY2 = y + p.sin(angle) * segmentLength;
+        const fullX2 = x + p.cos(angle) * segmentLength;
+        const fullY2 = y + p.sin(angle) * segmentLength;
 
         // Calculate CURRENT end point based on growth progress
         // The line grows FROM the origin (x, y) TO the final position
-        let currentX2 = x + p.cos(angle) * segmentLength * depthProgress;
-        let currentY2 = y + p.sin(angle) * segmentLength * depthProgress;
+        const currentX2 = x + p.cos(angle) * segmentLength * depthProgress;
+        const currentY2 = y + p.sin(angle) * segmentLength * depthProgress;
 
         // Draw the growing line from origin to current position
         if (depthProgress > 0) {
@@ -665,11 +665,11 @@ const approachSketch = (p) => {
             }
 
             // Draw right branch
-            let rightAngle = angle + p.radians(branchAngle);
+            const rightAngle = angle + p.radians(branchAngle);
             drawBranch(fullX2, fullY2, rightAngle, depth + 1, segmentLength);
 
             // Draw left branch
-            let leftAngle = angle - p.radians(branchAngle);
+            const leftAngle = angle - p.radians(branchAngle);
             drawBranch(fullX2, fullY2, leftAngle, depth + 1, segmentLength);
         }
     }
@@ -723,9 +723,9 @@ const approachSketch = (p) => {
 
     function calculateSegmentLength() {
         // Calculate margins
-        let minDimension = Math.min(p.width, p.height);
-        let margin = minDimension * MARGIN_PERCENTAGE;
-        let drawableHeight = p.height - margin * 2;
+        const minDimension = Math.min(p.width, p.height);
+        const margin = minDimension * MARGIN_PERCENTAGE;
+        const drawableHeight = p.height - margin * 2;
 
         // Calculate segment length to fill the canvas height
         // The tree grows upward through TREE_MAX_DEPTH levels
@@ -778,7 +778,7 @@ const approachSketch = (p) => {
             animationTime += 1;
 
             // Check if tree is fully grown
-            let maxGrowthTime = (TREE_MAX_DEPTH + 1) * GROWTH_DELAY_PER_LEVEL + GROWTH_DURATION;
+            const maxGrowthTime = (TREE_MAX_DEPTH + 1) * GROWTH_DELAY_PER_LEVEL + GROWTH_DURATION;
             if (animationTime >= maxGrowthTime) {
                 isGrowing = false;
                 growthProgress = 1;
@@ -788,12 +788,12 @@ const approachSketch = (p) => {
         }
 
         // Calculate margins (matching hero sketch)
-        let minDimension = Math.min(p.width, p.height);
-        let margin = minDimension * MARGIN_PERCENTAGE;
+        const minDimension = Math.min(p.width, p.height);
+        const margin = minDimension * MARGIN_PERCENTAGE;
 
         // Calculate tree starting position (bottom center of drawable area)
-        let startX = p.width / 2;
-        let startY = p.height - margin;
+        const startX = p.width / 2;
+        const startY = p.height - margin;
 
         // Draw fractal tree with dynamically calculated segment length
         p.noFill();
@@ -990,7 +990,7 @@ const foundationPrinciplesSketch = (p) => {
             // Check if it's time to start a new rotation
             if (!this.isAnimating && currentTime >= this.nextRotationTime) {
                 // Check if we've hit the simultaneous rotation limit
-                let animatingCount = getAnimatingTilesCount();
+                const animatingCount = getAnimatingTilesCount();
                 if (animatingCount >= SIMULTANEOUS_ROTATIONS) {
                     // Defer this rotation
                     this.nextRotationTime = currentTime + 100; // Try again in 100ms
@@ -998,7 +998,7 @@ const foundationPrinciplesSketch = (p) => {
                 }
 
                 // Randomly rotate 90 degrees clockwise or counterclockwise
-                let direction = p.random() < 0.5 ? 90 : -90;
+                const direction = p.random() < 0.5 ? 90 : -90;
                 this.targetRotation = this.currentRotation + direction;
                 this.animationProgress = 0;
                 this.isAnimating = true;
@@ -1025,15 +1025,15 @@ const foundationPrinciplesSketch = (p) => {
                 return this.currentRotation;
             }
             // Apply easing to animation progress (ease-in-out cubic)
-            let t = this.animationProgress;
-            let eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            const t = this.animationProgress;
+            const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
             return p.lerp(this.currentRotation, this.targetRotation, eased);
         }
 
         draw(startX, startY) {
-            let x = startX + this.col * TILE_SIZE;
-            let y = startY + this.row * TILE_SIZE;
+            const x = startX + this.col * TILE_SIZE;
+            const y = startY + this.row * TILE_SIZE;
 
             p.push();
             p.translate(x + TILE_SIZE / 2, y + TILE_SIZE / 2);
@@ -1045,8 +1045,8 @@ const foundationPrinciplesSketch = (p) => {
             p.strokeCap(p.ROUND);
             p.noFill();
 
-            let radius = TILE_SIZE * TILE_CORNER_RADIUS;
-            let offset = TILE_SIZE / 2;
+            const radius = TILE_SIZE * TILE_CORNER_RADIUS;
+            const offset = TILE_SIZE / 2;
 
             // Arc from top-left corner
             p.arc(-offset, -offset, radius * 2, radius * 2, 0, p.HALF_PI);
@@ -1066,18 +1066,18 @@ const foundationPrinciplesSketch = (p) => {
         tiles = [];
 
         // Calculate grid dimensions with margins
-        let minDimension = Math.min(p.width, p.height);
-        let margin = minDimension * TILE_MARGIN;
+        const minDimension = Math.min(p.width, p.height);
+        const margin = minDimension * TILE_MARGIN;
 
-        let gridWidth = p.width - margin * 2;
-        let gridHeight = p.height - margin * 2;
+        const gridWidth = p.width - margin * 2;
+        const gridHeight = p.height - margin * 2;
 
         cols = Math.floor(gridWidth / TILE_SIZE);
         rows = Math.floor(gridHeight / TILE_SIZE);
 
         // Calculate centered starting position
-        let startX = (p.width - cols * TILE_SIZE) / 2;
-        let startY = (p.height - rows * TILE_SIZE) / 2;
+        const startX = (p.width - cols * TILE_SIZE) / 2;
+        const startY = (p.height - rows * TILE_SIZE) / 2;
 
         // Create tiles
         for (let row = 0; row < rows; row++) {
@@ -1112,7 +1112,7 @@ const foundationPrinciplesSketch = (p) => {
     };
 
     p.draw = () => {
-        let currentTime = p.millis();
+        const currentTime = p.millis();
 
         // Draw gradient background
         drawGradient();
@@ -1316,7 +1316,7 @@ const implementationSketch = (p) => {
         if (index === totalEllipses - 1) return 1;
 
         // Linear progress (0 to 1)
-        let tLinear = index / (totalEllipses - 1);
+        const tLinear = index / (totalEllipses - 1);
 
         // If no spacing taper, return linear
         if (PATH_SPACING_TAPER_INTENSITY === 0) {
@@ -1337,8 +1337,8 @@ const implementationSketch = (p) => {
                     : 1.0 - 4.0 * (1.0 - tLinear) * (1.0 - tLinear) * (1.0 - tLinear);
         } else if (PATH_SPACING_TAPER_CURVE === 'exponential') {
             // Symmetric exponential: compress both edges, expand center
-            let distance = Math.abs(tLinear - 0.5) * 2.0; // 0 at center, 1 at edges
-            let compressionFactor = Math.exp(3.0 * distance) / Math.exp(3.0);
+            const distance = Math.abs(tLinear - 0.5) * 2.0; // 0 at center, 1 at edges
+            const compressionFactor = Math.exp(3.0 * distance) / Math.exp(3.0);
             tEased =
                 tLinear < 0.5
                     ? 0.5 - (0.5 - tLinear) * compressionFactor
@@ -1359,16 +1359,16 @@ const implementationSketch = (p) => {
         // Apply arc offset perpendicular to line
         if (arcAmount > 0) {
             // Calculate perpendicular offset using sine curve
-            let arcOffset = arcAmount * p.sin(t * p.PI) * arcDirection;
+            const arcOffset = arcAmount * p.sin(t * p.PI) * arcDirection;
 
             // Calculate perpendicular direction to line
-            let dx = ELLIPSE_2_X - ELLIPSE_1_X;
-            let dy = ELLIPSE_2_Y - ELLIPSE_1_Y;
-            let length = p.sqrt(dx * dx + dy * dy);
+            const dx = ELLIPSE_2_X - ELLIPSE_1_X;
+            const dy = ELLIPSE_2_Y - ELLIPSE_1_Y;
+            const length = p.sqrt(dx * dx + dy * dy);
 
             // Perpendicular vector (rotated 90 degrees)
-            let perpX = -dy / length;
-            let perpY = dx / length;
+            const perpX = -dy / length;
+            const perpY = dx / length;
 
             // Apply arc offset
             x += perpX * arcOffset;
@@ -1413,9 +1413,9 @@ const implementationSketch = (p) => {
 
     // Calculate wave scale multiplier for animation
     function calculateWaveScale(index, totalEllipses, taper) {
-        let waveValue = p.sin(wavePhase + (index * WAVE_FREQUENCY * p.TWO_PI) / totalEllipses);
+        const waveValue = p.sin(wavePhase + (index * WAVE_FREQUENCY * p.TWO_PI) / totalEllipses);
         // Map waveValue from [-1, 1] to [1-AMPLITUDE, 1] so it can only reduce size, never increase
-        let scale = 1.0 - ((1.0 - waveValue) / 2.0) * WAVE_AMPLITUDE * taper;
+        const scale = 1.0 - ((1.0 - waveValue) / 2.0) * WAVE_AMPLITUDE * taper;
         return scale;
     }
 
@@ -1467,17 +1467,17 @@ const implementationSketch = (p) => {
         // Calculate how much the ellipse is scaled down from full size (1.0)
         // waveScale ranges from (1 - WAVE_AMPLITUDE) to 1.0
         // scaleFactor: 0 = full size, 1 = most scaled down
-        let scaleFactor = (1.0 - waveScale) / WAVE_AMPLITUDE;
+        const scaleFactor = (1.0 - waveScale) / WAVE_AMPLITUDE;
 
         // Calculate the circularity amount based on scale and intensity
-        let circularityAmount = scaleFactor * WAVE_CIRCULARITY_INTENSITY;
+        const circularityAmount = scaleFactor * WAVE_CIRCULARITY_INTENSITY;
 
         // Calculate the average dimension (what a perfect circle would be)
-        let avgDimension = (width + height) / 2.0;
+        const avgDimension = (width + height) / 2.0;
 
         // Lerp width and height toward avgDimension based on circularity amount
-        let adjustedWidth = p.lerp(width, avgDimension, circularityAmount);
-        let adjustedHeight = p.lerp(height, avgDimension, circularityAmount);
+        const adjustedWidth = p.lerp(width, avgDimension, circularityAmount);
+        const adjustedHeight = p.lerp(height, avgDimension, circularityAmount);
 
         return { width: adjustedWidth, height: adjustedHeight };
     }
@@ -1551,10 +1551,10 @@ const implementationSketch = (p) => {
             p.mouseY <= p.height
         ) {
             // Map mouseX from [0, width] to [-1, 1]
-            let mouseNormalized = (p.mouseX / p.width) * 2.0 - 1.0;
+            const mouseNormalized = (p.mouseX / p.width) * 2.0 - 1.0;
 
             // Apply intensity to mouse influence
-            let mouseInfluence = mouseNormalized * PATH_ARC_MOUSE_INTENSITY;
+            const mouseInfluence = mouseNormalized * PATH_ARC_MOUSE_INTENSITY;
 
             // Calculate target arc amount (0 at center, max at edges) with strength multiplier
             targetArcAmount =
@@ -1577,7 +1577,7 @@ const implementationSketch = (p) => {
         }
 
         // Calculate total number of ellipses
-        let totalEllipses = INTERMEDIATE_STEPS + 2;
+        const totalEllipses = INTERMEDIATE_STEPS + 2;
 
         // Draw all ellipses
         p.strokeWeight(STROKE_WEIGHT);
@@ -1586,37 +1586,37 @@ const implementationSketch = (p) => {
 
         for (let i = 0; i < totalEllipses; i++) {
             // Calculate redistributed position along path with spacing taper
-            let t = calculatePathPosition(i, totalEllipses);
+            const t = calculatePathPosition(i, totalEllipses);
 
             // Get position with dynamic arc
-            let pos = calculatePosition(t, currentArcAmount, currentArcDirection);
-            let x = pos.x * p.width;
-            let y = pos.y * p.height;
+            const pos = calculatePosition(t, currentArcAmount, currentArcDirection);
+            const x = pos.x * p.width;
+            const y = pos.y * p.height;
 
             // Calculate dimensions with support for flat ellipses
-            let baseWidth = calculateDimension(ELLIPSE_1_WIDTH, ELLIPSE_2_WIDTH, t);
-            let baseHeight = calculateDimension(ELLIPSE_1_HEIGHT, ELLIPSE_2_HEIGHT, t);
+            const baseWidth = calculateDimension(ELLIPSE_1_WIDTH, ELLIPSE_2_WIDTH, t);
+            const baseHeight = calculateDimension(ELLIPSE_1_HEIGHT, ELLIPSE_2_HEIGHT, t);
 
             // Apply scale modifier based on position curve (edges remain 1.0)
-            let scaleModifier = calculateScaleModifier(t);
+            const scaleModifier = calculateScaleModifier(t);
 
             // Calculate wave taper (0 at edges, 1 at center)
-            let taper = calculateWaveTaper(t);
+            const taper = calculateWaveTaper(t);
 
             // Apply wave animation with taper
-            let waveScale = calculateWaveScale(i, totalEllipses, taper);
+            const waveScale = calculateWaveScale(i, totalEllipses, taper);
 
             // Calculate final dimensions
             let width = baseWidth * scaleModifier * waveScale;
             let height = baseHeight * scaleModifier * waveScale;
 
             // Apply circularity adjustment - smaller ellipses become more circular
-            let adjusted = applyCircularity(width, height, waveScale);
+            const adjusted = applyCircularity(width, height, waveScale);
             width = adjusted.width;
             height = adjusted.height;
 
             // Calculate opacity based on position (fade at edges)
-            let opacity = calculateOpacity(t);
+            const opacity = calculateOpacity(t);
 
             // Draw ellipse with tapered opacity
             p.stroke(STROKE_COLOR.r, STROKE_COLOR.g, STROKE_COLOR.b, opacity);
@@ -1814,13 +1814,13 @@ const enablementSketch = (p) => {
             // Calculate angle for each grid cell using Perlin noise
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
-                    let index = x + y * this.cols;
+                    const index = x + y * this.cols;
 
                     // Sample noise at this position
-                    let noiseValue = p.noise(x * NOISE_SCALE, y * NOISE_SCALE, noiseZOffset);
+                    const noiseValue = p.noise(x * NOISE_SCALE, y * NOISE_SCALE, noiseZOffset);
 
                     // Convert noise (0-1) to angle (0-TWO_PI)
-                    let angle = noiseValue * p.TWO_PI * 2;
+                    const angle = noiseValue * p.TWO_PI * 2;
 
                     this.field[index] = angle;
                 }
@@ -1831,28 +1831,28 @@ const enablementSketch = (p) => {
             // Apply mouse influence with momentum
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
-                    let index = x + y * this.cols;
+                    const index = x + y * this.cols;
 
                     // Get actual grid position
-                    let gridX = x * GRID_RESOLUTION + this.offsetX;
-                    let gridY = y * GRID_RESOLUTION + this.offsetY;
+                    const gridX = x * GRID_RESOLUTION + this.offsetX;
+                    const gridY = y * GRID_RESOLUTION + this.offsetY;
 
                     // Calculate distance to virtual mouse
-                    let dx = virtualMouseX - gridX;
-                    let dy = virtualMouseY - gridY;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    const dx = virtualMouseX - gridX;
+                    const dy = virtualMouseY - gridY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
 
                     // Apply influence if within radius
                     if (dist < MOUSE_INFLUENCE_RADIUS && dist > 0) {
                         // Calculate angle towards mouse
-                        let mouseAngle = Math.atan2(dy, dx);
+                        const mouseAngle = Math.atan2(dy, dx);
 
                         // Calculate influence strength (stronger when closer)
                         let influence = 1 - dist / MOUSE_INFLUENCE_RADIUS;
                         influence = Math.pow(influence, 2); // Ease the falloff
 
                         // Blend current angle with mouse angle
-                        let currentAngle = this.field[index];
+                        const currentAngle = this.field[index];
                         this.field[index] = p.lerp(
                             currentAngle,
                             mouseAngle,
@@ -1870,19 +1870,19 @@ const enablementSketch = (p) => {
 
             for (let y = 0; y < this.rows; y++) {
                 for (let x = 0; x < this.cols; x++) {
-                    let index = x + y * this.cols;
-                    let angle = this.field[index];
+                    const index = x + y * this.cols;
+                    const angle = this.field[index];
 
                     // Calculate grid point position
-                    let gridX = x * GRID_RESOLUTION + this.offsetX;
-                    let gridY = y * GRID_RESOLUTION + this.offsetY;
+                    const gridX = x * GRID_RESOLUTION + this.offsetX;
+                    const gridY = y * GRID_RESOLUTION + this.offsetY;
 
                     // Calculate line endpoints (centered on grid point)
-                    let halfLength = LINE_VISUAL_LENGTH / 2;
-                    let x1 = gridX - Math.cos(angle) * halfLength;
-                    let y1 = gridY - Math.sin(angle) * halfLength;
-                    let x2 = gridX + Math.cos(angle) * halfLength;
-                    let y2 = gridY + Math.sin(angle) * halfLength;
+                    const halfLength = LINE_VISUAL_LENGTH / 2;
+                    const x1 = gridX - Math.cos(angle) * halfLength;
+                    const y1 = gridY - Math.sin(angle) * halfLength;
+                    const x2 = gridX + Math.cos(angle) * halfLength;
+                    const y2 = gridY + Math.sin(angle) * halfLength;
 
                     // Draw line segment
                     p.line(x1, y1, x2, y2);
@@ -2146,8 +2146,8 @@ const evolutionSketch = (p) => {
     // Calculate a single point on the Lissajous curve
     function calculateLissajousPoint(t, scaleX, scaleY) {
         // Swap x and y to rotate 90 degrees - creates vertical "8" instead of horizontal "∞"
-        let x = Math.sin(LISSAJOUS_FREQ_RATIO * t + LISSAJOUS_PHASE_OFFSET) * scaleX;
-        let y = Math.sin(t) * scaleY;
+        const x = Math.sin(LISSAJOUS_FREQ_RATIO * t + LISSAJOUS_PHASE_OFFSET) * scaleX;
+        const y = Math.sin(t) * scaleY;
         return { x, y };
     }
 
@@ -2166,7 +2166,7 @@ const evolutionSketch = (p) => {
 
         // Determine which half of the curve to draw based on scale sign
         let tStart, tEnd;
-        let absScaleY = Math.abs(scaleY);
+        const absScaleY = Math.abs(scaleY);
 
         if (drawFullCurve) {
             // Draw complete "8" shape (for static outer curve)
@@ -2184,8 +2184,8 @@ const evolutionSketch = (p) => {
 
         p.beginShape();
         for (let i = 0; i <= LISSAJOUS_RESOLUTION; i++) {
-            let t = p.map(i, 0, LISSAJOUS_RESOLUTION, tStart, tEnd);
-            let point = calculateLissajousPoint(
+            const t = p.map(i, 0, LISSAJOUS_RESOLUTION, tStart, tEnd);
+            const point = calculateLissajousPoint(
                 t,
                 baseSize * LISSAJOUS_SCALE_X,
                 baseSize * absScaleY
@@ -2198,7 +2198,7 @@ const evolutionSketch = (p) => {
     // Draw static outer curve (background element for rolling wheel effect)
     function drawStaticOuterCurve(centerX, centerY, baseSize) {
         // Draw static "8" at maximum scale with very low opacity (background anchor)
-        let alpha = STROKE_ALPHA_MIN * 1.0;
+        const alpha = STROKE_ALPHA_MIN * 1.0;
         drawLissajousInfinity(centerX * p.width, centerY * p.height, baseSize, 1.0, alpha, true);
     }
 
@@ -2217,23 +2217,23 @@ const evolutionSketch = (p) => {
             let scalePosition = i / (instanceCount - 1);
 
             // Add animation rotation offset (all instances rotate together)
-            let animationOffset = (animationTime * animSpeed) % 1.0;
+            const animationOffset = (animationTime * animSpeed) % 1.0;
             // scalePosition = Math.sin(scalePosition * Math.PI * 0.5);
             scalePosition = (scalePosition + animationOffset) % 1.0;
 
             // Map to scale range (creates even spacing for 3D illusion)
-            let scaleY = p.lerp(scaleMin, scaleMax, scalePosition);
+            const scaleY = p.lerp(scaleMin, scaleMax, scalePosition);
 
             // ONLY DRAW INSTANCES IN THE FRONT (above visibility threshold)
             // This creates the rolling wheel effect - back half is hidden
-            let normalizedScale = (scaleY - scaleMin) / (scaleMax - scaleMin); // 0 to 1
+            const normalizedScale = (scaleY - scaleMin) / (scaleMax - scaleMin); // 0 to 1
             if (normalizedScale < VISIBILITY_THRESHOLD) {
                 continue; // Skip this instance - it's in the "back"
             }
 
             // Calculate opacity based on scale (larger = closer = more opaque)
-            let opacityFalloff = scaleY * scaleY;
-            let alpha = p.lerp(STROKE_ALPHA_MAX, STROKE_ALPHA_MIN, opacityFalloff);
+            const opacityFalloff = scaleY * scaleY;
+            const alpha = p.lerp(STROKE_ALPHA_MAX, STROKE_ALPHA_MIN, opacityFalloff);
             // if (scaleY < 0) {
             // alpha = p.map(scaleY, scaleMin, scaleMax, STROKE_ALPHA_MIN, STROKE_ALPHA_MAX);
             // }
@@ -2548,7 +2548,7 @@ const impactSketch = (p) => {
 
                 alpha = this.config.baseAlpha * (1 - fadeProgress);
             }
-            let weight = p.map(alpha, 0, this.config.baseAlpha, 0, this.config.strokeWeight);
+            const weight = p.map(alpha, 0, this.config.baseAlpha, 0, this.config.strokeWeight);
 
             // Only draw if opacity is visible
             if (alpha > 0) {
@@ -2578,8 +2578,8 @@ const impactSketch = (p) => {
 
         update(currentTime, p) {
             // Calculate origin point based on canvas size
-            let originX = p.width * this.config.originX;
-            let originY = p.height * this.config.originY;
+            const originX = p.width * this.config.originX;
+            const originY = p.height * this.config.originY;
 
             // Spawn new ripples at regular intervals
             if (currentTime - this.lastSpawnTime >= this.config.spawnInterval) {
@@ -2612,7 +2612,7 @@ const impactSketch = (p) => {
 
         display() {
             // Draw all ripples
-            for (let ripple of this.ripples) {
+            for (const ripple of this.ripples) {
                 ripple.display();
             }
         }
@@ -2683,7 +2683,7 @@ const impactSketch = (p) => {
         // Draw gradient background
         drawGradient();
 
-        let currentTime = p.millis();
+        const currentTime = p.millis();
 
         // Update and draw both ripple groups
         rippleGroup1.update(currentTime, p);
