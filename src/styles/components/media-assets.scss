@@ -13,6 +13,39 @@
     @include transition(transform);
 }
 
+// Image loading animation
+// Images start invisible and slightly scaled down, then fade in with a quick scale animation
+img, picture {
+    &.image-loading {
+        opacity: 0;
+        -webkit-transform: scale(0.8);
+        -moz-transform: scale(0.8);
+        -ms-transform: scale(0.8);
+        transform: scale(0.8);
+    }
+
+    &.image-loaded {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        -webkit-transition: opacity 300ms cubic-bezier(.08,.2,.5,1), -webkit-transform 300ms cubic-bezier(.08,.2,.5,1);
+        -moz-transition: opacity 300ms cubic-bezier(.08,.2,.5,1), -moz-transform 300ms cubic-bezier(.08,.2,.5,1);
+        transition: opacity 300ms cubic-bezier(.08,.2,.5,1), transform 300ms cubic-bezier(.08,.2,.5,1);
+    }
+}
+
+// Smooth content shift animation
+// When images load and content shifts, animate the movement
+* {
+    &.content-shift-animate {
+        -webkit-transition: margin 200ms cubic-bezier(.08,.2,.5,1), padding 200ms cubic-bezier(.08,.2,.5,1);
+        -moz-transition: margin 200ms cubic-bezier(.08,.2,.5,1), padding 200ms cubic-bezier(.08,.2,.5,1);
+        transition: margin 200ms cubic-bezier(.08,.2,.5,1), padding 200ms cubic-bezier(.08,.2,.5,1);
+    }
+}
+
 .fitImage-white {
     background-color: #ffffff;
     position: relative;
