@@ -2,6 +2,7 @@
 // ============================================================================
 
 @use '../settings' as *;
+@use 'sass:color';
 
 // Full bleed background image.
 .fillImage {
@@ -11,6 +12,93 @@
     -o-object-fit: cover; /* Opera */
     object-fit: cover;
     @include transition(transform);
+}
+
+// Image loading animation
+// Images start invisible and slightly scaled down, then fade in with a quick scale animation
+img, picture {
+    &.image-loading {
+        opacity: 0;
+        -webkit-transform: scale(0.8);
+        -moz-transform: scale(0.8);
+        -ms-transform: scale(0.8);
+        transform: scale(0.8);
+    }
+
+    &.image-loaded {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+        -webkit-transition: opacity 200ms cubic-bezier(.08,.2,.5,1), -webkit-transform 200ms cubic-bezier(.08,.2,.5,1);
+        -moz-transition: opacity 200ms cubic-bezier(.08,.2,.5,1), -moz-transform 200ms cubic-bezier(.08,.2,.5,1);
+        transition: opacity 200ms cubic-bezier(.08,.2,.5,1), transform 200ms cubic-bezier(.08,.2,.5,1);
+    }
+
+    // Failed image fallback - show subtle grey box instead of broken image icon
+    &.image-failed {
+        position: relative;
+        background-color: color.adjust($fill-black, $lightness: 10%); // 10% grey from black
+        opacity: 1;
+        -webkit-transform: scale(1);
+        -moz-transform: scale(1);
+        -ms-transform: scale(1);
+        transform: scale(1);
+
+        // Hide the broken image icon and alt text
+        color: transparent;
+        text-indent: -9999px;
+        overflow: hidden;
+
+        // Ensure it takes up space even when broken
+        min-height: 200px;
+        display: block;
+    }
+}
+
+// For picture elements with failed images, apply background to the picture wrapper
+picture.image-failed {
+    background-color: color.adjust($fill-black, $lightness: 10%);
+    display: block;
+    min-height: 200px;
+
+    img {
+        opacity: 0; // Hide the broken img inside the picture element
+    }
+}
+
+// Theme-aware failed image colors
+// Light backgrounds get light grey placeholders, dark backgrounds get dark grey
+.theme-light,
+.theme-light-alt,
+.theme-ds {
+    img.image-failed,
+    picture.image-failed {
+        background-color: color.adjust($fill-white, $lightness: -10%); // Slightly darker than white
+    }
+}
+
+.theme-dark,
+.theme-leia,
+.theme-motion,
+.theme-brand,
+.theme-beam,
+.theme-apple {
+    img.image-failed,
+    picture.image-failed {
+        background-color: color.adjust($fill-black, $lightness: 10%); // Slightly lighter than black
+    }
+}
+
+// Smooth content shift animation
+// When images load and content shifts, animate the movement
+* {
+    &.content-shift-animate {
+        -webkit-transition: margin 200ms cubic-bezier(.08,.2,.5,1), padding 200ms cubic-bezier(.08,.2,.5,1);
+        -moz-transition: margin 200ms cubic-bezier(.08,.2,.5,1), padding 200ms cubic-bezier(.08,.2,.5,1);
+        transition: margin 200ms cubic-bezier(.08,.2,.5,1), padding 200ms cubic-bezier(.08,.2,.5,1);
+    }
 }
 
 .fitImage-white {
