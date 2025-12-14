@@ -36,8 +36,10 @@ async function optimizeImages() {
         const isPng = /\.png$/i.test(imagePath);
         const formats = isPng ? ['png', 'webp'] : ['jpeg', 'webp'];
 
+        // Max width: 2800px (1400px content width * 2 for retina)
+        // This prevents serving comically large files
         const metadata = await Image(imagePath, {
-            widths: [1080, null], // 1080w for mobile, null for original size
+            widths: [1080, 2800], // 1080w for mobile, 2800w max for retina desktop
             formats: formats,
             outputDir: outputPath,
             useCache: false, // Disable cache to ensure all versions are generated
@@ -45,11 +47,13 @@ async function optimizeImages() {
                 const extension = path.extname(src);
                 const name = path.basename(src, extension);
 
-                // Generate filenames with width suffix for 1080w, no suffix for original
+                // Generate filenames with width suffix
                 if (width === 1080) {
                     return `${name}-1080w.${format === 'jpeg' ? 'jpg' : format}`;
+                } else if (width === 2800) {
+                    return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
                 } else {
-                    // Original size - ensure it's always generated
+                    // Fallback for any other sizes
                     return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
                 }
             },
@@ -65,23 +69,8 @@ async function optimizeImages() {
             },
         });
 
-        // Handle edge case: if image is exactly 1080px wide, copy 1080w as base version
-        for (const format of formats) {
-            const outputs = metadata[format] || [];
-            const has1080 = outputs.find(img => img.width === 1080);
-            const hasBase = outputs.find(img => img.outputPath && !img.outputPath.includes('-1080w'));
-
-            if (has1080 && !hasBase) {
-                // Copy 1080w version as base version
-                const extension = path.extname(imagePath);
-                const name = path.basename(imagePath, extension);
-                const baseFilename = `${name}.${format === 'jpeg' ? 'jpg' : format}`;
-                const basePath = path.join(outputPath, baseFilename);
-                const source1080Path = has1080.outputPath;
-
-                fs.copyFileSync(source1080Path, basePath);
-            }
-        }
+        // Note: Images larger than 2800px will be resized down automatically
+        // Images smaller than 2800px will keep their original size
     }
 
     console.log('Image optimization complete!');
