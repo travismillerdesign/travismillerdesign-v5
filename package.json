@@ -6,7 +6,8 @@
     "scripts": {
         "_comment_compile": "== SASS COMPILATION ==",
         "compile:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --no-source-map && postcss src/styles/project.css --replace --use autoprefixer",
-        "_comment_compile_desc": "Compiles Sass to CSS, then adds vendor prefixes via PostCSS/Autoprefixer. Load paths allow @use 'modern-normalize' imports.",
+        "compile:scss:production": "NODE_ENV=production sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --no-source-map && NODE_ENV=production postcss src/styles/project.css --replace",
+        "_comment_compile_desc": "Compiles Sass to CSS, then adds vendor prefixes. Production version also minifies and removes comments via cssnano.",
         "_comment_watch": "== WATCH MODES (DEVELOPMENT) ==",
         "watch:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch",
         "watch:scss:verbose": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch --verbose",
@@ -35,10 +36,11 @@
         "optimize:videos": "node optimize-videos.js",
         "_comment_optimize_desc": "Converts images to WebP, videos to WebM. Generates responsive sizes and poster frames.",
         "_comment_build": "== BUILD SCRIPTS ==",
-        "prebuild": "npm run compile:scss && npm run validate:assets",
-        "_comment_prebuild": "Runs automatically before 'build'. Validates assets and compiles CSS.",
-        "build": "npx @11ty/eleventy && npm run optimize:images && npm run optimize:videos",
-        "_comment_build_desc": "Full production build: 1) Validate & compile, 2) Generate HTML, 3) Optimize images, 4) Optimize videos. Output: dist/",
+        "prebuild": "npm run compile:scss:production && npm run validate:assets",
+        "_comment_prebuild": "Runs automatically before 'build'. Validates assets and compiles/minifies CSS.",
+        "build": "NODE_ENV=production npx @11ty/eleventy && npm run minify:js && npm run optimize:images && npm run optimize:videos",
+        "minify:js": "node minify-js.js",
+        "_comment_build_desc": "Full production build: 1) Minify CSS, 2) Generate & minify HTML, 3) Minify JS, 4) Optimize images/videos. Output: dist/",
         "_comment_serve": "== DEVELOPMENT SERVERS ==",
         "serve": "npm-run-all compile:scss --parallel watch:*",
         "_comment_serve_desc": "Fast dev mode. Compiles CSS once, then runs watch:scss and watch:11ty in parallel. No optimization.",
@@ -73,13 +75,16 @@
         "@11ty/eleventy-img": "^6.0.4",
         "@11ty/eleventy-plugin-rss": "^2.0.4",
         "autoprefixer": "^10.4.23",
+        "cssnano": "^7.1.2",
         "eslint": "^9.39.2",
         "fluent-ffmpeg": "^2.1.2",
+        "html-minifier-terser": "^7.2.0",
         "modern-normalize": "^3.0.1",
         "npm-run-all": "^4.1.5",
         "postcss": "^8.5.6",
         "postcss-cli": "^11.0.1",
         "prettier": "^3.6.2",
-        "sass": "^1.93.2"
+        "sass": "^1.93.2",
+        "terser": "^5.44.1"
     }
 }
