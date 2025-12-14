@@ -21,7 +21,15 @@
 // - Generates optimized static site in dist/
 // - Image/video optimization happens after Eleventy build completes
 
+const rssPlugin = require('@11ty/eleventy-plugin-rss');
+
 module.exports = function (eleventyConfig) {
+    // ========================================
+    // PLUGINS
+    // ========================================
+    // RSS plugin provides date formatting filters for sitemap generation
+    eleventyConfig.addPlugin(rssPlugin);
+
     // ========================================
     // CUSTOM SHORTCODES
     // ========================================

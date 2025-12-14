@@ -24,25 +24,73 @@ npm run serve
 
 ---
 
+## 🛠️ Development Tools & Commands
+
+**Quick reference for all available npm scripts:**
+
+### Core Commands
+```bash
+npm run serve          # Start dev server (fast, no optimization)
+npm run build          # Production build (with optimization)
+npm test               # Run all tests
+```
+
+### Development Tools
+```bash
+npm run new:case-study # Generate new project template
+                       # Usage: npm run new:case-study <slug> "<Title>" "<Description>"
+                       # Example: npm run new:case-study meta "Meta Design" "Work at Meta"
+
+npm run todos          # Scan codebase for TODO comments
+                       # Lists all TODOs by file and line number
+
+npm run lint           # Check JavaScript code quality
+npm run lint:fix       # Auto-fix linting issues
+```
+
+### Asset Optimization
+```bash
+npm run optimize:images  # Convert images to WebP + responsive sizes
+npm run optimize:videos  # Convert videos to WebM + generate posters
+npm run validate:assets  # Check assets for errors before build
+```
+
+### Advanced Development
+```bash
+npm run serve:full      # Dev server with full optimization (slower start)
+npm run serve:verbose   # Dev server with detailed logging
+```
+
+**First time setup:** Run `bash setup-hooks.sh` to enable pre-commit testing.
+
+**Note:** See DECISIONS.md for explanations of architectural choices.
+
+---
+
 ## 📝 Common Update Tasks
 
 ### ✅ Adding a New Project/Case Study
 
-**Steps:**
+**Quick Method (Recommended):**
 
-1. **Create the HTML page:**
-   ```bash
-   # Create new file in src/work/
-   touch src/work/my-new-project.html
-   ```
+```bash
+# Generate template with one command
+npm run new:case-study my-project "My Project Name" "Short description of the project"
+```
 
-2. **Copy an existing case study as a template:**
+This automatically creates:
+- `src/work/my-project.html` with proper structure
+- `src/assets/my-project/` folder for images/videos
+- README with next steps
+
+**Manual Method (Alternative):**
+
+1. **Copy an existing case study as a template:**
    ```bash
-   # Use an existing page as reference
    cp src/work/leia.html src/work/my-new-project.html
    ```
 
-3. **Edit the front matter (top of file):**
+2. **Edit the front matter (top of file):**
    ```yaml
    ---
    layout: base.html
@@ -51,20 +99,17 @@ npm run serve
    ---
    ```
 
-4. **Update the content:**
-   - Edit the HTML below the front matter
-   - Update headings, text, images, videos
-   - Keep the structure similar to other case studies
+3. **Create assets folder:**
+   ```bash
+   mkdir -p src/assets/my-new-project
+   ```
 
-5. **Add the project to homepage/work page:**
-   - Edit `src/index.html` to add a card linking to `/work/my-new-project`
-   - Edit `src/work.html` to include it in the work grid
+**Next Steps (Both Methods):**
 
-**File structure:**
-```
-src/work/my-new-project.html  ← Your new case study
-src/assets/my-project/         ← Your images/videos (create this folder)
-```
+1. Add images to `src/assets/my-new-project/`
+2. Edit the HTML file to customize content
+3. Add the project to homepage (`src/index.html`) and work page (`src/work.html`)
+4. Run `npm run serve` to preview
 
 ### ✅ Adding Images to a Project
 
