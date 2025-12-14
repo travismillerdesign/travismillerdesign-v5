@@ -6,7 +6,11 @@
       "Bash(npm run compile:scss:*)",
       "Bash(cat:*)",
       "Bash(test:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(ls:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(timeout 180 npm run optimize:videos:*)",
+      "Bash(npx @11ty/eleventy:*)"
     ],
     "deny": [],
     "ask": []
