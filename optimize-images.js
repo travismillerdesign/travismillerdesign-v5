@@ -39,7 +39,7 @@ async function optimizeImages() {
         // Max width: 2800px (1400px content width * 2 for retina)
         // This prevents serving comically large files
         const metadata = await Image(imagePath, {
-            widths: [1080, 2800], // 1080w for mobile, 2800w max for retina desktop
+            widths: [1080, null], // 1080w for mobile, null for original size (ensures base filename always generated)
             formats: formats,
             outputDir: outputPath,
             useCache: false, // Disable cache to ensure all versions are generated
@@ -50,10 +50,8 @@ async function optimizeImages() {
                 // Generate filenames with width suffix
                 if (width === 1080) {
                     return `${name}-1080w.${format === 'jpeg' ? 'jpg' : format}`;
-                } else if (width === 2800) {
-                    return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
                 } else {
-                    // Fallback for any other sizes
+                    // For original size (null) or any other size, use base name without suffix
                     return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
                 }
             },
