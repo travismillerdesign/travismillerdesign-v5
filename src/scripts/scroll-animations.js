@@ -13,11 +13,11 @@ class ScrollAnimations {
         const isMobile = window.innerWidth <= 768;
         const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
 
-        // More aggressive rootMargin on mobile so animations start before content enters viewport
+        // Trigger animations before content enters viewport, but not too aggressively
         // Desktop: start 100px before element enters viewport
-        // Tablet: start 200px before element enters viewport
-        // Mobile: start 300px before element enters viewport (prevents blank screen while scrolling)
-        const margin = isMobile ? '300px' : isTablet ? '200px' : '100px';
+        // Tablet: start 150px before element enters viewport
+        // Mobile: start 200px before element enters viewport
+        const margin = isMobile ? '200px' : isTablet ? '150px' : '100px';
 
         this.observerOptions = {
             root: null, // viewport
@@ -74,11 +74,91 @@ class ScrollAnimations {
         this.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('scroll-animate-visible');
+                    this.handleVisibleElement(entry.target);
                     this.observer.unobserve(entry.target);
                 }
             });
         }, this.observerOptions);
+    }
+
+    handleVisibleElement(element) {
+        // Check if element contains media that needs to load first
+        const containsImage = element.querySelector('img, picture');
+        const containsVideo = element.querySelector('video');
+
+        if (containsImage) {
+            // Wait for image to be loaded before animating
+            this.waitForImageLoad(element, containsImage);
+        } else if (containsVideo) {
+            // Wait for video to be ready before animating
+            this.waitForVideoLoad(element, containsVideo);
+        } else {
+            // No media, animate immediately
+            element.classList.add('scroll-animate-visible');
+        }
+    }
+
+    waitForImageLoad(element, mediaElement) {
+        // Check if image/picture already has image-loaded class
+        const img = mediaElement.tagName === 'PICTURE'
+            ? mediaElement.querySelector('img')
+            : mediaElement;
+
+        const checkLoaded = () => {
+            if (mediaElement.classList.contains('image-loaded') ||
+                (img && img.complete && img.naturalHeight !== 0)) {
+                element.classList.add('scroll-animate-visible');
+                return true;
+            }
+            return false;
+        };
+
+        // Check immediately first
+        if (checkLoaded()) return;
+
+        // If not loaded, watch for the image-loaded class or img load event
+        const observer = new MutationObserver(() => {
+            if (checkLoaded()) {
+                observer.disconnect();
+            }
+        });
+
+        observer.observe(mediaElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        // Also listen for load event as fallback
+        if (img) {
+            img.addEventListener('load', () => {
+                element.classList.add('scroll-animate-visible');
+                observer.disconnect();
+            }, { once: true });
+        }
+
+        // Timeout fallback - show after 2 seconds even if image hasn't loaded
+        setTimeout(() => {
+            element.classList.add('scroll-animate-visible');
+            observer.disconnect();
+        }, 2000);
+    }
+
+    waitForVideoLoad(element, video) {
+        // Check if video is ready
+        if (video.readyState >= 2) { // HAVE_CURRENT_DATA or better
+            element.classList.add('scroll-animate-visible');
+            return;
+        }
+
+        // Wait for video to be ready
+        video.addEventListener('loadeddata', () => {
+            element.classList.add('scroll-animate-visible');
+        }, { once: true });
+
+        // Timeout fallback - show after 2 seconds even if video hasn't loaded
+        setTimeout(() => {
+            element.classList.add('scroll-animate-visible');
+        }, 2000);
     }
 
     observeElements() {
