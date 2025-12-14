@@ -2,6 +2,7 @@
 // ============================================================================
 
 @use '../settings' as *;
+@use 'sass:color';
 
 // Full bleed background image.
 .fillImage {
@@ -38,7 +39,7 @@ img, picture {
     // Failed image fallback - show subtle grey box instead of broken image icon
     &.image-failed {
         position: relative;
-        background-color: rgba(26, 26, 26, 1); // 10% grey (90% black)
+        background-color: color.adjust($fill-black, $lightness: 10%); // 10% grey from black
         opacity: 1;
         -webkit-transform: scale(1);
         -moz-transform: scale(1);
@@ -58,7 +59,7 @@ img, picture {
 
 // For picture elements with failed images, apply background to the picture wrapper
 picture.image-failed {
-    background-color: rgba(26, 26, 26, 1);
+    background-color: color.adjust($fill-black, $lightness: 10%);
     display: block;
     min-height: 200px;
 
