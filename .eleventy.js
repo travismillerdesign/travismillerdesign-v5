@@ -22,6 +22,7 @@
 // - Image/video optimization happens after Eleventy build completes
 
 const rssPlugin = require('@11ty/eleventy-plugin-rss');
+const htmlMinifier = require('html-minifier-terser');
 
 module.exports = function (eleventyConfig) {
     // ========================================
@@ -82,6 +83,33 @@ module.exports = function (eleventyConfig) {
     // Enable immediate passthrough copying during serve mode (faster dev experience)
     // Without this, copied files would only update on rebuild
     eleventyConfig.setServerPassthroughCopyBehavior('passthrough');
+
+    // ========================================
+    // HTML MINIFICATION (PRODUCTION ONLY)
+    // ========================================
+    // Minify HTML output for production builds
+    // Only runs when NODE_ENV=production to keep dev builds fast
+    if (process.env.NODE_ENV === 'production') {
+        eleventyConfig.addTransform('htmlmin', function (content, outputPath) {
+            if (outputPath && outputPath.endsWith('.html')) {
+                return htmlMinifier.minify(content, {
+                    useShortDoctype: true,
+                    removeComments: true,              // Remove all HTML comments
+                    collapseWhitespace: true,         // Remove whitespace
+                    minifyCSS: true,                  // Minify inline CSS
+                    minifyJS: true,                   // Minify inline JavaScript
+                    removeAttributeQuotes: true,      // Remove quotes where safe
+                    removeEmptyAttributes: true,      // Remove empty attributes
+                    removeRedundantAttributes: true,  // Remove redundant attributes
+                    removeScriptTypeAttributes: true, // Remove type="text/javascript"
+                    removeStyleLinkTypeAttributes: true, // Remove type="text/css"
+                    sortAttributes: true,             // Sort attributes for better gzip
+                    sortClassName: true,              // Sort class names for better gzip
+                });
+            }
+            return content;
+        });
+    }
 
     // ========================================
     // DEV SERVER CONFIGURATION
