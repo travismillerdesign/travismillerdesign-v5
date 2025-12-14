@@ -14,6 +14,10 @@
 //   - optimize-videos.js generates WebM + poster images
 
 const path = require('path');
+const fs = require('fs');
+
+// Track missing assets to avoid duplicate warnings
+const missingAssets = new Set();
 
 module.exports = function (eleventyConfig) {
     // ========================================
@@ -42,6 +46,16 @@ module.exports = function (eleventyConfig) {
     //   - GIFs: Return plain <img> tag (GIFs don't optimize well)
     //   - PNGs: Preserve PNG format for transparency
     eleventyConfig.addShortcode('responsiveImage', function (src, alt, className = '') {
+        // Validate input parameters
+        if (!src) {
+            console.error('❌ Error: responsiveImage shortcode called with empty src');
+            return `<!-- ERROR: responsiveImage called with empty src -->`;
+        }
+
+        if (!alt) {
+            console.warn(`⚠️  Warning: responsiveImage missing alt text for image: ${src}`);
+        }
+
         // Remove leading slash for path manipulation
         // Example: "/assets/image.jpg" → "assets/image.jpg"
         const cleanSrc = src.startsWith('/') ? src.substring(1) : src;
@@ -50,6 +64,28 @@ module.exports = function (eleventyConfig) {
         // Example: "assets/image.jpg" → ext: ".jpg", name: "assets/image"
         const ext = path.extname(cleanSrc);
         const nameWithoutExt = cleanSrc.substring(0, cleanSrc.length - ext.length);
+
+        // Validate file extension
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+        if (!validExtensions.includes(ext.toLowerCase())) {
+            console.warn(`⚠️  Warning: Unexpected image extension "${ext}" for ${src}`);
+        }
+
+        // Check if source file exists (during build)
+        // Note: Check in dist/ directory as this runs after optimization
+        const sourceFilePath = path.join('./dist', cleanSrc);
+        if (!missingAssets.has(src)) {
+            // Only check and warn once per unique asset
+            if (!fs.existsSync(sourceFilePath)) {
+                // Also check in src/ directory
+                const srcFilePath = path.join('./src', cleanSrc);
+                if (!fs.existsSync(srcFilePath)) {
+                    console.warn(`⚠️  Warning: Image file not found: ${src}`);
+                    console.warn(`   Expected at: ${srcFilePath} or ${sourceFilePath}`);
+                    missingAssets.add(src);
+                }
+            }
+        }
 
         // GIFs: Don't optimize (animated GIFs don't compress well to WebP)
         // Return plain <img> tag with lazy loading
@@ -111,6 +147,16 @@ module.exports = function (eleventyConfig) {
     //   - playsinline: true (plays inline on iOS, not fullscreen)
     //   - controls: false (no playback controls, background video)
     eleventyConfig.addShortcode('lazyVideo', function (src, ariaLabel = '', className = '', attributes = {}) {
+        // Validate input parameters
+        if (!src) {
+            console.error('❌ Error: lazyVideo shortcode called with empty src');
+            return `<!-- ERROR: lazyVideo called with empty src -->`;
+        }
+
+        if (!ariaLabel) {
+            console.warn(`⚠️  Warning: lazyVideo missing aria-label for video: ${src}`);
+        }
+
         // Remove leading slash for path manipulation
         // Example: "/assets/video.mp4" → "assets/video.mp4"
         const cleanSrc = src.startsWith('/') ? src.substring(1) : src;
@@ -119,6 +165,27 @@ module.exports = function (eleventyConfig) {
         // Example: "assets/video.mp4" → ext: ".mp4", name: "assets/video"
         const ext = path.extname(cleanSrc);
         const nameWithoutExt = cleanSrc.substring(0, cleanSrc.length - ext.length);
+
+        // Validate file extension
+        const validExtensions = ['.mp4', '.webm', '.mov'];
+        if (!validExtensions.includes(ext.toLowerCase())) {
+            console.warn(`⚠️  Warning: Unexpected video extension "${ext}" for ${src}`);
+        }
+
+        // Check if source file exists (during build)
+        const sourceFilePath = path.join('./dist', cleanSrc);
+        if (!missingAssets.has(src)) {
+            // Only check and warn once per unique asset
+            if (!fs.existsSync(sourceFilePath)) {
+                // Also check in src/ directory
+                const srcFilePath = path.join('./src', cleanSrc);
+                if (!fs.existsSync(srcFilePath)) {
+                    console.warn(`⚠️  Warning: Video file not found: ${src}`);
+                    console.warn(`   Expected at: ${srcFilePath} or ${sourceFilePath}`);
+                    missingAssets.add(src);
+                }
+            }
+        }
 
         // Build paths to optimized video assets
         // optimize-videos.js generates these during build

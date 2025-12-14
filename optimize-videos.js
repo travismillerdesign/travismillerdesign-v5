@@ -37,31 +37,49 @@ const Image = require('@11ty/eleventy-img');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const { validateDirectory, validateVideoFile, findAllVideos, getFileSize, checkFFmpegAvailable } = require('./lib/asset-validator');
 
 async function optimizeVideos() {
     const sourceDir = './src/assets';
     const outputDir = './dist/assets';
 
-    // Recursively find all MP4 video files in directory tree
-    // Returns: Array of absolute file paths
-    const findVideos = (dir, fileList = []) => {
-        const files = fs.readdirSync(dir);
+    console.log('🎬 Starting video optimization...\n');
 
-        files.forEach((file) => {
-            const filePath = path.join(dir, file);
-            if (fs.statSync(filePath).isDirectory()) {
-                // Recurse into subdirectories
-                findVideos(filePath, fileList);
-            } else if (/\.mp4$/i.test(file)) {
-                fileList.push(filePath);
-            }
-        });
+    // Check if FFmpeg is available
+    const ffmpegAvailable = await checkFFmpegAvailable();
+    if (!ffmpegAvailable) {
+        console.error('❌ Error: FFmpeg is required for video optimization.');
+        console.error('   Install FFmpeg from: https://ffmpeg.org/download.html');
+        process.exit(1);
+    }
 
-        return fileList;
-    };
+    // Validate source directory exists
+    if (!validateDirectory(sourceDir)) {
+        console.error(`❌ Error: Source directory not found: ${sourceDir}`);
+        console.error('   Please create the directory or check the path.');
+        process.exit(1);
+    }
 
-    const videos = findVideos(sourceDir);
-    console.log(`Found ${videos.length} MP4 videos to process...`);
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+        console.log(`📁 Creating output directory: ${outputDir}`);
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    // Find all videos using the validator utility
+    const videos = findAllVideos(sourceDir).filter(v => /\.mp4$/i.test(v));
+
+    if (videos.length === 0) {
+        console.warn('⚠️  Warning: No MP4 videos found to process.');
+        console.log('   Video optimization complete (nothing to do).\n');
+        return;
+    }
+
+    console.log(`Found ${videos.length} MP4 videos to process...\n`);
+
+    let successCount = 0;
+    let errorCount = 0;
+    let warningCount = 0;
 
     // Process each video file
     for (const videoPath of videos) {
@@ -70,42 +88,117 @@ async function optimizeVideos() {
         const ext = path.extname(videoPath);
         const baseName = path.basename(videoPath, ext);
 
-        console.log(`\nProcessing: ${relativePath}`);
+        try {
+            // Validate video file before processing
+            const validation = validateVideoFile(videoPath, { maxSizeMB: 100 });
 
-        // Ensure output directory exists
-        if (!fs.existsSync(outputPath)) {
-            fs.mkdirSync(outputPath, { recursive: true });
-        }
+            if (!validation.valid) {
+                console.error(`❌ Error: ${relativePath}`);
+                console.error(`   ${validation.error}`);
+                errorCount++;
+                continue;
+            }
 
-        // STEP 1: Extract poster frame from video
-        // Takes a snapshot at 0.5 seconds (avoids potential black frames at 0.0s)
-        console.log(`  - Extracting poster frame...`);
-        const tempPosterPath = await extractPosterFrame(videoPath, baseName);
+            // Log warnings (e.g., large file sizes)
+            if (validation.warnings.length > 0) {
+                validation.warnings.forEach(warning => {
+                    console.warn(`⚠️  Warning: ${relativePath}`);
+                    console.warn(`   ${warning}`);
+                    warningCount++;
+                });
+            }
 
-        // STEP 2: Optimize poster image
-        // Generates WebP + JPEG versions (same as image optimization)
-        console.log(`  - Generating optimized poster images...`);
-        await generateOptimizedPosters(tempPosterPath, outputPath, baseName);
+            console.log(`\n🔧 Processing: ${relativePath} (${getFileSize(videoPath)})`);
 
-        // Clean up temporary poster file (work done in OS temp directory)
-        if (fs.existsSync(tempPosterPath)) {
-            fs.unlinkSync(tempPosterPath);
-        }
+            // Ensure output directory exists
+            if (!fs.existsSync(outputPath)) {
+                fs.mkdirSync(outputPath, { recursive: true });
+            }
 
-        // STEP 3: Convert MP4 to WebM format
-        // Only convert if WebM doesn't already exist in source directory
-        // (allows manual WebM files to skip conversion)
-        const sourceWebm = videoPath.replace(/\.mp4$/i, '.webm');
-        if (!fs.existsSync(sourceWebm)) {
-            console.log(`  - Converting to WebM format...`);
-            const webmOutputPath = path.join(outputPath, `${baseName}.webm`);
-            await convertToWebM(videoPath, webmOutputPath);
-        } else {
-            console.log(`  - WebM already exists in source, skipping conversion`);
+            // STEP 1: Extract poster frame from video
+            // Takes a snapshot at 0.5 seconds (avoids potential black frames at 0.0s)
+            console.log(`  - Extracting poster frame...`);
+            let tempPosterPath;
+            try {
+                tempPosterPath = await extractPosterFrame(videoPath, baseName);
+                console.log(`    ✓ Poster frame extracted`);
+            } catch (err) {
+                console.warn(`    ⚠️  Failed to extract poster frame: ${err.message}`);
+                console.warn(`    Continuing without poster image...`);
+                warningCount++;
+            }
+
+            // STEP 2: Optimize poster image
+            // Generates WebP + JPEG versions (same as image optimization)
+            if (tempPosterPath) {
+                console.log(`  - Generating optimized poster images...`);
+                try {
+                    await generateOptimizedPosters(tempPosterPath, outputPath, baseName);
+                    console.log(`    ✓ Poster images generated`);
+                } catch (err) {
+                    console.warn(`    ⚠️  Failed to optimize poster: ${err.message}`);
+                    warningCount++;
+                }
+
+                // Clean up temporary poster file (work done in OS temp directory)
+                try {
+                    if (fs.existsSync(tempPosterPath)) {
+                        fs.unlinkSync(tempPosterPath);
+                    }
+                } catch (err) {
+                    console.warn(`    ⚠️  Failed to clean up temp file: ${err.message}`);
+                }
+            }
+
+            // STEP 3: Convert MP4 to WebM format
+            // Only convert if WebM doesn't already exist in source directory
+            // (allows manual WebM files to skip conversion)
+            const sourceWebm = videoPath.replace(/\.mp4$/i, '.webm');
+            if (!fs.existsSync(sourceWebm)) {
+                console.log(`  - Converting to WebM format...`);
+                const webmOutputPath = path.join(outputPath, `${baseName}.webm`);
+                try {
+                    await convertToWebM(videoPath, webmOutputPath);
+                } catch (err) {
+                    console.warn(`    ⚠️  WebM conversion failed: ${err.message}`);
+                    console.warn(`    Continuing with MP4 only...`);
+                    warningCount++;
+                }
+            } else {
+                console.log(`  - WebM already exists in source, skipping conversion`);
+            }
+
+            successCount++;
+        } catch (err) {
+            console.error(`❌ Error processing ${relativePath}:`);
+            console.error(`   ${err.message}`);
+            if (err.stack && process.env.VERBOSE) {
+                console.error(`   Stack trace: ${err.stack}`);
+            }
+            errorCount++;
         }
     }
 
-    console.log('\n✓ Video optimization complete!');
+    // Final summary
+    console.log('\n' + '='.repeat(60));
+    console.log('📊 Video Optimization Summary');
+    console.log('='.repeat(60));
+    console.log(`✅ Successfully processed: ${successCount} videos`);
+    if (warningCount > 0) {
+        console.log(`⚠️  Warnings: ${warningCount}`);
+    }
+    if (errorCount > 0) {
+        console.log(`❌ Errors: ${errorCount} videos failed`);
+    }
+    console.log('='.repeat(60) + '\n');
+
+    // Exit with error code if any videos completely failed
+    if (errorCount > 0) {
+        console.error('⚠️  Some videos failed to process. See errors above.');
+        process.exit(1);
+    }
+
+    console.log('✨ Video optimization complete!\n');
 }
 
 /**
@@ -121,19 +214,33 @@ async function optimizeVideos() {
 function extractPosterFrame(videoPath, baseName) {
     return new Promise((resolve, reject) => {
         const tempDir = os.tmpdir();
-        const tempPosterPath = path.join(tempDir, `${baseName}-poster.jpg`);
+        // Add timestamp to temp file to avoid conflicts with concurrent builds
+        const timestamp = Date.now();
+        const tempPosterPath = path.join(tempDir, `${baseName}-poster-${timestamp}.jpg`);
+
+        // Add timeout to prevent hanging on corrupted videos
+        const timeout = setTimeout(() => {
+            reject(new Error('Poster extraction timed out after 30 seconds'));
+        }, 30000);
 
         ffmpeg(videoPath)
             .screenshots({
                 timestamps: ['0.5'], // Extract at 0.5s (avoids black/loading frames at 0.0s)
-                filename: `${baseName}-poster.jpg`,
+                filename: `${baseName}-poster-${timestamp}.jpg`,
                 folder: tempDir,
                 size: '?x1080' // Maintain aspect ratio, max height 1080px (matches image optimization)
             })
             .on('end', () => {
-                resolve(tempPosterPath);
+                clearTimeout(timeout);
+                // Verify the file was actually created
+                if (fs.existsSync(tempPosterPath)) {
+                    resolve(tempPosterPath);
+                } else {
+                    reject(new Error('Poster frame file was not created'));
+                }
             })
             .on('error', (err) => {
+                clearTimeout(timeout);
                 reject(new Error(`Failed to extract poster frame: ${err.message}`));
             });
     });
@@ -208,10 +315,15 @@ function convertToWebM(inputPath, outputPath) {
     return new Promise((resolve, reject) => {
         // Skip if WebM already exists (avoid re-encoding)
         if (fs.existsSync(outputPath)) {
-            console.log(`    WebM already exists: ${path.basename(outputPath)}`);
+            console.log(`    ✓ WebM already exists: ${path.basename(outputPath)}`);
             resolve();
             return;
         }
+
+        // Add timeout to prevent hanging on corrupted videos (10 minutes max)
+        const timeout = setTimeout(() => {
+            reject(new Error('WebM conversion timed out after 10 minutes'));
+        }, 600000);
 
         ffmpeg(inputPath)
             .videoCodec('libvpx-vp9')       // VP9 video codec
@@ -223,7 +335,9 @@ function convertToWebM(inputPath, outputPath) {
             .format('webm')                 // WebM container format
             .output(outputPath)
             .on('start', (commandLine) => {
-                console.log(`    FFmpeg command: ${commandLine}`);
+                if (process.env.VERBOSE) {
+                    console.log(`    FFmpeg command: ${commandLine}`);
+                }
             })
             .on('progress', (progress) => {
                 // Show encoding progress percentage
@@ -232,20 +346,30 @@ function convertToWebM(inputPath, outputPath) {
                 }
             })
             .on('end', () => {
+                clearTimeout(timeout);
                 process.stdout.write('\r');
-                // Calculate file size savings
-                const inputSize = fs.statSync(inputPath).size;
-                const outputSize = fs.existsSync(outputPath) ? fs.statSync(outputPath).size : 0;
-                const savings = outputSize > 0 ? Math.round((1 - outputSize / inputSize) * 100) : 0;
-                console.log(`    ✓ WebM created (${savings}% smaller than MP4)`);
-                resolve();
+
+                try {
+                    // Calculate file size savings
+                    const inputSize = fs.statSync(inputPath).size;
+                    const outputSize = fs.existsSync(outputPath) ? fs.statSync(outputPath).size : 0;
+
+                    if (outputSize === 0) {
+                        reject(new Error('WebM file was created but has 0 bytes'));
+                        return;
+                    }
+
+                    const savings = Math.round((1 - outputSize / inputSize) * 100);
+                    console.log(`    ✓ WebM created: ${getFileSize(outputPath)} (${savings}% smaller than MP4)`);
+                    resolve();
+                } catch (err) {
+                    reject(new Error(`Failed to verify WebM output: ${err.message}`));
+                }
             })
             .on('error', (err) => {
-                // Don't fail entire build if one video fails
-                // Just skip WebM and continue with MP4 only
-                console.error(`\n    Warning: Failed to convert to WebM: ${err.message}`);
-                console.log(`    Continuing with MP4 only...`);
-                resolve(); // Resolve (not reject) to continue build
+                clearTimeout(timeout);
+                // Reject instead of resolve, so caller can handle the error
+                reject(new Error(`FFmpeg error: ${err.message}`));
             })
             .run();
     });

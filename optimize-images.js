@@ -33,92 +33,171 @@
 const Image = require('@11ty/eleventy-img');
 const path = require('path');
 const fs = require('fs');
+const { validateDirectory, validateImageFile, findAllImages, getFileSize } = require('./lib/asset-validator');
 
 async function optimizeImages() {
     const sourceDir = './src/assets';
     const outputDir = './dist/assets';
 
-    // Recursively find all image files in directory tree
-    // Searches for: .jpg, .jpeg, .png, .webp, .avif (case-insensitive)
-    // Returns: Array of absolute file paths
-    const findImages = (dir, fileList = []) => {
-        const files = fs.readdirSync(dir);
+    console.log('🖼️  Starting image optimization...\n');
 
-        files.forEach((file) => {
-            const filePath = path.join(dir, file);
-            if (fs.statSync(filePath).isDirectory()) {
-                // Recurse into subdirectories
-                findImages(filePath, fileList);
-            } else if (/\.(jpg|jpeg|png|webp|avif)$/i.test(file)) {
-                fileList.push(filePath);
-            }
-        });
+    // Validate source directory exists
+    if (!validateDirectory(sourceDir)) {
+        console.error(`❌ Error: Source directory not found: ${sourceDir}`);
+        console.error('   Please create the directory or check the path.');
+        process.exit(1);
+    }
 
-        return fileList;
-    };
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+        console.log(`📁 Creating output directory: ${outputDir}`);
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
 
-    const images = findImages(sourceDir);
-    console.log(`Found ${images.length} images to optimize...`);
+    // Find all images using the validator utility
+    const images = findAllImages(sourceDir);
+
+    if (images.length === 0) {
+        console.warn('⚠️  Warning: No images found to optimize.');
+        console.log('   Image optimization complete (nothing to do).\n');
+        return;
+    }
+
+    console.log(`Found ${images.length} images to optimize...\n`);
+
+    let successCount = 0;
+    let errorCount = 0;
+    let warningCount = 0;
 
     for (const imagePath of images) {
         const relativePath = path.relative(sourceDir, imagePath);
         const outputPath = path.join(outputDir, path.dirname(relativePath));
 
-        console.log(`Optimizing: ${relativePath}`);
+        try {
+            // Validate image file before processing
+            const validation = validateImageFile(imagePath, { maxSizeMB: 50 });
 
-        // PNG files need special handling to preserve transparency (alpha channel)
-        // PNGs get: PNG + WebP formats
-        // JPGs get: JPEG + WebP formats
-        const isPng = /\.png$/i.test(imagePath);
-        const formats = isPng ? ['png', 'webp'] : ['jpeg', 'webp'];
+            if (!validation.valid) {
+                console.error(`❌ Error: ${relativePath}`);
+                console.error(`   ${validation.error}`);
+                errorCount++;
+                continue;
+            }
 
-        // Generate optimized image versions using @11ty/eleventy-img
-        const metadata = await Image(imagePath, {
-            // Widths to generate:
-            // - 1080: Mobile/small screens (1080px wide)
-            // - null: Original size for desktop/retina displays
-            widths: [1080, null],
+            // Log warnings (e.g., large file sizes)
+            if (validation.warnings.length > 0) {
+                validation.warnings.forEach(warning => {
+                    console.warn(`⚠️  Warning: ${relativePath}`);
+                    console.warn(`   ${warning}`);
+                    warningCount++;
+                });
+            }
 
-            formats: formats, // Output formats (WebP + fallback)
-            outputDir: outputPath, // Preserve folder structure in dist/assets
-            useCache: false, // Always regenerate (ensures consistency)
+            console.log(`🔧 Optimizing: ${relativePath} (${getFileSize(imagePath)})`);
 
-            // Custom filename generator
-            // Examples:
-            //   image.jpg → image.jpg, image.webp (original)
-            //   image.jpg → image-1080w.jpg, image-1080w.webp (mobile)
-            filenameFormat: function (id, src, width, format, options) {
-                const extension = path.extname(src);
-                const name = path.basename(src, extension);
+            // PNG files need special handling to preserve transparency (alpha channel)
+            // PNGs get: PNG + WebP formats
+            // JPGs get: JPEG + WebP formats
+            const isPng = /\.png$/i.test(imagePath);
+            const formats = isPng ? ['png', 'webp'] : ['jpeg', 'webp'];
 
-                if (width === 1080) {
-                    // Mobile version: add -1080w suffix
-                    return `${name}-1080w.${format === 'jpeg' ? 'jpg' : format}`;
-                } else {
-                    // Original size: no suffix
-                    return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
-                }
-            },
+            // Ensure output directory exists
+            if (!fs.existsSync(outputPath)) {
+                fs.mkdirSync(outputPath, { recursive: true });
+            }
 
-            // Compression settings (quality vs file size tradeoff)
-            jpegOptions: {
-                quality: 85,        // 85% quality (good balance)
-                progressive: true,  // Progressive JPEGs load top-to-bottom (better UX)
-            },
-            webpOptions: {
-                quality: 85,        // Matches JPEG quality
-            },
-            pngOptions: {
-                quality: 85,        // For PNGs with transparency
-            },
-        });
+            // Generate optimized image versions using @11ty/eleventy-img
+            const metadata = await Image(imagePath, {
+                // Widths to generate:
+                // - 1080: Mobile/small screens (1080px wide)
+                // - null: Original size for desktop/retina displays
+                widths: [1080, null],
 
-        // Note: eleventy-img automatically handles image resizing
-        // Images larger than specified widths are scaled down
-        // Images smaller than specified widths keep original size
+                formats: formats, // Output formats (WebP + fallback)
+                outputDir: outputPath, // Preserve folder structure in dist/assets
+                useCache: false, // Always regenerate (ensures consistency)
+
+                // Custom filename generator
+                // Examples:
+                //   image.jpg → image.jpg, image.webp (original)
+                //   image.jpg → image-1080w.jpg, image-1080w.webp (mobile)
+                filenameFormat: function (id, src, width, format, options) {
+                    const extension = path.extname(src);
+                    const name = path.basename(src, extension);
+
+                    if (width === 1080) {
+                        // Mobile version: add -1080w suffix
+                        return `${name}-1080w.${format === 'jpeg' ? 'jpg' : format}`;
+                    } else {
+                        // Original size: no suffix
+                        return `${name}.${format === 'jpeg' ? 'jpg' : format}`;
+                    }
+                },
+
+                // Compression settings (quality vs file size tradeoff)
+                jpegOptions: {
+                    quality: 85,        // 85% quality (good balance)
+                    progressive: true,  // Progressive JPEGs load top-to-bottom (better UX)
+                },
+                webpOptions: {
+                    quality: 85,        // Matches JPEG quality
+                },
+                pngOptions: {
+                    quality: 85,        // For PNGs with transparency
+                },
+            });
+
+            // Calculate and log file size savings
+            const originalSize = fs.statSync(imagePath).size;
+            let totalOutputSize = 0;
+
+            // Sum up all generated files
+            Object.values(metadata).forEach(formatArray => {
+                formatArray.forEach(file => {
+                    if (fs.existsSync(file.outputPath)) {
+                        totalOutputSize += fs.statSync(file.outputPath).size;
+                    }
+                });
+            });
+
+            const savings = totalOutputSize > 0 ? Math.round((1 - totalOutputSize / (originalSize * 2)) * 100) : 0;
+            console.log(`   ✓ Generated ${formats.join(' + ')} formats (${savings}% total size reduction)`);
+
+            successCount++;
+
+            // Note: eleventy-img automatically handles image resizing
+            // Images larger than specified widths are scaled down
+            // Images smaller than specified widths keep original size
+        } catch (err) {
+            console.error(`❌ Error processing ${relativePath}:`);
+            console.error(`   ${err.message}`);
+            if (err.stack && process.env.VERBOSE) {
+                console.error(`   Stack trace: ${err.stack}`);
+            }
+            errorCount++;
+        }
     }
 
-    console.log('Image optimization complete!');
+    // Final summary
+    console.log('\n' + '='.repeat(60));
+    console.log('📊 Image Optimization Summary');
+    console.log('='.repeat(60));
+    console.log(`✅ Successfully optimized: ${successCount} images`);
+    if (warningCount > 0) {
+        console.log(`⚠️  Warnings: ${warningCount}`);
+    }
+    if (errorCount > 0) {
+        console.log(`❌ Errors: ${errorCount} images failed`);
+    }
+    console.log('='.repeat(60) + '\n');
+
+    // Exit with error code if any images failed
+    if (errorCount > 0) {
+        console.error('⚠️  Some images failed to optimize. See errors above.');
+        process.exit(1);
+    }
+
+    console.log('✨ Image optimization complete!\n');
 }
 
 optimizeImages().catch((err) => {
