@@ -9,9 +9,20 @@
 class ImageLoadAnimations {
     constructor() {
         this.images = [];
+
+        // Detect mobile/tablet for more aggressive image loading
+        const isMobile = window.innerWidth <= 768;
+        const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+
+        // More aggressive loading on mobile to prevent blank screens
+        // Mobile: start loading 400px before image enters viewport
+        // Tablet: start loading 300px before
+        // Desktop: start loading 200px before
+        const margin = isMobile ? '400px' : isTablet ? '300px' : '200px';
+
         this.observerOptions = {
             root: null, // viewport
-            rootMargin: '50px', // Start loading slightly before image enters viewport
+            rootMargin: margin, // Start loading before image enters viewport
             threshold: 0.01
         };
 

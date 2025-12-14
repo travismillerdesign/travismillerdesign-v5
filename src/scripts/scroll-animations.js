@@ -8,9 +8,20 @@
 class ScrollAnimations {
     constructor() {
         this.animatedElements = [];
+
+        // Detect mobile/tablet for more aggressive animation triggering
+        const isMobile = window.innerWidth <= 768;
+        const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+
+        // More aggressive rootMargin on mobile so animations start before content enters viewport
+        // Desktop: start 100px before element enters viewport
+        // Tablet: start 200px before element enters viewport
+        // Mobile: start 300px before element enters viewport (prevents blank screen while scrolling)
+        const margin = isMobile ? '300px' : isTablet ? '200px' : '100px';
+
         this.observerOptions = {
             root: null, // viewport
-            rootMargin: '0px', // Trigger as soon as element enters viewport
+            rootMargin: `0px 0px ${margin} 0px`, // Start animation before element fully enters viewport
             threshold: 0.01 // Trigger when just 1% of element is visible
         };
 
