@@ -99,9 +99,16 @@ class ImageLoadAnimations {
 
         if (!img) return;
 
-        // If image is already loaded (race condition)
+        // If image is already loaded successfully (race condition)
         if (img.complete && img.naturalHeight !== 0) {
             this.onImageLoaded(element);
+            return;
+        }
+
+        // If image already failed to load (race condition)
+        if (img.complete && img.naturalHeight === 0) {
+            element.classList.remove('image-loading');
+            element.classList.add('image-failed');
             return;
         }
 
@@ -113,8 +120,9 @@ class ImageLoadAnimations {
         };
 
         const errorHandler = () => {
-            // Even on error, remove the loading class to prevent invisible images
+            // On error, show grey placeholder instead of broken image icon
             element.classList.remove('image-loading');
+            element.classList.add('image-failed');
             img.removeEventListener('load', loadHandler);
             img.removeEventListener('error', errorHandler);
         };

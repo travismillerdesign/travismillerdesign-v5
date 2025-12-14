@@ -105,7 +105,9 @@ class ScrollAnimations {
             : mediaElement;
 
         const checkLoaded = () => {
+            // Image is ready if it loaded successfully OR if it failed (we show grey box)
             if (mediaElement.classList.contains('image-loaded') ||
+                mediaElement.classList.contains('image-failed') ||
                 (img && img.complete && img.naturalHeight !== 0)) {
                 element.classList.add('scroll-animate-visible');
                 return true;
