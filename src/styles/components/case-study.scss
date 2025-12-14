@@ -35,7 +35,9 @@ $p5-margin: 1rem * 0.5;
 
     // GPU acceleration hints for better mobile performance
     // Note: will-change removed to reduce memory pressure on mobile
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
 
     canvas {
@@ -49,7 +51,9 @@ $p5-margin: 1rem * 0.5;
         image-rendering: -webkit-optimize-contrast;
 
         // GPU acceleration for canvas
+        -webkit-transform: translateZ(0);
         transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
     }
 }
