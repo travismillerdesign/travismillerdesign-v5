@@ -60,6 +60,7 @@ $darken-amt: 15%;
 //*******************************************
 //	PROJECT COLORS
 //*******************************************
+// text color , background color
 .theme-leia {
     @include button-hover-swap(#AACCE3, #0b09aa);
 }
@@ -81,7 +82,7 @@ $darken-amt: 15%;
 }
 
 .theme-apple {
-    @include button-hover-swap(#f5f5f7, #1d1d1f);
+    @include button-hover-swap(#eaeaec, #1d1d1f);
 }
 
 // Workaround for worklist button hover
