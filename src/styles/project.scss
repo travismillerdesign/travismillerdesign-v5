@@ -1,22 +1,84 @@
-// Core Settings and Resets
-//*******************************************
+// project.scss
+//
+// Main Sass Entry Point
+//
+// This file is compiled to project.css by the Sass compiler.
+// It imports all Sass modules in the correct order.
+//
+// Compilation Command:
+//   sass src/styles/project.scss src/styles/project.css --style=compressed
+//
+// Architecture:
+//   1. Resets: Normalize browser defaults
+//   2. Utilities: Helper classes and mixins
+//   3. Settings: Variables (colors, spacing, typography, breakpoints)
+//   4. Core: Base element styles (html, body, headings, links)
+//   5. Components: Reusable UI components (cards, buttons, navigation)
+//
+// Sass Features Used:
+//   - @use: Modern module system (replaces @import)
+//   - Nesting: Scoped selectors
+//   - Variables: $color-primary, $unit-lg, etc.
+//   - Mixins: @include respond-to(medium) for breakpoints
+//   - Functions: color.adjust() for color manipulation
+//
+// Output:
+//   dist/styles/project.css (compressed, minified)
+
+// ========================================
+// 1. CORE SETTINGS AND RESETS
+// ========================================
+// modern-normalize: CSS reset for cross-browser consistency
+// Normalizes default browser styles (margins, font sizes, etc.)
 @use 'modern-normalize/modern-normalize.css';
 
-//	Utilities
-//*******************************************
+// ========================================
+// 2. UTILITIES
+// ========================================
+// Utility classes and Sass mixins
+// Currently minimal (defined in utilities/_index.scss)
 @use 'utilities';
 
-// Settings Variables
-//*******************************************
+// ========================================
+// 3. SETTINGS (VARIABLES)
+// ========================================
+// Global configuration variables:
+//   - settings/color.scss: Color palette, theme mixins
+//   - settings/fonts.scss: Typography scale, font weights
+//   - settings/layout.scss: Breakpoints, spacing units, grid
+//   - settings/motion.scss: Animation timing and easing
+//   - settings/zindex.scss: Z-index stacking context
+//
+// These variables are available to all modules via @use 'settings'
 @use 'settings';
 
-// Elements
-//*******************************************
+// ========================================
+// 4. CORE ELEMENT STYLES
+// ========================================
+// Base HTML element styles:
+//   - html, body: Root styles
+//   - Headings: h1-h6 typography
+//   - Links: a tag styles, hover states
+//   - Lists, paragraphs, etc.
 @use 'core/tags';
 
-// Components
-//*******************************************
+// ========================================
+// 5. COMPONENTS
+// ========================================
+// Reusable UI component styles:
+//   - components/header.scss: Hero sections, page headers
+//   - components/footer.scss: Site footer
+//   - components/navigation.scss: Nav components
+//   - components/worklist.scss: Work grid and cards
+//   - components/case-study.scss: P5.js animation containers
+//   - components/content.scss: Content blocks, text, media
+//   - components/media-assets.scss: Image and video styling
+//
+// All components imported via components/_index.scss
 @use 'components';
 
-// Views
-//*******************************************
+// ========================================
+// 6. VIEWS / PAGE-SPECIFIC STYLES
+// ========================================
+// Currently unused (no view-specific styles needed)
+// Add page-specific styles here if needed in future

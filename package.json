@@ -4,18 +4,40 @@
     "description": "v5 portfolio website",
     "main": "index.js",
     "scripts": {
+        "_comment_compile": "== SASS COMPILATION ==",
         "compile:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --style=compressed",
+        "_comment_compile_desc": "Compiles Sass to CSS with compression. Load paths allow @use 'modern-normalize' imports.",
+
+        "_comment_watch": "== WATCH MODES (DEVELOPMENT) ==",
         "watch:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch",
         "watch:scss:verbose": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch --verbose",
+        "_comment_watch_desc": "Watches Sass files for changes and recompiles. Verbose mode shows detailed output.",
+
         "watch:11ty": "npx @11ty/eleventy --serve --quiet",
         "watch:11ty:verbose": "npx @11ty/eleventy --serve",
+        "_comment_watch_11ty": "Runs Eleventy dev server with live reload. Watches HTML templates and content.",
+
+        "_comment_optimize": "== ASSET OPTIMIZATION (PRODUCTION) ==",
         "optimize:images": "node optimize-images.js",
         "optimize:videos": "node optimize-videos.js",
+        "_comment_optimize_desc": "Converts images to WebP, videos to WebM. Generates responsive sizes and poster frames.",
+
+        "_comment_build": "== BUILD SCRIPTS ==",
         "prebuild": "npm run compile:scss",
+        "_comment_prebuild": "Runs automatically before 'build'. Ensures CSS is compiled first.",
+
         "build": "npx @11ty/eleventy && npm run optimize:images && npm run optimize:videos",
+        "_comment_build_desc": "Full production build: 1) Generate HTML, 2) Optimize images, 3) Optimize videos. Output: dist/",
+
+        "_comment_serve": "== DEVELOPMENT SERVERS ==",
         "serve": "npm-run-all compile:scss --parallel watch:*",
+        "_comment_serve_desc": "Fast dev mode. Compiles CSS once, then runs watch:scss and watch:11ty in parallel. No optimization.",
+
         "serve:full": "npm run optimize:images && npm run optimize:videos && npm-run-all compile:scss --parallel watch:*",
-        "serve:verbose": "npm-run-all compile:scss --parallel watch:scss:verbose watch:11ty:verbose"
+        "_comment_serve_full": "Full dev mode with optimized assets. Slower start, but tests production asset pipeline.",
+
+        "serve:verbose": "npm-run-all compile:scss --parallel watch:scss:verbose watch:11ty:verbose",
+        "_comment_serve_verbose": "Dev mode with verbose logging for debugging Sass and Eleventy."
     },
     "repository": {
         "type": "git",

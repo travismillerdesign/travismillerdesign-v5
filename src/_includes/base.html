@@ -1,32 +1,62 @@
+<!--
+  base.html - Base Layout Template
+
+  This is the root HTML template that wraps all pages on the site.
+  Eleventy uses Nunjucks to process this template and inject page-specific content.
+
+  How It Works:
+  1. Each page has YAML front matter specifying: layout: base.html
+  2. Eleventy processes the page content through Nunjucks
+  3. The page content replaces {{ content | safe }} in this template
+  4. Variables (title, description) come from page front matter or fallback to defaults
+
+  Template Variables (from page front matter):
+  - title: Page title for <title> and meta tags
+  - description: Page description for meta description
+  - page.url: Current page URL (Eleventy built-in)
+
+  Usage Example:
+    ---
+    layout: base.html
+    title: "Apple Case Study"
+    description: "Design system work at Apple"
+    ---
+    <section>Page content here...</section>
+-->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
+
   <!-- Primary Meta Tags -->
+  <!-- Nunjucks {{ title or "default" }} syntax: Use page title if provided, otherwise use default -->
   <title>{{ title or "Travis Miller - Design Systems Designer | Apple, Google, Leia" }}</title>
   <meta name="title" content="{{ title or 'Travis Miller - Design Systems Designer' }}" />
   <meta name="description" content="{{ description or 'Design systems designer with 11 years building scalable design infrastructure for Apple, Google, and Leia. Combining systems thinking, visual craft, and technical implementation (HTML/CSS/JS) to create strategic, beautiful, and adoptable design systems.' }}" />
   <meta name="keywords" content="design systems designer, design infrastructure, scalable design, component design, design systems architecture, visual design, motion design, HTML CSS JavaScript, WCAG accessibility, cross-functional design, design documentation, design systems strategy, product design, Bay Area designer, Silicon Valley designer, senior designer, staff designer" />
   <meta name="author" content="Travis Miller" />
+
+  <!-- Canonical URL: Prevents duplicate content issues in SEO -->
   <link rel="canonical" href="https://travismillerdesign.com{{ page.url or '/' }}" />
   
   <!-- Additional SEO -->
+  <!-- Tells search engines to index and follow links -->
   <meta name="robots" content="index, follow" />
   <meta name="language" content="English" />
   <meta name="revisit-after" content="7 days" />
-  
-  <!-- Geo Tags (Bay Area focus) -->
+
+  <!-- Geo Tags: Helps with local SEO for Bay Area searches -->
   <meta name="geo.region" content="US-CA" />
   <meta name="geo.placename" content="Bay Area, California" />
   <meta name="geo.position" content="37.3861;-122.0839" />
   <meta name="ICBM" content="37.3861, -122.0839" />
-  
-  <!-- Preconnect for Performance -->
+
+  <!-- Preconnect: Establishes early connection to CDN for faster P5.js loading -->
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-  
-  <!-- Structured Data (JSON-LD) -->
+
+  <!-- Structured Data (JSON-LD): Helps search engines understand site content -->
+  <!-- Provides rich snippets in search results (job title, skills, location) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org/",
@@ -55,29 +85,45 @@
     }
   }
   </script>
-  
+
+  <!-- Compiled CSS (from Sass via npm run compile:scss) -->
   <link rel="stylesheet" href="/styles/project.css" />
 </head>
 <body>
 
+  <!-- Main Content Area -->
+  <!-- {{ content | safe }} is replaced by page-specific content -->
+  <!-- "safe" filter prevents HTML escaping (allows HTML tags in content) -->
   <main>{{ content | safe }}</main>
 
+  <!-- Footer (common across all pages) -->
+  <!-- {% include %} injects footer.html template here -->
   {% include 'footer.html' %}
 
+  <!-- Core JavaScript Modules (load order matters!) -->
+
+  <!-- 1. Scroll Animations: Fade-in effects as content enters viewport -->
   <script src="/scripts/scroll-animations.js"></script>
+
+  <!-- 2. Video Lazy Loading: Defers video loading until near viewport -->
   <script src="/scripts/video-lazy-loading.js"></script>
+
+  <!-- 3. Page Transitions: SPA-like navigation with smooth fades -->
   <script src="/scripts/page-transitions.js"></script>
 
-  <!-- P5.js Library -->
+  <!-- P5.js Creative Coding Library (v1.7.0 from CDN) -->
+  <!-- Used for animated background sketches on case study pages -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 
-  <!-- P5.js Mobile Optimizer - Must load before case study animations -->
+  <!-- 4. P5.js Mobile Optimizer (must load BEFORE case-study-animations.js) -->
+  <!-- Detects device capabilities and sets performance-appropriate settings -->
   <script src="/scripts/p5-mobile-optimizer.js"></script>
 
-  <!-- Case Study Animations -->
+  <!-- 5. Case Study Animations: P5.js sketches with animated backgrounds -->
+  <!-- Depends on p5-mobile-optimizer.js being loaded first -->
   <script src="/scripts/case-study-animations.js"></script>
 
-  <!-- Keyboard Navigation -->
+  <!-- 6. Keyboard Navigation: Arrow key navigation between sections -->
   <script src="/scripts/case-study-navigation.js"></script>
 </body>
 </html>
