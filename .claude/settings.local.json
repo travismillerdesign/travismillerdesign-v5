@@ -12,7 +12,8 @@
       "Bash(timeout 180 npm run optimize:videos:*)",
       "Bash(npx @11ty/eleventy:*)",
       "Bash(npm run build:scss:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
