@@ -68,6 +68,29 @@ picture.image-failed {
     }
 }
 
+// Theme-aware failed image colors
+// Light backgrounds get light grey placeholders, dark backgrounds get dark grey
+.theme-light,
+.theme-light-alt,
+.theme-ds {
+    img.image-failed,
+    picture.image-failed {
+        background-color: color.adjust($fill-white, $lightness: -10%); // Slightly darker than white
+    }
+}
+
+.theme-dark,
+.theme-leia,
+.theme-motion,
+.theme-brand,
+.theme-beam,
+.theme-apple {
+    img.image-failed,
+    picture.image-failed {
+        background-color: color.adjust($fill-black, $lightness: 10%); // Slightly lighter than black
+    }
+}
+
 // Smooth content shift animation
 // When images load and content shifts, animate the movement
 * {
