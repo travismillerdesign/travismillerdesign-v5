@@ -60,6 +60,7 @@ nav {
     @extend %padding-full;
 }
 footer {
+    padding-bottom: 25vh; /* Fallback for older browsers */
     padding-bottom: 25dvh;
 }
 

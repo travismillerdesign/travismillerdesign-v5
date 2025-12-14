@@ -30,13 +30,21 @@ $ease-out: cubic-bezier(.08,.2,.5,1);
 // Default state: hidden and slightly below position
 .scroll-animate {
     opacity: 0;
+    -webkit-transform: translateY(16px);
+    -moz-transform: translateY(16px);
+    -ms-transform: translateY(16px);
     transform: translateY(16px);
+    -webkit-transition: opacity $transition-fadeIn $ease-out, -webkit-transform $transition-fadeIn $ease-out;
+    -moz-transition: opacity $transition-fadeIn $ease-out, -moz-transform $transition-fadeIn $ease-out;
     transition: opacity $transition-fadeIn $ease-out, transform $transition-fadeIn $ease-out;
 }
 
 // Visible state: fully opaque and in position
 .scroll-animate-visible {
     opacity: 1;
+    -webkit-transform: translateY(0);
+    -moz-transform: translateY(0);
+    -ms-transform: translateY(0);
     transform: translateY(0);
 }
 
@@ -55,7 +63,12 @@ $ease-out: cubic-bezier(.08,.2,.5,1);
 
     .scroll-animate {
         opacity: 1;
+        -webkit-transform: none;
+        -moz-transform: none;
+        -ms-transform: none;
         transform: none;
+        -webkit-transition: none;
+        -moz-transition: none;
         transition: none;
     }
 }
@@ -81,16 +94,32 @@ footer.page-transitioning-out {
 // Fade in: content fades in with subtle upward movement
 main.page-transitioning-in,
 footer.page-transitioning-in {
+    -webkit-animation: fadeInContent $transition-fadeIn $ease-out forwards;
     animation: fadeInContent $transition-fadeIn $ease-out forwards;
+}
+
+@-webkit-keyframes fadeInContent {
+    from {
+        opacity: 0;
+        -webkit-transform: translateY(8px);
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
 }
 
 @keyframes fadeInContent {
     from {
         opacity: 0;
+        -webkit-transform: translateY(8px);
         transform: translateY(8px);
     }
     to {
         opacity: 1;
+        -webkit-transform: translateY(0);
         transform: translateY(0);
     }
 }

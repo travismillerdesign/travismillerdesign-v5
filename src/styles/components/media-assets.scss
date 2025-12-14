@@ -8,6 +8,7 @@
     display: block;
     width: 100%;
     height: 100%;
+    -o-object-fit: cover; /* Opera */
     object-fit: cover;
     @include transition(transform);
 }
@@ -18,6 +19,7 @@
     img {
         width: 100%;
         height: 100%;
+        -o-object-fit: contain; /* Opera */
         object-fit: contain;
     }
 }

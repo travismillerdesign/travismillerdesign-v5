@@ -4,6 +4,7 @@
 @use '../settings' as *;
 
 header.hero {
+    min-height: 88vh; /* Fallback for older browsers */
     min-height: 88dvh;
     padding-bottom: 45rem;
     .flex-container {
@@ -38,6 +39,7 @@ header.hero-compact {
     padding-bottom: 10rem;
     min-height: none;
     @include breakpoint-up($bp_sm) {
+        min-height: 50vh; /* Fallback for older browsers */
         min-height: 50dvh;
     }
     .flex-container {
@@ -68,6 +70,7 @@ header.hero-compact {
 
 header.hero-full {
     @extend %padding-full;
+    min-height: 100vh; /* Fallback for older browsers */
     min-height: 100dvh;
     overflow: hidden;
     padding-bottom: 45rem;
