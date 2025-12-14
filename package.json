@@ -5,12 +5,12 @@
     "main": "index.js",
     "scripts": {
         "_comment_compile": "== SASS COMPILATION ==",
-        "compile:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --style=compressed",
-        "_comment_compile_desc": "Compiles Sass to CSS with compression. Load paths allow @use 'modern-normalize' imports.",
+        "compile:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --no-source-map && postcss src/styles/project.css --replace --use autoprefixer",
+        "_comment_compile_desc": "Compiles Sass to CSS, then adds vendor prefixes via PostCSS/Autoprefixer. Load paths allow @use 'modern-normalize' imports.",
         "_comment_watch": "== WATCH MODES (DEVELOPMENT) ==",
         "watch:scss": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch",
         "watch:scss:verbose": "sass --load-path=node_modules --load-path=src/styles src/styles/project.scss src/styles/project.css --watch --verbose",
-        "_comment_watch_desc": "Watches Sass files for changes and recompiles. Verbose mode shows detailed output.",
+        "_comment_watch_desc": "Watches Sass files for changes and recompiles. Note: Vendor prefixes are added only during 'compile:scss' for production builds.",
         "watch:11ty": "npx @11ty/eleventy --serve --quiet",
         "watch:11ty:verbose": "npx @11ty/eleventy --serve",
         "_comment_watch_11ty": "Runs Eleventy dev server with live reload. Watches HTML templates and content.",
@@ -58,16 +58,27 @@
         "url": "https://github.com/travismillerdesign/travismillerdesign-v5/issues"
     },
     "homepage": "https://github.com/travismillerdesign/travismillerdesign-v5#readme",
+    "browserslist": [
+        "> 0.5%",
+        "last 2 versions",
+        "Firefox ESR",
+        "not dead",
+        "iOS >= 12",
+        "Safari >= 12"
+    ],
     "dependencies": {
         "@11ty/eleventy": "^3.1.2"
     },
     "devDependencies": {
         "@11ty/eleventy-img": "^6.0.4",
         "@11ty/eleventy-plugin-rss": "^2.0.4",
+        "autoprefixer": "^10.4.23",
         "eslint": "^9.39.2",
         "fluent-ffmpeg": "^2.1.2",
         "modern-normalize": "^3.0.1",
         "npm-run-all": "^4.1.5",
+        "postcss": "^8.5.6",
+        "postcss-cli": "^11.0.1",
         "prettier": "^3.6.2",
         "sass": "^1.93.2"
     }
