@@ -12,7 +12,7 @@
     How It Works:
     1. Each page has YAML front matter specifying: layout: base.html
     2. Eleventy processes the page content through Nunjucks
-    3. The page content replaces {{ content | safe }} in this template
+    3. The page content replaces the content variable in this template
     4. Variables (title, description) come from page front matter or fallback to defaults
 
     Template Variables (from page front matter):
@@ -95,7 +95,7 @@
 <body>
 
   <!-- Main Content Area -->
-  <!-- {{ content | safe }} is replaced by page-specific content -->
+  <!-- The content variable is replaced by page-specific content -->
   <!-- "safe" filter prevents HTML escaping (allows HTML tags in content) -->
   <main>{{ content | safe }}</main>
 
