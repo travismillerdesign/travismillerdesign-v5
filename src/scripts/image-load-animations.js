@@ -105,30 +105,13 @@ class ImageLoadAnimations {
             return;
         }
 
-        // If image already failed to load (race condition)
-        if (img.complete && img.naturalHeight === 0) {
-            element.classList.remove('image-loading');
-            element.classList.add('image-failed');
-            return;
-        }
-
         // Set up load event listener
         const loadHandler = () => {
             this.onImageLoaded(element);
             img.removeEventListener('load', loadHandler);
-            img.removeEventListener('error', errorHandler);
-        };
-
-        const errorHandler = () => {
-            // On error, show grey placeholder instead of broken image icon
-            element.classList.remove('image-loading');
-            element.classList.add('image-failed');
-            img.removeEventListener('load', loadHandler);
-            img.removeEventListener('error', errorHandler);
         };
 
         img.addEventListener('load', loadHandler);
-        img.addEventListener('error', errorHandler);
     }
 
     onImageLoaded(element) {
