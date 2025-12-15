@@ -34,6 +34,7 @@ const Image = require('@11ty/eleventy-img');
 const path = require('path');
 const fs = require('fs');
 const { validateDirectory, validateImageFile, findAllImages, getFileSize } = require('./lib/asset-validator');
+const { createProgressTracker, printSummary } = require('./lib/build-reporter');
 
 async function optimizeImages() {
     const sourceDir = './src/assets';
@@ -65,9 +66,7 @@ async function optimizeImages() {
 
     console.log(`Found ${images.length} images to optimize...\n`);
 
-    let successCount = 0;
-    let errorCount = 0;
-    let warningCount = 0;
+    const tracker = createProgressTracker();
 
     for (const imagePath of images) {
         const relativePath = path.relative(sourceDir, imagePath);
@@ -80,7 +79,7 @@ async function optimizeImages() {
             if (!validation.valid) {
                 console.error(`❌ Error: ${relativePath}`);
                 console.error(`   ${validation.error}`);
-                errorCount++;
+                tracker.error();
                 continue;
             }
 
@@ -89,7 +88,7 @@ async function optimizeImages() {
                 validation.warnings.forEach(warning => {
                     console.warn(`⚠️  Warning: ${relativePath}`);
                     console.warn(`   ${warning}`);
-                    warningCount++;
+                    tracker.warning();
                 });
             }
 
@@ -180,7 +179,7 @@ async function optimizeImages() {
             const savings = totalOutputSize > 0 ? Math.round((1 - totalOutputSize / (originalSize * 2)) * 100) : 0;
             console.log(`   ✓ Generated ${formats.join(' + ')} formats (${savings}% total size reduction)`);
 
-            successCount++;
+            tracker.success();
 
             // Note: eleventy-img automatically handles image resizing
             // Images larger than specified widths are scaled down
@@ -191,28 +190,12 @@ async function optimizeImages() {
             if (err.stack && process.env.VERBOSE) {
                 console.error(`   Stack trace: ${err.stack}`);
             }
-            errorCount++;
+            tracker.error();
         }
     }
 
     // Final summary
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 Image Optimization Summary');
-    console.log('='.repeat(60));
-    console.log(`✅ Successfully optimized: ${successCount} images`);
-    if (warningCount > 0) {
-        console.log(`⚠️  Warnings: ${warningCount}`);
-    }
-    if (errorCount > 0) {
-        console.log(`❌ Errors: ${errorCount} images failed`);
-    }
-    console.log('='.repeat(60) + '\n');
-
-    // Exit with error code if any images failed
-    if (errorCount > 0) {
-        console.error('⚠️  Some images failed to optimize. See errors above.');
-        process.exit(1);
-    }
+    printSummary('Image Optimization Summary', 'images', tracker.getCounts());
 
     console.log('✨ Image optimization complete!\n');
 }

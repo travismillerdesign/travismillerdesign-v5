@@ -28,14 +28,14 @@ const {
     checkImageWidth,
     getFileSize
 } = require('./lib/asset-validator');
+const { createProgressTracker, printSummary, printSeparator } = require('./lib/build-reporter');
 
 async function validateAssets() {
     console.log('🔍 Starting Asset Validation\n');
-    console.log('='.repeat(60));
+    printSeparator();
 
     const sourceDir = './src/assets';
-    let errorCount = 0;
-    let warningCount = 0;
+    const tracker = createProgressTracker();
 
     // Step 1: Check source directory exists
     console.log('\n📁 Checking source directory...');
@@ -53,7 +53,7 @@ async function validateAssets() {
         console.error('❌ Error: FFmpeg is not installed or not in PATH');
         console.error('   Video optimization will fail without FFmpeg');
         console.error('   Install from: https://ffmpeg.org/download.html');
-        errorCount++;
+        tracker.error();
     } else {
         console.log('✓ FFmpeg is available');
     }
@@ -67,7 +67,7 @@ async function validateAssets() {
 
     if (images.length === 0 && videos.length === 0) {
         console.warn('⚠️  Warning: No assets found to validate');
-        warningCount++;
+        tracker.warning();
     }
 
     // Step 4: Validate images
@@ -84,12 +84,12 @@ async function validateAssets() {
             if (!validation.valid) {
                 console.error(`❌ ${relativePath}`);
                 console.error(`   ${validation.error}`);
-                errorCount++;
+                tracker.error();
             } else if (validation.warnings.length > 0) {
                 validation.warnings.forEach(warning => {
                     console.warn(`⚠️  ${relativePath}`);
                     console.warn(`   ${warning}`);
-                    warningCount++;
+                    tracker.warning();
                 });
             } else {
                 // Check for 1080px width edge case
@@ -109,7 +109,8 @@ async function validateAssets() {
             }
         }
 
-        if (errorCount === 0 && warningCount === 0) {
+        const counts = tracker.getCounts();
+        if (counts.error === 0 && counts.warning === 0) {
             console.log(`✓ All ${images.length} images are valid`);
         }
 
@@ -137,12 +138,12 @@ async function validateAssets() {
             if (!validation.valid) {
                 console.error(`❌ ${relativePath}`);
                 console.error(`   ${validation.error}`);
-                errorCount++;
+                tracker.error();
             } else if (validation.warnings.length > 0) {
                 validation.warnings.forEach(warning => {
                     console.warn(`⚠️  ${relativePath}`);
                     console.warn(`   ${warning}`);
-                    warningCount++;
+                    tracker.warning();
                 });
             } else {
                 // Only show size for valid files in verbose mode
@@ -152,7 +153,8 @@ async function validateAssets() {
             }
         }
 
-        if (errorCount === 0 && warningCount === 0) {
+        const counts = tracker.getCounts();
+        if (counts.error === 0 && counts.warning === 0) {
             console.log(`✓ All ${videos.length} videos are valid`);
         }
     }
@@ -178,41 +180,20 @@ async function validateAssets() {
     if (totalSizeMB > 500) {
         console.warn('⚠️  Warning: Total asset size exceeds 500 MB');
         console.warn('   This may slow down the build process');
-        warningCount++;
+        tracker.warning();
     }
 
     // Final summary
-    console.log('\n' + '='.repeat(60));
-    console.log('📋 Validation Summary');
-    console.log('='.repeat(60));
+    const finalCounts = tracker.getCounts();
+    printSummary('Validation Summary', 'assets', finalCounts, { exitOnWarnings: true });
+    printSeparator();
 
-    if (errorCount === 0 && warningCount === 0) {
-        console.log('✅ All validations passed! Assets are ready for optimization.');
-        return { errors: 0, warnings: 0 };
-    } else if (errorCount === 0) {
-        console.log(`⚠️  Validation complete with ${warningCount} warning(s)`);
-        console.log('   Build can proceed, but review warnings above.');
-        return { errors: 0, warnings: warningCount };
-    } else {
-        console.log(`❌ Validation failed with ${errorCount} error(s) and ${warningCount} warning(s)`);
-        console.log('   Please fix errors before building.');
-        return { errors: errorCount, warnings: warningCount };
-    }
+    return { errors: finalCounts.error, warnings: finalCounts.warning };
 }
 
 // Run validation
+// Note: printSummary handles process.exit() internally based on error/warning counts
 validateAssets()
-    .then(({ errors, warnings }) => {
-        console.log('='.repeat(60) + '\n');
-
-        if (errors > 0) {
-            process.exit(1);
-        } else if (warnings > 0) {
-            process.exit(2);
-        } else {
-            process.exit(0);
-        }
-    })
     .catch((err) => {
         console.error('\n❌ Fatal error during validation:', err);
         console.error(err.stack);
