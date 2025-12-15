@@ -13,7 +13,8 @@
       "Bash(npx @11ty/eleventy:*)",
       "Bash(npm run build:scss:*)",
       "Bash(npm run:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

@@ -38,6 +38,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const { validateDirectory, validateVideoFile, findAllVideos, getFileSize, checkFFmpegAvailable } = require('./lib/asset-validator');
+const { createProgressTracker, printSummary } = require('./lib/build-reporter');
 
 async function optimizeVideos() {
     const sourceDir = './src/assets';
@@ -77,9 +78,7 @@ async function optimizeVideos() {
 
     console.log(`Found ${videos.length} MP4 videos to process...\n`);
 
-    let successCount = 0;
-    let errorCount = 0;
-    let warningCount = 0;
+    const tracker = createProgressTracker();
 
     // Process each video file
     for (const videoPath of videos) {
@@ -95,7 +94,7 @@ async function optimizeVideos() {
             if (!validation.valid) {
                 console.error(`❌ Error: ${relativePath}`);
                 console.error(`   ${validation.error}`);
-                errorCount++;
+                tracker.error();
                 continue;
             }
 
@@ -104,7 +103,7 @@ async function optimizeVideos() {
                 validation.warnings.forEach(warning => {
                     console.warn(`⚠️  Warning: ${relativePath}`);
                     console.warn(`   ${warning}`);
-                    warningCount++;
+                    tracker.warning();
                 });
             }
 
@@ -125,7 +124,7 @@ async function optimizeVideos() {
             } catch (err) {
                 console.warn(`    ⚠️  Failed to extract poster frame: ${err.message}`);
                 console.warn(`    Continuing without poster image...`);
-                warningCount++;
+                tracker.warning();
             }
 
             // STEP 2: Optimize poster image
@@ -137,7 +136,7 @@ async function optimizeVideos() {
                     console.log(`    ✓ Poster images generated`);
                 } catch (err) {
                     console.warn(`    ⚠️  Failed to optimize poster: ${err.message}`);
-                    warningCount++;
+                    tracker.warning();
                 }
 
                 // Clean up temporary poster file (work done in OS temp directory)
@@ -162,41 +161,25 @@ async function optimizeVideos() {
                 } catch (err) {
                     console.warn(`    ⚠️  WebM conversion failed: ${err.message}`);
                     console.warn(`    Continuing with MP4 only...`);
-                    warningCount++;
+                    tracker.warning();
                 }
             } else {
                 console.log(`  - WebM already exists in source, skipping conversion`);
             }
 
-            successCount++;
+            tracker.success();
         } catch (err) {
             console.error(`❌ Error processing ${relativePath}:`);
             console.error(`   ${err.message}`);
             if (err.stack && process.env.VERBOSE) {
                 console.error(`   Stack trace: ${err.stack}`);
             }
-            errorCount++;
+            tracker.error();
         }
     }
 
     // Final summary
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 Video Optimization Summary');
-    console.log('='.repeat(60));
-    console.log(`✅ Successfully processed: ${successCount} videos`);
-    if (warningCount > 0) {
-        console.log(`⚠️  Warnings: ${warningCount}`);
-    }
-    if (errorCount > 0) {
-        console.log(`❌ Errors: ${errorCount} videos failed`);
-    }
-    console.log('='.repeat(60) + '\n');
-
-    // Exit with error code if any videos completely failed
-    if (errorCount > 0) {
-        console.error('⚠️  Some videos failed to process. See errors above.');
-        process.exit(1);
-    }
+    printSummary('Video Optimization Summary', 'videos', tracker.getCounts());
 
     console.log('✨ Video optimization complete!\n');
 }

@@ -1,0 +1,2 @@
+# Prevent Eleventy from processing markdown files in assets folder
+src/assets/**/*.md
