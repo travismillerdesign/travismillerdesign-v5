@@ -1,31 +1,34 @@
-<!--
-  base.html - Base Layout Template
 
-  This is the root HTML template that wraps all pages on the site.
-  Eleventy uses Nunjucks to process this template and inject page-specific content.
-
-  How It Works:
-  1. Each page has YAML front matter specifying: layout: base.html
-  2. Eleventy processes the page content through Nunjucks
-  3. The page content replaces {{ content | safe }} in this template
-  4. Variables (title, description) come from page front matter or fallback to defaults
-
-  Template Variables (from page front matter):
-  - title: Page title for <title> and meta tags
-  - description: Page description for meta description
-  - page.url: Current page URL (Eleventy built-in)
-
-  Usage Example:
-    ---
-    layout: base.html
-    title: "Apple Case Study"
-    description: "Design system work at Apple"
-    ---
-    <section>Page content here...</section>
--->
 <!doctype html>
 <html lang="en">
 <head>
+
+  <!--
+    base.html - Base Layout Template
+
+    This is the root HTML template that wraps all pages on the site.
+    Eleventy uses Nunjucks to process this template and inject page-specific content.
+
+    How It Works:
+    1. Each page has YAML front matter specifying: layout: base.html
+    2. Eleventy processes the page content through Nunjucks
+    3. The page content replaces {{ content | safe }} in this template
+    4. Variables (title, description) come from page front matter or fallback to defaults
+
+    Template Variables (from page front matter):
+    - title: Page title for <title> and meta tags
+    - description: Page description for meta description
+    - page.url: Current page URL (Eleventy built-in)
+
+    Usage Example:
+      ---
+      layout: base.html
+      title: "Apple Case Study"
+      description: "Design system work at Apple"
+      ---
+      <section>Page content here...</section>
+  -->
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
