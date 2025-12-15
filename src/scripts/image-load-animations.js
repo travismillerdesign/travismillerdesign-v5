@@ -190,6 +190,12 @@ let imageLoadAnimations;
 
 function initializeImageLoadAnimations() {
     imageLoadAnimations = new ImageLoadAnimations();
+
+    // Respect user's motion preferences - check after initialization
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // If user prefers reduced motion, show all images immediately
+        imageLoadAnimations.showAll();
+    }
 }
 
 // Initialize when DOM is ready
@@ -205,13 +211,3 @@ document.addEventListener('page:loaded', () => {
         imageLoadAnimations.refresh();
     }
 });
-
-// Respect user's motion preferences
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    // If user prefers reduced motion, show all images immediately
-    document.addEventListener('DOMContentLoaded', () => {
-        if (imageLoadAnimations) {
-            imageLoadAnimations.showAll();
-        }
-    });
-}
