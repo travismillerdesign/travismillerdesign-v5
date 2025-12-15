@@ -193,6 +193,12 @@ let scrollAnimations;
 
 function initializeScrollAnimations() {
     scrollAnimations = new ScrollAnimations();
+
+    // Respect user's motion preferences - check after initialization
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // If user prefers reduced motion, show all elements immediately
+        scrollAnimations.showAll();
+    }
 }
 
 // Initialize when DOM is ready
@@ -208,11 +214,3 @@ document.addEventListener('page:loaded', () => {
         scrollAnimations.refresh();
     }
 });
-
-// Respect user's motion preferences
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    // If user prefers reduced motion, show all elements immediately
-    if (scrollAnimations) {
-        scrollAnimations.showAll();
-    }
-}
