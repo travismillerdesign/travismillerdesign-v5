@@ -25,6 +25,7 @@ const {
     findAllImages,
     findAllVideos,
     checkFFmpegAvailable,
+    checkImageWidth,
     getFileSize
 } = require('./lib/asset-validator');
 
@@ -74,6 +75,8 @@ async function validateAssets() {
         console.log('\n🖼️  Validating images...');
         console.log('-'.repeat(60));
 
+        const images1080px = [];
+
         for (const imagePath of images) {
             const relativePath = path.relative(sourceDir, imagePath);
             const validation = validateImageFile(imagePath, { maxSizeMB: 50 });
@@ -89,6 +92,16 @@ async function validateAssets() {
                     warningCount++;
                 });
             } else {
+                // Check for 1080px width edge case
+                const widthCheck = await checkImageWidth(imagePath);
+                if (widthCheck.is1080px) {
+                    images1080px.push({
+                        path: relativePath,
+                        width: widthCheck.width,
+                        height: widthCheck.height
+                    });
+                }
+
                 // Only show size for valid files in verbose mode
                 if (process.env.VERBOSE) {
                     console.log(`✓ ${relativePath} (${getFileSize(imagePath)})`);
@@ -98,6 +111,17 @@ async function validateAssets() {
 
         if (errorCount === 0 && warningCount === 0) {
             console.log(`✓ All ${images.length} images are valid`);
+        }
+
+        // Report images that are exactly 1080px wide (edge case)
+        if (images1080px.length > 0) {
+            console.log(`\n📏 Found ${images1080px.length} image(s) exactly 1080px wide:`);
+            console.log('-'.repeat(60));
+            images1080px.forEach(img => {
+                console.log(`   ${img.path} (${img.width}x${img.height})`);
+            });
+            console.log('   ℹ️  These images will be handled by the build process to ensure');
+            console.log('   both base and -1080w versions are created for responsive images.');
         }
     }
 

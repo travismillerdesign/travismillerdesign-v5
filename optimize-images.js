@@ -147,6 +147,23 @@ async function optimizeImages() {
                 },
             });
 
+            // Edge case: If source image is exactly 1080px wide, eleventy-img only generates
+            // the -1080w version. We need to create the base version (without suffix) as well
+            // for the responsive image shortcode to work correctly.
+
+            // Check if base version exists for each format
+            for (const format of formats) {
+                const formatExtension = format === 'jpeg' ? 'jpg' : format;
+                const baseName = path.basename(imagePath, path.extname(imagePath));
+                const baseFile = path.join(outputPath, `${baseName}.${formatExtension}`);
+                const widthFile = path.join(outputPath, `${baseName}-1080w.${formatExtension}`);
+
+                // If base file doesn't exist but width file does, copy it
+                if (!fs.existsSync(baseFile) && fs.existsSync(widthFile)) {
+                    fs.copyFileSync(widthFile, baseFile);
+                }
+            }
+
             // Calculate and log file size savings
             const originalSize = fs.statSync(imagePath).size;
             let totalOutputSize = 0;
