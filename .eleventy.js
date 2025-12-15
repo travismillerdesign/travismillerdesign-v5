@@ -73,6 +73,16 @@ module.exports = function (eleventyConfig) {
     // Copy SEO robots.txt to site root
     eleventyConfig.addPassthroughCopy('src/robots.txt');
 
+    // Copy favicon files to root of dist/
+    // Favicons must be at site root (not /assets/) for browser compatibility
+    eleventyConfig.addPassthroughCopy({ "src/assets/favicon/favicon.ico": "favicon.ico" });
+    eleventyConfig.addPassthroughCopy({ "src/assets/favicon/favicon.svg": "favicon.svg" });
+    eleventyConfig.addPassthroughCopy({ "src/assets/favicon/favicon-96x96.png": "favicon-96x96.png" });
+    eleventyConfig.addPassthroughCopy({ "src/assets/favicon/apple-touch-icon.png": "apple-touch-icon.png" });
+    eleventyConfig.addPassthroughCopy({ "src/assets/favicon/site.webmanifest": "site.webmanifest" });
+    eleventyConfig.addPassthroughCopy({ "src/assets/favicon/web-app-manifest-192x192.png": "web-app-manifest-192x192.png" });
+    eleventyConfig.addPassthroughCopy({ "src/assets/favicon/web-app-manifest-512x512.png": "web-app-manifest-512x512.png" });
+
     // ========================================
     // FILE WATCHING (DEV MODE)
     // ========================================
