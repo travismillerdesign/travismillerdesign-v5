@@ -808,7 +808,7 @@ ul.chipList li {
   font-weight: 400;
 }
 
-.font-semibold, .tableList li span:first-child, .button, .siteName, .hero-eyebrow, .sectionEyebrow, strong {
+.semibold, .tableList li span:first-child, .button, .siteName, .hero-eyebrow, .sectionEyebrow, strong {
   font-weight: 600;
 }
 
