@@ -14,7 +14,8 @@
       "Bash(npm run build:scss:*)",
       "Bash(npm run:*)",
       "Bash(python3:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
