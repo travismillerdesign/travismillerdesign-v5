@@ -126,8 +126,9 @@ module.exports = function (eleventyConfig) {
     // DEV SERVER CONFIGURATION
     // ========================================
     // BrowserSync settings for local development server
+    // Note: BrowserSync automatically watches all files in _site/ for changes
+    // CSS reloading is handled by the watch:scss script which compiles to _site/styles/
     eleventyConfig.setServerOptions({
-        watch: ['_site/styles/project.css'], // Reload browser when CSS changes
         host: '0.0.0.0',  // Listen on all network interfaces (allows phone/tablet testing)
         port: 8080,       // Dev server runs at http://localhost:8080
         showAllHosts: true, // Display all network URLs in console (e.g., http://192.168.1.x:8080)
