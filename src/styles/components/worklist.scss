@@ -98,6 +98,10 @@ a:hover .featured-image .fillImage {
     // Mobile: full width
     flex-basis: 100%;
 
+    // Flexbox layout for vertical alignment
+    display: flex;
+    flex-direction: column;
+
     // Tablet and up: 33% width
     @include breakpoint-up($bp_sm) {
         flex-basis: 50%;
@@ -109,14 +113,13 @@ a:hover .featured-image .fillImage {
     }
 
     &.bottomText {
-        display: flex;
-        flex-direction: column;
         justify-content: end;
         padding-bottom: 0;
         p {
             padding-right: 2em;
         }
     }
+
     .title {
         // Mobile: auto height (don't force fixed height)
         height: auto;
@@ -128,6 +131,20 @@ a:hover .featured-image .fillImage {
             height: 11.5em;
             min-height: 0;
         }
+    }
+
+    // Push remaining content to bottom
+    > p.large,
+    > .statList,
+    > .button-bottomRight {
+        margin-top: auto;
+    }
+
+    // Reset margin-top for subsequent siblings
+    > p.large ~ .statList,
+    > p.large ~ .button-bottomRight,
+    > .statList ~ .button-bottomRight {
+        margin-top: 0;
     }
 }
 
