@@ -89,7 +89,7 @@ header.hero-full {
 }
 
 .hero-eyebrow {
-    @extend .font-semibold;
+    @extend .semibold;
     @extend .uppercase;
     padding-bottom: 0.9em;
 }

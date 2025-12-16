@@ -1,0 +1,98 @@
+<!-- Worklist Section -->
+<section class="worklist theme-dark">
+    <div class="sectionLabel">
+        <p class="uppercase semibold">selected work</p>
+    </div>
+
+    <div class="worklist-small">
+        {% if excludePage != 'leia' %}
+        <a class="workitem flex-container" href="/work/leia">
+            <div class="featured-image">
+                {% responsiveImage "/assets/leia/leia_wallpaper_gradients.jpg", "Leia 3D Lightfield display wallpaper", "fillImage" %}
+            </div>
+            <div class="featured-card theme-leia">
+                <div class="title">
+                    <h3>Leia 3D<br>Design System</h3>
+                </div>
+                <p class="large">Building foundational design infrastructure for the world's first AI powered 3D Lightfield tablet.</p>
+                <div class="button-bottomRight">
+                    <span class="button" href="/work/leia">View project</span>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+
+        {% if excludePage != 'apple' %}
+        <a class="workitem flex-container" href="/work/apple">
+            <div class="featured-image">
+                {% responsiveImage "/assets/apple/apple_component.png", "apple.com UI component", "fillImage" %}
+            </div>
+            <div class="featured-card theme-apple">
+                <div class="title">
+                    <h3>Apple</h3>
+                </div>
+                <p class="large">Architecting scalable design systems infrastructure for apple.com</p>
+                <div class="button-bottomRight">
+                    <span class="button" href="/work/apple">View project</span>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+
+        {% if excludePage != 'google-beam' %}
+        <a class="workitem flex-container" href="/work/google-beam">
+            <div class="featured-image">
+                {% responsiveImage "/assets/google/google_beam_overview.jpg", "Google Beam product shot", "fillImage" %}
+            </div>
+            <div class="featured-card theme-beam">
+                <div class="title">
+                    <h3>Google Beam</h3>
+                </div>
+                <p class="large">Building a design system for emerging 3D video communication technology</p>
+                <div class="button-bottomRight">
+                    <span class="button">View project</span>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+
+    </div>
+
+    <!-- Work Collections -->
+    <div class="worklist-small">
+
+        {% if excludePage != 'motion' %}
+        <a class="workitem flex-container" href="/work/motion">
+            <div class="featured-image">
+                {% responsiveImage "/assets/motion/scotiabank_arena_logo_animation.gif", "Scotiabank Arena animated logo", "fillImage" %}
+            </div>
+            <div class="featured-card theme-motion">
+                <div class="title">
+                    <h3>Motion design frameworks</h3>
+                </div>
+                <p class="large">Motion graphics systems and brand campaigns for mediums ranging from mobile campaigns to stadium graphics.</p>
+                <div class="button-bottomRight">
+                    <span class="button" href="/work/motion">View project</span>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+
+        {% if excludePage != 'branding' %}
+        <a class="workitem flex-container" href="/work/branding">
+            <div class="featured-image">
+                {% responsiveImage "/assets/brand/vesca/vesca_packaging_retail_2.jpg", "Vesca beauty product packaging", "fillImage" %}
+            </div>
+            <div class="featured-card theme-brand">
+                <div class="title">
+                    <h3>Brand identity systems</h3>
+                </div>
+                <p class="large">Brand identity, packaging, and art direction for consumer beauty brands</p>
+                <div class="button-bottomRight">
+                    <span class="button">View project</span>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+    </div>
+</section>
