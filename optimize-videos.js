@@ -6,11 +6,11 @@
 // It optimizes videos for web delivery with better compression and faster loading.
 //
 // What It Does:
-// 1. Scans src/assets/ recursively for .mp4 video files
+// 1. Scans _src/assets/ recursively for .mp4 video files
 // 2. Extracts first frame as poster image (for <video poster> attribute)
 // 3. Generates optimized poster images (WebP + JPEG)
 // 4. Converts MP4 to WebM format (VP9 codec, ~30-50% smaller file size)
-// 5. Outputs to dist/assets/ maintaining folder structure
+// 5. Outputs to _site/assets/ maintaining folder structure
 //
 // Video Format Strategy:
 // - WebM (VP9): Modern format, superior compression, supported by 95% of browsers
@@ -29,8 +29,8 @@
 // - VP9 codec uses row-based multithreading (faster encoding)
 //
 // Used With:
-// - src/_includes/shortcodes.js lazyVideo() generates <video> elements
-// - src/scripts/video-lazy-loading.js handles lazy loading
+// - _src/_includes/shortcodes.js lazyVideo() generates <video> elements
+// - _src/scripts/video-lazy-loading.js handles lazy loading
 
 const ffmpeg = require('fluent-ffmpeg');
 const Image = require('@11ty/eleventy-img');
@@ -41,8 +41,8 @@ const { validateDirectory, validateVideoFile, findAllVideos, getFileSize, checkF
 const { createProgressTracker, printSummary } = require('./lib/build-reporter');
 
 async function optimizeVideos() {
-    const sourceDir = './src/assets';
-    const outputDir = './dist/assets';
+    const sourceDir = './_src/assets';
+    const outputDir = './_site/assets';
 
     console.log('🎬 Starting video optimization...\n');
 

@@ -13,13 +13,13 @@ const fs = require('fs');
 const path = require('path');
 
 // Directories to scan
-const SCAN_DIRS = ['src', 'lib', 'tests'];
+const SCAN_DIRS = ['_src', 'lib', 'tests'];
 
 // File extensions to search
 const EXTENSIONS = ['.js', '.html', '.css', '.scss', '.md'];
 
 // Directories to ignore
-const IGNORE_DIRS = ['node_modules', 'dist', '.git'];
+const IGNORE_DIRS = ['node_modules', '_site', '.git'];
 
 // TODO patterns to match
 const TODO_PATTERNS = [

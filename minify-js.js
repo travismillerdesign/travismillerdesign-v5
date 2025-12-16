@@ -2,7 +2,7 @@
 //
 // JavaScript Minification Script
 //
-// Minifies all JavaScript files in the dist/ directory using Terser.
+// Minifies all JavaScript files in the _site/ directory using Terser.
 // This script runs as part of the production build pipeline.
 //
 // Features:
@@ -21,7 +21,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { minify } = require('terser');
 
-const DIST_DIR = path.join(__dirname, 'dist');
+const DIST_DIR = path.join(__dirname, '_site');
 
 async function findJavaScriptFiles(dir) {
     const files = [];
@@ -87,11 +87,11 @@ async function main() {
     try {
         console.log('🗜️  Minifying JavaScript files...\n');
 
-        // Check if dist directory exists
+        // Check if _site directory exists
         try {
             await fs.access(DIST_DIR);
         } catch {
-            console.log('⚠️  dist/ directory not found. Run build first.');
+            console.log('⚠️  _site/ directory not found. Run build first.');
             process.exit(0);
         }
 

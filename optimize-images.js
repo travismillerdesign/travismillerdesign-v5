@@ -6,11 +6,11 @@
 // It converts source images to optimized formats for web delivery.
 //
 // What It Does:
-// 1. Scans src/assets/ recursively for JPG, PNG, WebP, AVIF images
+// 1. Scans _src/assets/ recursively for JPG, PNG, WebP, AVIF images
 // 2. Generates two versions: 1080w (mobile) + original size (desktop/retina)
 // 3. Converts to WebP format (better compression, ~30% smaller than JPEG)
 // 4. Preserves PNG transparency when needed
-// 5. Outputs to dist/assets/ maintaining folder structure
+// 5. Outputs to _site/assets/ maintaining folder structure
 //
 // Format Strategy:
 // - PNG sources → PNG + WebP (preserves transparency)
@@ -22,7 +22,7 @@
 // - Mobile size: image-1080w.jpg, image-1080w.webp
 //
 // Used With:
-// - src/_includes/shortcodes.js responsiveImage() generates <picture> elements
+// - _src/_includes/shortcodes.js responsiveImage() generates <picture> elements
 // - <picture> uses WebP with JPG fallback for browser compatibility
 //
 // Performance Impact:
@@ -37,8 +37,8 @@ const { validateDirectory, validateImageFile, findAllImages, getFileSize } = req
 const { createProgressTracker, printSummary } = require('./lib/build-reporter');
 
 async function optimizeImages() {
-    const sourceDir = './src/assets';
-    const outputDir = './dist/assets';
+    const sourceDir = './_src/assets';
+    const outputDir = './_site/assets';
 
     console.log('🖼️  Starting image optimization...\n');
 
@@ -113,7 +113,7 @@ async function optimizeImages() {
                 widths: [1080, null],
 
                 formats: formats, // Output formats (WebP + fallback)
-                outputDir: outputPath, // Preserve folder structure in dist/assets
+                outputDir: outputPath, // Preserve folder structure in _site/assets
                 useCache: false, // Always regenerate (ensures consistency)
 
                 // Custom filename generator

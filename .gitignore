@@ -4,7 +4,7 @@
 
 # Ignore build artifacts
 build/
-dist/
+_site/
 
 # Ignore node_modules folder in Node.js projects
 node_modules/

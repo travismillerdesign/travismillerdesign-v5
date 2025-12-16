@@ -3,7 +3,7 @@
 
 module.exports = [
     {
-        ignores: ['dist/', 'node_modules/', 'src/styles/'],
+        ignores: ['_site/', 'node_modules/', '_src/styles/'],
     },
     {
         languageOptions: {

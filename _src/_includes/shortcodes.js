@@ -72,13 +72,13 @@ module.exports = function (eleventyConfig) {
         }
 
         // Check if source file exists (during build)
-        // Note: Check in dist/ directory as this runs after optimization
-        const sourceFilePath = path.join('./dist', cleanSrc);
+        // Note: Check in _site/ directory as this runs after optimization
+        const sourceFilePath = path.join('./_site', cleanSrc);
         if (!missingAssets.has(src)) {
             // Only check and warn once per unique asset
             if (!fs.existsSync(sourceFilePath)) {
-                // Also check in src/ directory
-                const srcFilePath = path.join('./src', cleanSrc);
+                // Also check in _src/ directory
+                const srcFilePath = path.join('./_src', cleanSrc);
                 if (!fs.existsSync(srcFilePath)) {
                     console.warn(`⚠️  Warning: Image file not found: ${src}`);
                     console.warn(`   Expected at: ${srcFilePath} or ${sourceFilePath}`);
@@ -173,12 +173,12 @@ module.exports = function (eleventyConfig) {
         }
 
         // Check if source file exists (during build)
-        const sourceFilePath = path.join('./dist', cleanSrc);
+        const sourceFilePath = path.join('./_site', cleanSrc);
         if (!missingAssets.has(src)) {
             // Only check and warn once per unique asset
             if (!fs.existsSync(sourceFilePath)) {
-                // Also check in src/ directory
-                const srcFilePath = path.join('./src', cleanSrc);
+                // Also check in _src/ directory
+                const srcFilePath = path.join('./_src', cleanSrc);
                 if (!fs.existsSync(srcFilePath)) {
                     console.warn(`⚠️  Warning: Video file not found: ${src}`);
                     console.warn(`   Expected at: ${srcFilePath} or ${sourceFilePath}`);
