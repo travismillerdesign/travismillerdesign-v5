@@ -87,9 +87,9 @@ module.exports = function (eleventyConfig) {
     // ========================================
     // FILE WATCHING (DEV MODE)
     // ========================================
-    // Watch compiled CSS and trigger browser reload when Sass compilation completes
-    // This works with npm run watch:scss running in parallel
-    eleventyConfig.addWatchTarget('_site/styles/project.css');
+    // Watch SCSS source files and trigger browser reload when changes are detected
+    // The Sass compiler (watch:scss) will automatically compile to _site/styles/project.css
+    eleventyConfig.addWatchTarget('_src/styles/**/*.scss');
 
     // Enable immediate passthrough copying during serve mode (faster dev experience)
     // Without this, copied files would only update on rebuild
