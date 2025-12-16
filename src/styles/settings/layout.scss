@@ -229,8 +229,7 @@ $border-radius: 1.6rem;
     }
 }
 
-// The proportion of the flex box the item should take up
-.column-1 {
+.column {
     flex: 1;
     // Mobile: full width
     flex-basis: 100%;
@@ -241,6 +240,11 @@ $border-radius: 1.6rem;
         flex-basis: 50%;
         max-width: 50%;
     }
+}
+
+// The proportion of the flex box the item should take up
+.column-1 {
+    @extend .column;
     @include breakpoint-up($bp_lg) {
         flex-basis: 33%;
         max-width: 33%;
@@ -248,10 +252,7 @@ $border-radius: 1.6rem;
 }
 
 .column-2 {
-    flex: 1;
-    // Mobile: full width
-    flex-basis: 100%;
-
+    @extend .column;
     // Tablet and up: 66% width
     @include breakpoint-up($bp_sm) {
         flex: 2;
@@ -259,10 +260,7 @@ $border-radius: 1.6rem;
     }
 }
 .column-12 {
-    flex: 1;
-    // Mobile: full width
-    flex-basis: 100%;
-
+    @extend .column;
     // Tablet and up: 66% width
     @include breakpoint-up($bp_sm) {
         flex: 1;
