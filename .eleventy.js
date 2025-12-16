@@ -64,11 +64,13 @@ module.exports = function (eleventyConfig) {
     // Copy web fonts (PP Mori in WOFF/WOFF2 formats)
     eleventyConfig.addPassthroughCopy('_src/fonts');
 
-    // Copy specific asset types (GIFs and MP4s)
+    // Copy specific asset types (GIFs, videos, and pre-optimized video files)
     // Note: JPG/PNG/WebP images are optimized separately by optimize-images.js
-    // Note: WebM videos are generated separately by optimize-videos.js
+    // Note: Videos are pre-optimized using 'npm run preprocess:videos' and committed to Git
     eleventyConfig.addPassthroughCopy('_src/assets/**/*.gif');
-    eleventyConfig.addPassthroughCopy('_src/assets/**/*.mp4');
+    eleventyConfig.addPassthroughCopy('_src/assets/**/*.mp4');   // Original MP4 videos
+    eleventyConfig.addPassthroughCopy('_src/assets/**/*.webm');  // Pre-optimized WebM videos
+    eleventyConfig.addPassthroughCopy('_src/assets/**/*.webp');  // Pre-generated video posters
 
     // Copy SEO robots.txt to site root
     eleventyConfig.addPassthroughCopy('_src/robots.txt');

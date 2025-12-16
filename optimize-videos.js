@@ -49,9 +49,11 @@ async function optimizeVideos() {
     // Check if FFmpeg is available
     const ffmpegAvailable = await checkFFmpegAvailable();
     if (!ffmpegAvailable) {
-        console.error('❌ Error: FFmpeg is required for video optimization.');
-        console.error('   Install FFmpeg from: https://ffmpeg.org/download.html');
-        process.exit(1);
+        console.warn('⚠️  FFmpeg not found - skipping video optimization');
+        console.warn('   Videos will be copied without optimization');
+        console.warn('   Install FFmpeg from: https://ffmpeg.org/download.html');
+        console.log('✅ Video optimization skipped (FFmpeg not available)\n');
+        process.exit(0);
     }
 
     // Validate source directory exists

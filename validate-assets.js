@@ -50,10 +50,10 @@ async function validateAssets() {
     console.log('\n🎬 Checking FFmpeg availability...');
     const ffmpegAvailable = await checkFFmpegAvailable();
     if (!ffmpegAvailable) {
-        console.error('❌ Error: FFmpeg is not installed or not in PATH');
-        console.error('   Video optimization will fail without FFmpeg');
-        console.error('   Install from: https://ffmpeg.org/download.html');
-        tracker.error();
+        console.warn('❌ FFmpeg not found. Video optimization will fail.');
+        console.warn('   Install FFmpeg: https://ffmpeg.org/download.html');
+        console.warn('⚠️  Warning: Video optimization will be skipped during build');
+        tracker.warning();
     } else {
         console.log('✓ FFmpeg is available');
     }
