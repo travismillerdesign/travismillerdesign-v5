@@ -13,7 +13,8 @@ console.log('='.repeat(60) + '\n');
 
 const tests = [
     { name: 'Asset Validator Tests', file: 'asset-validator.test.js' },
-    { name: 'Shortcode Tests', file: 'shortcodes.test.js' }
+    { name: 'Shortcode Tests', file: 'shortcodes.test.js' },
+    { name: 'PostCSS dvh Fallback Tests', file: 'postcss-dvh.test.js' }
 ];
 
 let currentTest = 0;
