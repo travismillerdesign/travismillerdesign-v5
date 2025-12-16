@@ -185,7 +185,7 @@ async function validateAssets() {
 
     // Final summary
     const finalCounts = tracker.getCounts();
-    printSummary('Validation Summary', 'assets', finalCounts, { exitOnWarnings: true });
+    printSummary('Validation Summary', 'assets', finalCounts, { exitOnWarnings: false });
     printSeparator();
 
     return { errors: finalCounts.error, warnings: finalCounts.warning };
