@@ -3,14 +3,14 @@
     "tasks": [
         {
             "type": "npm",
-            "script": "build",
+            "script": "serve:full",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "problemMatcher": [],
-            "label": "npm: build",
-            "detail": "Full production build with optimized assets"
+            "label": "npm: serve:full",
+            "detail": "Full dev mode with optimized assets and live reload"
         },
         {
             "type": "npm",
