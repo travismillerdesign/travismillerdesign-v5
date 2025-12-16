@@ -13,6 +13,9 @@ class PageNavigation {
         this.SCROLL_BEHAVIOR = 'smooth'; // 'smooth' or 'auto'
         this.SCROLL_OFFSET = 0; // Offset from top in pixels (adjust if you have a fixed header)
 
+        // Only enable debug logging on localhost
+        this.debugMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
         // ============================================
         // STATE
         // ============================================
@@ -41,7 +44,9 @@ class PageNavigation {
         this.findNavigableSections();
 
         if (this.sections.length === 0) {
-            console.log('No navigable sections found for keyboard navigation');
+            if (this.debugMode) {
+                console.log('No navigable sections found for keyboard navigation');
+            }
             return;
         }
 
@@ -54,7 +59,10 @@ class PageNavigation {
         // Initial section detection
         this.updateCurrentSection();
 
-        console.log(`Keyboard navigation initialized with ${this.sections.length} sections`);
+        // Only log in development mode
+        if (this.debugMode) {
+            console.log(`Keyboard navigation initialized with ${this.sections.length} sections`);
+        }
     }
 
     // ============================================

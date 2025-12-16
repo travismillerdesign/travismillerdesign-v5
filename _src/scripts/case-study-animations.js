@@ -8,6 +8,9 @@
 // Get mobile optimizer (loaded from p5-mobile-optimizer.js)
 const getOptimizer = () => window.p5MobileOptimizer;
 
+// Only enable debug logging on localhost
+const debugMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
 // Helper function for setting up canvas with optimization
 const setupOptimizedCanvas = (p, containerId) => {
     const optimizer = getOptimizer();
@@ -2733,7 +2736,9 @@ function initializeSketch(containerId, sketchFunction) {
     activeSketchInstances.push(instance);
     initializedSketches.add(containerId);
 
-    console.log(`Initialized sketch: ${containerId}`);
+    if (debugMode) {
+        console.log(`Initialized sketch: ${containerId}`);
+    }
 }
 
 // Lazy load a sketch when it's near the viewport
