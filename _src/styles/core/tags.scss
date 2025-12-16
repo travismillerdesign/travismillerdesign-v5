@@ -60,8 +60,7 @@ nav {
     @extend %padding-full;
 }
 footer {
-    padding-bottom: 25vh; /* Fallback for Safari < 15.4, Firefox < 101, Chrome < 108 */
-    padding-bottom: 25dvh;
+    // padding-bottom: 5em;
 }
 
 //*******************************************
@@ -94,7 +93,7 @@ a {
 // abbr[title] {}
 // b {}
 strong {
-    @extend .font-semibold;
+    @extend .semibold;
 }
 // dfn {}
 hr {

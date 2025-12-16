@@ -8,6 +8,8 @@ class P5MobileOptimizer {
     constructor() {
         this.deviceInfo = this.detectDevice();
         this.performanceSettings = this.getPerformanceSettings();
+        // Only enable debug logging on localhost
+        this.debugMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     }
 
     // ============================================
@@ -136,7 +138,9 @@ class P5MobileOptimizer {
     setupCanvas(p, containerId, options = {}) {
         const container = document.getElementById(containerId);
         if (!container) {
-            console.warn(`Container ${containerId} not found`);
+            if (this.debugMode) {
+                console.warn(`Container ${containerId} not found`);
+            }
             return null;
         }
 
@@ -190,17 +194,23 @@ class P5MobileOptimizer {
             if (enableShaders && this.deviceInfo.hasWebGL && !this.deviceInfo.isChromeIOS) {
                 const buffer = p.createGraphics(width, height, p.WEBGL);
                 buffer.pixelDensity(1); // Always 1 for buffers
-                console.log('Created WEBGL gradient buffer');
+                if (this.debugMode) {
+                    console.log('Created WEBGL gradient buffer');
+                }
                 return buffer;
             }
 
             // Fallback to P2D buffer (works everywhere, including Chrome iOS)
             const buffer = p.createGraphics(width, height);
             buffer.pixelDensity(1);
-            console.log('Created P2D gradient buffer');
+            if (this.debugMode) {
+                console.log('Created P2D gradient buffer');
+            }
             return buffer;
         } catch (error) {
-            console.error('Failed to create gradient buffer:', error);
+            if (this.debugMode) {
+                console.error('Failed to create gradient buffer:', error);
+            }
             return null;  // Will use solid background fallback
         }
     }
@@ -305,8 +315,10 @@ class P5MobileOptimizer {
         return this.performanceSettings.maxParticles;
     }
 
-    // Log device info for debugging
+    // Log device info for debugging (only in development)
     logDeviceInfo() {
+        if (!this.debugMode) return; // Skip logging in production
+
         console.log('=== P5 Mobile Optimizer - Device Info ===');
         console.log('Device Type:', this.deviceInfo.isMobile ? 'Mobile' : 'Desktop');
         console.log('Browser:', this.deviceInfo.isSafariIOS ? 'Safari on iOS' : (this.deviceInfo.isChromeIOS ? 'Chrome on iOS' : (this.deviceInfo.isIOS ? 'iOS' : 'Other')));

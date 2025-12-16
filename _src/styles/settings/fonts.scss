@@ -245,6 +245,10 @@ ul.compact li {
 }
 
 ul.chipList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4em 0.4em;
+
     li {
         @extend %fontSize-bodySmall;
         text-transform: uppercase;
@@ -253,7 +257,6 @@ ul.chipList {
         line-height: 1em; // to normalize chip height
         padding: 0.2em 0.4em 0.2em;
         border-radius: 0.3em;
-        margin: 0.15em 0.3em 0.15em 0.02em;
     }
 }
 
@@ -266,6 +269,6 @@ ul.chipList {
     font-weight: 400;
 }
 
-.font-semibold {
+.semibold {
     font-weight: 600;
 }

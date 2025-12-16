@@ -9,6 +9,8 @@
 class VideoLazyLoader {
     constructor() {
         this.lazyVideos = [];
+        // Only enable debug logging on localhost
+        this.debugMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         this.loadObserverOptions = {
             root: null, // viewport
             rootMargin: '200px', // Start loading 200px before entering viewport
@@ -111,7 +113,9 @@ class VideoLazyLoader {
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
                     // Autoplay was prevented (can happen on mobile)
-                    console.log('Video autoplay prevented:', error);
+                    if (this.debugMode) {
+                        console.log('Video autoplay prevented:', error);
+                    }
                 });
             }
         }

@@ -12,24 +12,34 @@
 }
 .worklist-small {
     display: flex;
-    // Mobile: stack vertically with smaller gap
     flex-wrap: wrap;
-    flex-direction: column;
     gap: $unit-sm;
-    justify-content: center;
-    align-items: stretch;
 
-    // Tablet and up: horizontal layout with larger gap
+    // Mobile: stack vertically with smaller gap
+    flex-direction: column;
+
+    // Medium screens (tablet): 2-column grid layout
     @include breakpoint-up($bp_sm) {
         flex-direction: row;
         gap: $unit-md;
     }
 
     .workitem {
-        min-width: 45%;
-        @include breakpoint-up($bp_lg) {
-            min-width: 20%;
+        // Mobile: full width
+        flex: 1 1 100%;
+
+        // Medium screens: 50% width for 2-column layout (creates 2x2 grid for 4 items)
+        @include breakpoint-up($bp_sm) {
+            flex: 1 1 calc((100% - $unit-md) / 2);
+            max-width: calc((100% - $unit-md) / 2);
         }
+
+        // Large screens: prioritize 4-in-a-row layout
+        @include breakpoint-up($bp_lg) {
+            flex: 1 1 calc((100% - (3 * $unit-md)) / 4);
+            max-width: none;
+        }
+
         .flex-container {
             flex-direction: column;
             align-items: stretch;
@@ -153,7 +163,7 @@ a:hover .featured-image .fillImage {
             content: '';
         } // removes bullet from basic bullet list
         @extend .uppercase;
-        // @extend .font-semibold;
+        // @extend .semibold;
         padding: 0.7em 0 0.5em;
         margin-bottom: 0;
         border-top: $border-width solid currentColor;
@@ -190,7 +200,7 @@ a:hover .featured-image .fillImage {
 
             &:first-child {
                 @extend .uppercase;
-                @extend .font-semibold;
+                @extend .semibold;
             }
 
             &:nth-child(n+2) {
