@@ -20,52 +20,52 @@ FILES GROUPED BY INDENTATION PATTERN
 ================================================================================
 
 USING TABS (1 file)
-├── src/styles/utilities/centering.scss
+├── _src/styles/utilities/centering.scss
 
 USING 2-SPACE (5 files) ✓ MATCHES STANDARD
-├── src/404.html
-├── src/styles/components/footer.scss
-├── src/styles/components/media-assets.scss
-├── src/styles/components/navigation.scss
-└── src/styles/settings/motion.scss
+├── _src/404.html
+├── _src/styles/components/footer.scss
+├── _src/styles/components/media-assets.scss
+├── _src/styles/components/navigation.scss
+└── _src/styles/settings/motion.scss
 
 USING 4-SPACE (5 files)
 ├── optimize-images.js
-├── src/_includes/base.html
-├── src/_includes/nav.html
-├── src/styles/components/worklist.scss
-└── src/styles/settings/color.scss
+├── _src/_includes/base.html
+├── _src/_includes/nav.html
+├── _src/styles/components/worklist.scss
+└── _src/styles/settings/color.scss
 
 MIXED INDENTATION (20 files) - HIGHEST PRIORITY FOR FIXES
 ├── .claude/settings.local.json
 ├── .eleventy.js [MOSTLY 4-SPACE]
 ├── package-lock.json [MOSTLY 4-SPACE]
 ├── package.json
-├── src/_includes/footer.html
-├── src/_includes/section-explorations.html
-├── src/about.html
-├── src/experiments.html
-├── src/index.html
-├── src/scripts/case-study-animations.js [MOSTLY 4-SPACE - 707 LINES]
-├── src/scripts/case-study-navigation.js
-├── src/styles/components/case-study.scss [MOSTLY 2-SPACE]
-├── src/styles/components/content.scss
-├── src/styles/components/header.scss
-├── src/styles/core/tags.scss [USES TABS]
-├── src/styles/project.css [USES TABS]
-├── src/styles/settings/fonts.scss [USES TABS]
-├── src/styles/settings/layout.scss [USES TABS]
-├── src/work.html
-└── src/work/design-systems.html
+├── _src/_includes/footer.html
+├── _src/_includes/section-explorations.html
+├── _src/about.html
+├── _src/experiments.html
+├── _src/index.html
+├── _src/scripts/case-study-animations.js [MOSTLY 4-SPACE - 707 LINES]
+├── _src/scripts/case-study-navigation.js
+├── _src/styles/components/case-study.scss [MOSTLY 2-SPACE]
+├── _src/styles/components/content.scss
+├── _src/styles/components/header.scss
+├── _src/styles/core/tags.scss [USES TABS]
+├── _src/styles/project.css [USES TABS]
+├── _src/styles/settings/fonts.scss [USES TABS]
+├── _src/styles/settings/layout.scss [USES TABS]
+├── _src/work.html
+└── _src/work/design-systems.html
 
 NO CLEAR PATTERN (7 files - Low priority)
 ├── README.md
-├── src/styles/components/_index.scss
-├── src/styles/project.scss
-├── src/styles/settings/_index.scss
-├── src/styles/settings/path.scss
-├── src/styles/settings/zindex.scss
-└── src/styles/utilities/_index.scss
+├── _src/styles/components/_index.scss
+├── _src/styles/project.scss
+├── _src/styles/settings/_index.scss
+├── _src/styles/settings/path.scss
+├── _src/styles/settings/zindex.scss
+└── _src/styles/utilities/_index.scss
 
 ================================================================================
 RECOMMENDED STANDARD: 2-SPACE INDENTATION
@@ -96,27 +96,27 @@ QUICK FIX: 3 STEPS
 
 3. Run Prettier:
    npm install -D prettier
-   npx prettier --write "src/**/*" ".eleventy.js" "optimize-images.js"
+   npx prettier --write "_src/**/*" ".eleventy.js" "optimize-images.js"
 
 ================================================================================
 PRIORITY FIX ORDER
 ================================================================================
 
 PRIORITY 1 (Fix first - Active development files):
-1. src/scripts/case-study-animations.js (707 indented lines, mostly 4-space)
-2. src/scripts/case-study-navigation.js (60 indented lines, mostly 4-space)
+1. _src/scripts/case-study-animations.js (707 indented lines, mostly 4-space)
+2. _src/scripts/case-study-navigation.js (60 indented lines, mostly 4-space)
 3. .eleventy.js (17 indented lines, 4-space)
-4. src/styles/core/tags.scss (uses tabs)
-5. src/styles/project.css (uses tabs)
-6. src/styles/settings/fonts.scss (uses tabs)
-7. src/styles/settings/layout.scss (uses tabs)
+4. _src/styles/core/tags.scss (uses tabs)
+5. _src/styles/project.css (uses tabs)
+6. _src/styles/settings/fonts.scss (uses tabs)
+7. _src/styles/settings/layout.scss (uses tabs)
 
 PRIORITY 2 (Fix second - Page/component files):
-1. src/work/design-systems.html (67 indented lines)
-2. src/about.html (44 indented lines)
-3. src/index.html (30 indented lines)
-4. src/work.html (20 indented lines)
-5. src/styles/components/case-study.scss (33 indented lines)
+1. _src/work/design-systems.html (67 indented lines)
+2. _src/about.html (44 indented lines)
+3. _src/index.html (30 indented lines)
+4. _src/work.html (20 indented lines)
+5. _src/styles/components/case-study.scss (33 indented lines)
 
 PRIORITY 3 (Fix last - Configuration files):
 1. package.json
@@ -139,7 +139,7 @@ Issue #2: Tabs in CSS/SCSS files (5 files)
 
 Issue #3: Large JavaScript file with inconsistent indentation
   Cause: Multiple edits with different settings
-  File: src/scripts/case-study-animations.js
+  File: _src/scripts/case-study-animations.js
   Fix: Use Prettier to standardize
   Impact: High - 1,235 total indented lines
 
@@ -191,7 +191,7 @@ NOTES
 
 5. This analysis excludes:
    - node_modules/ (external dependencies)
-   - dist/ (generated files)
+   - _site/ (generated files)
    - .git/ (version control)
 
 ================================================================================

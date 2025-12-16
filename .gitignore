@@ -17,5 +17,5 @@ node_modules/
 
 # Ignore build artifacts
 npm_output.log
-src/styles/project.css
-src/styles/project.css.map
+_src/styles/project.css
+_src/styles/project.css.map

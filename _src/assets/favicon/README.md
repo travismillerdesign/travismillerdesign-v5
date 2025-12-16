@@ -29,9 +29,9 @@ The favicon design follows the site's minimal aesthetic:
 All favicon files are copied to the site root (`/`) during build:
 
 ```
-src/assets/favicon/favicon.ico → dist/favicon.ico
-src/assets/favicon/favicon.svg → dist/favicon.svg
-src/assets/favicon/favicon-96x96.png → dist/favicon-96x96.png
+_src/assets/favicon/favicon.ico → _site/favicon.ico
+_src/assets/favicon/favicon.svg → _site/favicon.svg
+_src/assets/favicon/favicon-96x96.png → _site/favicon-96x96.png
 ... and so on
 ```
 
@@ -39,7 +39,7 @@ This is configured in `.eleventy.js` using passthrough copy.
 
 ## HTML Implementation
 
-Favicon meta tags are in `src/_includes/base.html`:
+Favicon meta tags are in `_src/_includes/base.html`:
 
 ```html
 <!-- Favicons -->
@@ -61,7 +61,7 @@ Favicon meta tags are in `src/_includes/base.html`:
    - [Favicon.io](https://favicon.io/) - Simple generator with text/emoji/image options
    - Manual creation in design tool (Figma, Sketch, etc.)
 
-2. **Replace files** in `src/assets/favicon/` with new versions
+2. **Replace files** in `_src/assets/favicon/` with new versions
    - Keep the same filenames
    - Maintain the same dimensions for each file
    - Ensure color theme consistency
@@ -73,7 +73,7 @@ Favicon meta tags are in `src/_includes/base.html`:
    ```bash
    npm run build
    ```
-   - Check `dist/` root for all favicon files
+   - Check `_site/` root for all favicon files
    - Test in multiple browsers (Chrome, Firefox, Safari, Edge)
    - Test "Add to Home Screen" on iOS and Android
 

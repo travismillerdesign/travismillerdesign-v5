@@ -74,7 +74,7 @@ Tests the `lib/asset-validator.js` utility:
 
 ### Shortcode Tests (`tests/shortcodes.test.js`)
 
-Tests the Eleventy shortcodes in `src/_includes/shortcodes.js`:
+Tests the Eleventy shortcodes in `_src/_includes/shortcodes.js`:
 
 **responsiveImage Shortcode:**
 - ✅ Basic JPG generation
@@ -110,7 +110,7 @@ The `validate-assets.js` script runs before every build to catch issues early:
 ### What It Checks
 
 1. **Directory Structure**
-   - Source directory exists (`src/assets/`)
+   - Source directory exists (`_src/assets/`)
    - Directory is readable
 
 2. **FFmpeg Availability**
@@ -148,7 +148,7 @@ The `validate-assets.js` script runs before every build to catch issues early:
 ============================================================
 
 📁 Checking source directory...
-✓ Source directory exists: ./src/assets
+✓ Source directory exists: ./_src/assets
 
 🎬 Checking FFmpeg availability...
 ✓ FFmpeg is available
@@ -371,7 +371,7 @@ The tests and validation are designed to work in CI/CD environments:
 
 **Solution:**
 - Warnings don't stop the build
-- Consider compressing large images/videos before adding to src/
+- Consider compressing large images/videos before adding to _src/
 - Review file sizes: `npm run validate:assets`
 
 ### Build Fails on Asset Validation
@@ -424,7 +424,7 @@ The tests and validation are designed to work in CI/CD environments:
 ### Modified Files
 - `optimize-images.js` - Added error handling, validation, logging
 - `optimize-videos.js` - Added error handling, validation, timeouts, logging
-- `src/_includes/shortcodes.js` - Added input validation, warnings, error handling
+- `_src/_includes/shortcodes.js` - Added input validation, warnings, error handling
 - `package.json` - Added test scripts, updated prebuild script
 
 ## Summary

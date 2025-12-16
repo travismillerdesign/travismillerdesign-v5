@@ -2,7 +2,7 @@
 //
 // Pre-Build Asset Validation Script
 //
-// Validates all assets in src/assets/ before building.
+// Validates all assets in _src/assets/ before building.
 // Checks for:
 // - File existence and readability
 // - File size warnings
@@ -34,7 +34,7 @@ async function validateAssets() {
     console.log('🔍 Starting Asset Validation\n');
     printSeparator();
 
-    const sourceDir = './src/assets';
+    const sourceDir = './_src/assets';
     const tracker = createProgressTracker();
 
     // Step 1: Check source directory exists

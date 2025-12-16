@@ -14,21 +14,21 @@ Your project has **INCONSISTENT indentation patterns** across different file typ
 ## Indentation Pattern Breakdown
 
 ### 1. Using Tabs (1 file)
-- `src/styles/utilities/centering.scss`
+- `_src/styles/utilities/centering.scss`
 
 ### 2. Using 2-Space Indentation (5 files) - RECOMMENDED STANDARD
-- `src/404.html`
-- `src/styles/components/footer.scss`
-- `src/styles/components/media-assets.scss`
-- `src/styles/components/navigation.scss`
-- `src/styles/settings/motion.scss`
+- `_src/404.html`
+- `_src/styles/components/footer.scss`
+- `_src/styles/components/media-assets.scss`
+- `_src/styles/components/navigation.scss`
+- `_src/styles/settings/motion.scss`
 
 ### 3. Using 4-Space Indentation (5 files)
 - `optimize-images.js`
-- `src/_includes/base.html`
-- `src/_includes/nav.html`
-- `src/styles/components/worklist.scss`
-- `src/styles/settings/color.scss`
+- `_src/_includes/base.html`
+- `_src/_includes/nav.html`
+- `_src/styles/components/worklist.scss`
+- `_src/styles/settings/color.scss`
 
 ### 4. Mixed/Inconsistent Indentation (20 files) - NEEDS STANDARDIZATION
 
@@ -38,32 +38,32 @@ Your project has **INCONSISTENT indentation patterns** across different file typ
 | `.eleventy.js` | 1 | 17 | Primarily 4-space |
 | `package-lock.json` | 6 | 664 | Primarily 4-space |
 | `package.json` | 18 | 15 | Nearly balanced |
-| `src/_includes/footer.html` | 2 | 2 | Perfectly balanced |
-| `src/_includes/section-explorations.html` | 2 | 3 | - |
-| `src/about.html` | 21 | 23 | Nearly balanced |
-| `src/experiments.html` | 10 | 13 | - |
-| `src/index.html` | 15 | 15 | Perfectly balanced |
-| `src/scripts/case-study-animations.js` | 528 | 707 | Primarily 4-space |
-| `src/scripts/case-study-navigation.js` | 43 | 60 | - |
-| `src/styles/components/case-study.scss` | 27 | 6 | Primarily 2-space |
-| `src/styles/components/content.scss` | 6 | 5 | Nearly balanced |
-| `src/styles/components/header.scss` | 9 | 10 | Nearly balanced |
-| `src/styles/core/tags.scss` | - | - | Uses tabs + 4-space |
-| `src/styles/project.css` | - | - | Uses tabs + 2-space |
-| `src/styles/settings/fonts.scss` | - | - | Uses tabs + 4-space |
-| `src/styles/settings/layout.scss` | - | - | Uses tabs + 2-space |
-| `src/work.html` | 10 | 10 | Perfectly balanced |
-| `src/work/design-systems.html` | 33 | 34 | Nearly balanced |
+| `_src/_includes/footer.html` | 2 | 2 | Perfectly balanced |
+| `_src/_includes/section-explorations.html` | 2 | 3 | - |
+| `_src/about.html` | 21 | 23 | Nearly balanced |
+| `_src/experiments.html` | 10 | 13 | - |
+| `_src/index.html` | 15 | 15 | Perfectly balanced |
+| `_src/scripts/case-study-animations.js` | 528 | 707 | Primarily 4-space |
+| `_src/scripts/case-study-navigation.js` | 43 | 60 | - |
+| `_src/styles/components/case-study.scss` | 27 | 6 | Primarily 2-space |
+| `_src/styles/components/content.scss` | 6 | 5 | Nearly balanced |
+| `_src/styles/components/header.scss` | 9 | 10 | Nearly balanced |
+| `_src/styles/core/tags.scss` | - | - | Uses tabs + 4-space |
+| `_src/styles/project.css` | - | - | Uses tabs + 2-space |
+| `_src/styles/settings/fonts.scss` | - | - | Uses tabs + 4-space |
+| `_src/styles/settings/layout.scss` | - | - | Uses tabs + 2-space |
+| `_src/work.html` | 10 | 10 | Perfectly balanced |
+| `_src/work/design-systems.html` | 33 | 34 | Nearly balanced |
 
 ### 5. No Clear Indentation Pattern (7 files)
 Mostly configuration/index files with minimal code:
 - `README.md`
-- `src/styles/components/_index.scss`
-- `src/styles/project.scss`
-- `src/styles/settings/_index.scss`
-- `src/styles/settings/path.scss`
-- `src/styles/settings/zindex.scss`
-- `src/styles/utilities/_index.scss`
+- `_src/styles/components/_index.scss`
+- `_src/styles/project.scss`
+- `_src/styles/settings/_index.scss`
+- `_src/styles/settings/path.scss`
+- `_src/styles/settings/zindex.scss`
+- `_src/styles/utilities/_index.scss`
 
 ---
 
@@ -139,7 +139,7 @@ Mostly configuration/index files with minimal code:
 ··"description": "v5 portfolio website",
 ```
 
-### Current Tab Example (src/styles/core/tags.scss)
+### Current Tab Example (_src/styles/core/tags.scss)
 ```scss
 [TAB]// Box sizing
 [TAB]-moz-box-sizing: border-box;
@@ -199,27 +199,27 @@ npm install -D prettier
 
 **Fix all files:**
 ```bash
-npx prettier --write "src/**/*" ".eleventy.js" "optimize-images.js"
+npx prettier --write "_src/**/*" ".eleventy.js" "optimize-images.js"
 ```
 
 ### 4. Fix Priority Order
 
 #### Priority 1 (Critical - Active development files)
 These have the most lines of code and are likely edited frequently:
-- `src/scripts/case-study-animations.js` (707 indented lines)
-- `src/scripts/case-study-navigation.js` (60 indented lines)
+- `_src/scripts/case-study-animations.js` (707 indented lines)
+- `_src/scripts/case-study-navigation.js` (60 indented lines)
 - `.eleventy.js` (17 indented lines)
-- `src/styles/core/tags.scss` (uses tabs)
-- `src/styles/project.css` (uses tabs)
-- `src/styles/settings/fonts.scss` (uses tabs)
+- `_src/styles/core/tags.scss` (uses tabs)
+- `_src/styles/project.css` (uses tabs)
+- `_src/styles/settings/fonts.scss` (uses tabs)
 
 #### Priority 2 (Important - Page/component files)
 These are part of your main content:
-- `src/work/design-systems.html`
-- `src/about.html`
-- `src/index.html`
-- `src/work.html`
-- `src/styles/components/case-study.scss`
+- `_src/work/design-systems.html`
+- `_src/about.html`
+- `_src/index.html`
+- `_src/work.html`
+- `_src/styles/components/case-study.scss`
 
 #### Priority 3 (Configuration files)
 Lower priority, can be fixed later:
@@ -299,7 +299,7 @@ Add to `.gitattributes` to ensure consistent line endings:
 
 3. **Format existing code:**
    ```bash
-   npx prettier --write "src/**/*" ".eleventy.js" "optimize-images.js" "package.json"
+   npx prettier --write "_src/**/*" ".eleventy.js" "optimize-images.js" "package.json"
    ```
 
 4. **Verify changes:**

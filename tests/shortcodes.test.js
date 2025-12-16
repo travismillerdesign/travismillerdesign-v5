@@ -22,7 +22,7 @@ const mockConfig = {
 };
 
 // Load shortcodes module
-require('../src/_includes/shortcodes')(mockConfig);
+require('../_src/_includes/shortcodes')(mockConfig);
 
 const { responsiveImage, lazyVideo } = mockConfig.shortcodes;
 

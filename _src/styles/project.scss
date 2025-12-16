@@ -6,7 +6,7 @@
 // It imports all Sass modules in the correct order.
 //
 // Compilation Command:
-//   sass src/styles/project.scss src/styles/project.css --style=compressed
+//   sass _src/styles/project.scss _src/styles/project.css --style=compressed
 //
 // Architecture:
 //   1. Resets: Normalize browser defaults
@@ -23,7 +23,7 @@
 //   - Functions: color.adjust() for color manipulation
 //
 // Output:
-//   dist/styles/project.css (compressed, minified)
+//   _site/styles/project.css (compressed, minified)
 
 // ========================================
 // 1. CORE SETTINGS AND RESETS

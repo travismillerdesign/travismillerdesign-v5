@@ -32,8 +32,8 @@ if (!/^[a-z0-9-]+$/.test(slug)) {
 }
 
 // Define file paths
-const htmlPath = path.join(__dirname, 'src', 'work', `${slug}.html`);
-const assetsPath = path.join(__dirname, 'src', 'assets', slug);
+const htmlPath = path.join(__dirname, '_src', 'work', `${slug}.html`);
+const assetsPath = path.join(__dirname, '_src', 'assets', slug);
 
 // Check if files already exist
 if (fs.existsSync(htmlPath)) {

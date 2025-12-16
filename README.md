@@ -35,7 +35,7 @@ Static portfolio website with:
 
 ```
 travismillerdesign-v5/
-├── src/                          # Source files (input)
+├── _src/                          # Source files (input)
 │   ├── _includes/                # Eleventy templates and partials
 │   │   ├── base.html            # Root HTML layout template
 │   │   ├── nav.html             # Navigation component
@@ -80,7 +80,7 @@ travismillerdesign-v5/
 │   ├── 404.html                 # 404 error page
 │   └── robots.txt               # SEO robots file
 │
-├── dist/                        # Built output (generated, gitignored)
+├── _site/                        # Built output (generated, gitignored)
 │
 ├── .eleventy.js                 # Eleventy configuration
 ├── optimize-images.js           # Image optimization build script
@@ -139,7 +139,7 @@ npm run build
 # 2. Generates HTML with Eleventy
 # 3. Optimizes images (JPG/PNG → WebP + responsive sizes)
 # 4. Optimizes videos (MP4 → WebM + poster frames)
-# Output: dist/
+# Output: _site/
 ```
 
 ---
@@ -150,8 +150,8 @@ npm run build
 
 **Config:** `.eleventy.js`
 
-- **Input:** `src/`
-- **Output:** `dist/`
+- **Input:** `_src/`
+- **Output:** `_site/`
 - **Template Engine:** Nunjucks (`.njk`)
 - **Custom Shortcodes:**
   - `{% responsiveImage %}` - Generates `<picture>` elements with WebP + fallback
@@ -166,8 +166,8 @@ npm run build
 
 ### Sass Compilation
 
-**Entry Point:** `src/styles/project.scss`
-**Output:** `src/styles/project.css` (then copied to `dist/`)
+**Entry Point:** `_src/styles/project.scss`
+**Output:** `_src/styles/project.css` (then copied to `_site/`)
 
 **Architecture:**
 - `settings/` - Variables (colors, spacing, breakpoints)
@@ -177,7 +177,7 @@ npm run build
 
 **Command:**
 ```bash
-sass src/styles/project.scss src/styles/project.css --style=compressed
+sass _src/styles/project.scss _src/styles/project.css --style=compressed
 ```
 
 ### Image Optimization
@@ -185,24 +185,24 @@ sass src/styles/project.scss src/styles/project.css --style=compressed
 **Script:** `optimize-images.js`
 
 **Process:**
-1. Scans `src/assets/` for `.jpg`, `.png`, `.webp`, `.avif`
+1. Scans `_src/assets/` for `.jpg`, `.png`, `.webp`, `.avif`
 2. Generates two sizes:
    - **1080w** - Mobile/tablet
    - **Original** - Desktop/retina
 3. Converts to formats:
    - **WebP** - Modern format (~30% smaller)
    - **JPG/PNG** - Fallback
-4. Outputs to `dist/assets/` preserving folder structure
+4. Outputs to `_site/assets/` preserving folder structure
 
 **Quality Settings:** 85% for all formats
 
 **Example Output:**
 ```
-src/assets/apple/hero.jpg
-→ dist/assets/apple/hero.jpg (original)
-→ dist/assets/apple/hero.webp (original)
-→ dist/assets/apple/hero-1080w.jpg (mobile)
-→ dist/assets/apple/hero-1080w.webp (mobile)
+_src/assets/apple/hero.jpg
+→ _site/assets/apple/hero.jpg (original)
+→ _site/assets/apple/hero.webp (original)
+→ _site/assets/apple/hero-1080w.jpg (mobile)
+→ _site/assets/apple/hero-1080w.webp (mobile)
 ```
 
 ### Video Optimization
@@ -210,11 +210,11 @@ src/assets/apple/hero.jpg
 **Script:** `optimize-videos.js`
 
 **Process:**
-1. Scans `src/assets/` for `.mp4` files
+1. Scans `_src/assets/` for `.mp4` files
 2. Extracts poster frame at 0.5s (avoids black frames)
 3. Generates optimized posters (WebP + JPEG)
 4. Converts MP4 → WebM (VP9 codec, ~30-50% smaller)
-5. Outputs to `dist/assets/`
+5. Outputs to `_site/assets/`
 
 **Video Encoding:**
 - **Codec:** VP9 (libvpx-vp9)
@@ -224,11 +224,11 @@ src/assets/apple/hero.jpg
 
 **Example Output:**
 ```
-src/assets/motion/animation.mp4
-→ dist/assets/motion/animation.mp4 (original)
-→ dist/assets/motion/animation.webm (VP9)
-→ dist/assets/motion/animation.jpg (poster)
-→ dist/assets/motion/animation.webp (poster WebP)
+_src/assets/motion/animation.mp4
+→ _site/assets/motion/animation.mp4 (original)
+→ _site/assets/motion/animation.webm (VP9)
+→ _site/assets/motion/animation.jpg (poster)
+→ _site/assets/motion/animation.webp (poster WebP)
 ```
 
 ---
@@ -279,7 +279,7 @@ src/assets/motion/animation.mp4
 
 ### 3. **Page Transitions**
 
-**Script:** `src/scripts/page-transitions.js`
+**Script:** `_src/scripts/page-transitions.js`
 
 - Intercepts internal navigation clicks
 - Smooth 200ms fade between pages
@@ -289,14 +289,14 @@ src/assets/motion/animation.mp4
 
 ### 4. **P5.js Animated Backgrounds**
 
-**Script:** `src/scripts/case-study-animations.js`
+**Script:** `_src/scripts/case-study-animations.js`
 
 - Procedural animated backgrounds for case study pages
 - Multiple unique sketches (Lissajous curves, gradients, etc.)
 - Mobile optimizations (lower FPS, simpler rendering)
 - Respects `prefers-reduced-motion`
 
-**Mobile Optimizer:** `src/scripts/p5-mobile-optimizer.js`
+**Mobile Optimizer:** `_src/scripts/p5-mobile-optimizer.js`
 - Device detection (iOS, Android, desktop)
 - Performance tier classification
 - Adaptive FPS (30 mobile, 60 desktop)
@@ -304,7 +304,7 @@ src/assets/motion/animation.mp4
 
 ### 5. **Keyboard Navigation**
 
-**Script:** `src/scripts/case-study-navigation.js`
+**Script:** `_src/scripts/case-study-navigation.js`
 
 - Arrow keys (←↑↓→) navigate between sections
 - Smooth scrolling
@@ -313,7 +313,7 @@ src/assets/motion/animation.mp4
 
 ### 6. **Scroll Animations**
 
-**Script:** `src/scripts/scroll-animations.js`
+**Script:** `_src/scripts/scroll-animations.js`
 
 - Fade-in effects as content enters viewport
 - Uses IntersectionObserver (performance)
@@ -358,7 +358,7 @@ src/assets/motion/animation.mp4
 
 ## 🧩 Custom Shortcodes
 
-Defined in: `src/_includes/shortcodes.js`
+Defined in: `_src/_includes/shortcodes.js`
 
 ### `responsiveImage`
 
@@ -427,7 +427,7 @@ Defined in: `src/_includes/shortcodes.js`
 - `/latest` → `/` (non-permanent)
 
 **Build Command:** `npm run build`
-**Output Directory:** `dist/`
+**Output Directory:** `_site/`
 
 ---
 

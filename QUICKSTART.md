@@ -79,15 +79,15 @@ npm run new:case-study my-project "My Project Name" "Short description of the pr
 ```
 
 This automatically creates:
-- `src/work/my-project.html` with proper structure
-- `src/assets/my-project/` folder for images/videos
+- `_src/work/my-project.html` with proper structure
+- `_src/assets/my-project/` folder for images/videos
 - README with next steps
 
 **Manual Method (Alternative):**
 
 1. **Copy an existing case study as a template:**
    ```bash
-   cp src/work/leia.html src/work/my-new-project.html
+   cp _src/work/leia.html _src/work/my-new-project.html
    ```
 
 2. **Edit the front matter (top of file):**
@@ -101,14 +101,14 @@ This automatically creates:
 
 3. **Create assets folder:**
    ```bash
-   mkdir -p src/assets/my-new-project
+   mkdir -p _src/assets/my-new-project
    ```
 
 **Next Steps (Both Methods):**
 
-1. Add images to `src/assets/my-new-project/`
+1. Add images to `_src/assets/my-new-project/`
 2. Edit the HTML file to customize content
-3. Add the project to homepage (`src/index.html`) and work page (`src/work.html`)
+3. Add the project to homepage (`_src/index.html`) and work page (`_src/work.html`)
 4. Run `npm run serve` to preview
 
 ### ✅ Adding Images to a Project
@@ -118,10 +118,10 @@ This automatically creates:
 1. **Add source images:**
    ```bash
    # Create project folder in assets
-   mkdir -p src/assets/my-project
+   mkdir -p _src/assets/my-project
 
    # Copy your JPG/PNG images
-   cp ~/Desktop/my-image.jpg src/assets/my-project/
+   cp ~/Desktop/my-image.jpg _src/assets/my-project/
    ```
 
 2. **Use in your HTML:**
@@ -143,7 +143,7 @@ This automatically creates:
 1. **Add source video (MP4):**
    ```bash
    # Copy your MP4 video
-   cp ~/Desktop/my-video.mp4 src/assets/my-project/
+   cp ~/Desktop/my-video.mp4 _src/assets/my-project/
    ```
 
 2. **Use in your HTML:**
@@ -164,14 +164,14 @@ This automatically creates:
 
 1. **Find the file:**
    ```bash
-   # All case studies are in src/work/
-   ls src/work/
+   # All case studies are in _src/work/
+   ls _src/work/
    ```
 
 2. **Edit the HTML:**
    ```bash
    # Open in your editor
-   code src/work/apple.html
+   code _src/work/apple.html
    ```
 
 3. **Save and check:**
@@ -181,8 +181,8 @@ This automatically creates:
 ### ✅ Updating Homepage or Work Page
 
 **Files:**
-- Homepage: `src/index.html`
-- Work collection: `src/work.html`
+- Homepage: `_src/index.html`
+- Work collection: `_src/work.html`
 
 **Edit and save** - changes will auto-reload.
 
@@ -194,17 +194,17 @@ This automatically creates:
 
 1. **Find the right Sass file:**
    ```
-   src/styles/
+   _src/styles/
    ├── settings/        # Colors, fonts, spacing, breakpoints
    ├── core/            # Base HTML elements (h1, p, a, etc.)
    └── components/      # UI components (cards, headers, etc.)
    ```
 
 2. **Common files to edit:**
-   - Colors: `src/styles/settings/color.scss`
-   - Typography: `src/styles/settings/fonts.scss`
-   - Spacing: `src/styles/settings/layout.scss`
-   - Components: `src/styles/components/[component-name].scss`
+   - Colors: `_src/styles/settings/color.scss`
+   - Typography: `_src/styles/settings/fonts.scss`
+   - Spacing: `_src/styles/settings/layout.scss`
+   - Components: `_src/styles/components/[component-name].scss`
 
 3. **Changes auto-compile:**
    - Sass watcher compiles automatically
@@ -254,8 +254,8 @@ git push origin main
 # Build production version locally
 npm run build
 
-# Check dist/ folder output
-ls dist/
+# Check _site/ folder output
+ls _site/
 ```
 
 ---
@@ -265,7 +265,7 @@ ls dist/
 When adding a new project, create this structure:
 
 ```
-src/
+_src/
 ├── work/
 │   └── my-project.html          ← Case study page
 ├── assets/
@@ -281,8 +281,8 @@ src/
 ## 💡 Tips & Shortcuts
 
 ### 1. **Reuse Existing Patterns**
-   - Copy structure from `src/work/leia.html` for new case studies
-   - Copy card structure from `src/index.html` for new work items
+   - Copy structure from `_src/work/leia.html` for new case studies
+   - Copy card structure from `_src/index.html` for new work items
    - Keep consistent section types (hero, overview, content blocks)
 
 ### 2. **Image Guidelines**
@@ -322,7 +322,7 @@ pkill -f "eleventy"
 
 ### Issue: "Images not showing"
 - Check path starts with `/assets/` not `assets/`
-- Check file exists in `src/assets/`
+- Check file exists in `_src/assets/`
 - Check file extension is correct (case-sensitive on some systems)
 
 ### Issue: "Sass not compiling"
@@ -361,7 +361,7 @@ Before pushing to production:
 - [ ] Review text for typos
 - [ ] Test keyboard navigation (arrow keys)
 - [ ] Run production build (`npm run build`)
-- [ ] Check `dist/` folder has all assets
+- [ ] Check `_site/` folder has all assets
 
 ---
 
@@ -376,11 +376,11 @@ npm run serve:verbose  # Debug mode (shows details)
 
 ### Key Files
 ```
-src/index.html                   # Homepage
-src/work.html                    # Work collection page
-src/work/[project].html          # Individual case studies
-src/_includes/base.html          # Site-wide template
-src/styles/project.scss          # Main CSS entry point
+_src/index.html                   # Homepage
+_src/work.html                    # Work collection page
+_src/work/[project].html          # Individual case studies
+_src/_includes/base.html          # Site-wide template
+_src/styles/project.scss          # Main CSS entry point
 ```
 
 ### Asset Paths (in HTML)
@@ -406,11 +406,11 @@ description: "SEO description of the project"
 
 1. `cd travismillerdesign-v5`
 2. `npm run serve`
-3. Copy `src/work/leia.html` → `src/work/new-project.html`
-4. Create `src/assets/new-project/` folder
+3. Copy `_src/work/leia.html` → `_src/work/new-project.html`
+4. Create `_src/assets/new-project/` folder
 5. Add images/videos to assets folder
 6. Edit `new-project.html` with your content
-7. Add project card to `src/index.html` and `src/work.html`
+7. Add project card to `_src/index.html` and `_src/work.html`
 8. Check in browser (auto-reloads)
 9. `git add .`
 10. `git commit -m "Add new project"`
