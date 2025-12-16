@@ -87,9 +87,9 @@ module.exports = function (eleventyConfig) {
     // ========================================
     // FILE WATCHING (DEV MODE)
     // ========================================
-    // Watch SCSS source files and trigger browser reload when changes are detected
-    // The Sass compiler (watch:scss) will automatically compile to _site/styles/project.css
-    eleventyConfig.addWatchTarget('_src/styles/**/*.scss');
+    // Note: SCSS watching is handled by the watch:scss script (not by 11ty)
+    // The Sass compiler watches _src/styles/ and compiles to _site/styles/project.css
+    // Browser reload is triggered by BrowserSync watching _site/styles/project.css (see setServerOptions below)
 
     // Enable immediate passthrough copying during serve mode (faster dev experience)
     // Without this, copied files would only update on rebuild
