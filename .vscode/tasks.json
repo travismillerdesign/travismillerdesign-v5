@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "label": "npm: build",
+            "detail": "Full production build with optimized assets"
+        },
+        {
+            "type": "npm",
+            "script": "serve",
+            "problemMatcher": [],
+            "label": "npm: serve",
+            "detail": "Fast dev mode with live reload"
+        },
+        {
+            "type": "npm",
+            "script": "compile:scss",
+            "problemMatcher": [],
+            "label": "npm: compile:scss",
+            "detail": "Compile and autoprefix CSS"
+        },
+        {
+            "type": "npm",
+            "script": "test",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "label": "npm: test",
+            "detail": "Run all test suites"
+        }
+    ]
+}
